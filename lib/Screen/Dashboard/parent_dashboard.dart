@@ -1,10 +1,10 @@
-
 import 'package:curved_navigation_bar/curved_navigation_bar.dart'; // Ensure this is in pubspec.yaml
 import 'package:flutter/material.dart';
 import 'package:tamdansers/Role_PARENT/attendance_son_role.dart';
 import 'package:tamdansers/Role_PARENT/comment_and_signature_son_role.dart';
 import 'package:tamdansers/Role_PARENT/events_news_son_role.dart';
 import 'package:tamdansers/Role_PARENT/homework_son_role.dart';
+import 'package:tamdansers/Role_PARENT/result_monthly_son_role.dart';
 import 'package:tamdansers/Screen/Edit-Profile/parent_edit_profile.dart';
 
 import '../../Controller/controller_parent.dart/categorycard.dart';
@@ -83,6 +83,10 @@ class ParentHomeContent extends StatelessWidget {
             _buildAttendanceStatusCard(),
             const SizedBox(height: 25),
             _buildParentGridMenu(context),
+            const SizedBox(height: 25),
+            _buildSectionTitle("សកម្មភាពរហ័ស", actionText: "គ្រប់គ្រង"),
+            const SizedBox(height: 25),
+            _buildQuickActions(context),
             const SizedBox(height: 30),
             _buildSectionHeader("កិច្ចការបន្ទាប់", actionText: "មើលទាំងអស់"),
             const SizedBox(height: 15),
@@ -363,186 +367,334 @@ class ParentHomeContent extends StatelessWidget {
     );
   }
 
-  Widget _buildParentHeader() {
-    return const Row(
+  Widget _buildSectionTitle(String title, {String? actionText}) {
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Icon(Icons.grid_view_rounded, color: Color(0xFF007A7A), size: 28),
         Text(
-          "ផ្ទាំងគ្រប់គ្រងអាណាព្យាបាល",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          title,
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        Icon(Icons.notifications_none, color: Colors.black, size: 28),
-      ],
-    );
-  }
-
-  Widget _buildStudentProfileCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ParentEditProfileScreen(),
-              ),
-            ),
-            child: const CircleAvatar(
-              radius: 25,
-              backgroundImage: NetworkImage(
-                'https://img.freepik.com/free-vector/mans-face-flat-style_90220-2877.jpg?semt=ais_hybrid&w=740&q=80',
-              ),
-            ),
-          ),
-          const SizedBox(width: 15),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Alex Johnson",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  "ថ្នាក់ទី ១០-B • #8829",
-                  style: TextStyle(color: Color(0xFF007A7A), fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-          const Icon(Icons.swap_horiz_rounded, color: Color(0xFF007A7A)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAttendanceStatusCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF006666),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        if (actionText != null)
           Text(
-            "បានមកដល់ថ្ងៃនេះ",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 22,
+            actionText,
+            style: const TextStyle(
+              color: Color(0xFF007A7A),
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 8),
-          Text(
-            "ស្កេនចូលម៉ោង 08:30 ព្រឹក (ទាន់ពេល)",
-            style: TextStyle(color: Colors.white70, fontSize: 13),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParentGridMenu(BuildContext context) {
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      mainAxisSpacing: 15,
-      crossAxisSpacing: 15,
-      childAspectRatio: 1.1,
-      children: [
-        _gridItem(
-          context,
-          Icons.schedule,
-          "កាលវិភាគ",
-          Colors.redAccent,
-          const ParentHomeworkScreen(),
-        ),
-        _gridItem(
-          context,
-          Icons.check_circle_outline,
-          "តាមដានវត្តមាន",
-          Colors.green,
-          const ParentAttendanceMonitor(),
-        ),
-        _gridItem(
-          context,
-          Icons.edit_note,
-          "មតិយោបល់",
-          Colors.purple,
-          const ParentSignatureScreen(),
-        ),
-        _gridItem(
-          context,
-          Icons.bar_chart,
-          "ព្រឹត្តិការណ៍",
-          Colors.orange,
-          const SchoolNewsEventsScreen(),
-        ),
       ],
     );
   }
+}
 
-  Widget _gridItem(
-    BuildContext context,
-    IconData icon,
-    String label,
-    Color color,
-    Widget screen,
-  ) {
-    return GestureDetector(
-      onTap: () => Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => screen),
+Widget _buildParentHeader() {
+  return const Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Icon(Icons.grid_view_rounded, color: Color(0xFF007A7A), size: 28),
+      Text(
+        "ផ្ទាំងគ្រប់គ្រងអាណាព្យាបាល",
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
-      child: CategoryCard(icon: icon, label: label, color: color),
-    );
-  }
+      Icon(Icons.notifications_none, color: Colors.black, size: 28),
+    ],
+  );
+}
 
-  Widget _buildTeacherFeedbackCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: const Border(
-          left: BorderSide(color: Color(0xFF007A7A), width: 6),
-        ),
-      ),
-      child: const Text(
-        "\"Alex បានបង្ហាញពីភាពជាអ្នកដឹកនាំដ៏ឆ្នើមក្នុងអំឡុងពេលពិភាក្សាក្នុងថ្នាក់ថ្ងៃនេះ...\"",
-      ),
-    );
-  }
-
-  Widget _buildMessageTeacherCard() {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: const Color(0xFF006666),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: const Row(
-        children: [
-          Icon(Icons.chat_bubble_outline, color: Colors.white),
-          SizedBox(width: 15),
-          Text(
-            "ផ្ញើសារទៅគ្រូ",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+Widget _buildStudentProfileCard(BuildContext context) {
+  return Container(
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const ParentEditProfileScreen(),
+            ),
           ),
-          Spacer(),
-          Icon(Icons.chevron_right, color: Colors.white),
-        ],
+          child: const CircleAvatar(
+            radius: 25,
+            backgroundImage: NetworkImage(
+              'https://img.freepik.com/free-vector/mans-face-flat-style_90220-2877.jpg?semt=ais_hybrid&w=740&q=80',
+            ),
+          ),
+        ),
+        const SizedBox(width: 15),
+        const Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Alex Johnson",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "ថ្នាក់ទី ១០-B • #8829",
+                style: TextStyle(color: Color(0xFF007A7A), fontSize: 12),
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.swap_horiz_rounded, color: Color(0xFF007A7A)),
+      ],
+    ),
+  );
+}
+
+Widget _buildAttendanceStatusCard() {
+  return Container(
+    width: double.infinity,
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: const Color(0xFF006666),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "បានមកដល់ថ្ងៃនេះ",
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 22,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        SizedBox(height: 8),
+        Text(
+          "ស្កេនចូលម៉ោង 08:30 ព្រឹក (ទាន់ពេល)",
+          style: TextStyle(color: Colors.white70, fontSize: 13),
+        ),
+      ],
+    ),
+  );
+}
+
+Widget _buildParentGridMenu(BuildContext context) {
+  return GridView.count(
+    shrinkWrap: true,
+    physics: const NeverScrollableScrollPhysics(),
+    crossAxisCount: 2,
+    mainAxisSpacing: 15,
+    crossAxisSpacing: 15,
+    childAspectRatio: 1.1,
+    children: [
+      _gridItem(
+        context,
+        Icons.home_work_rounded,
+        "កិច្ចការផ្ទះ",
+        Colors.redAccent,
+        const ParentHomeworkScreen(),
       ),
-    );
-  }
+      _gridItem(
+        context,
+        Icons.check_circle_outline,
+        "តាមដានវត្តមាន",
+        Colors.green,
+        const ParentAttendanceMonitor(),
+      ),
+      _gridItem(
+        context,
+        Icons.edit_note,
+        "មតិយោបល់",
+        Colors.purple,
+        const ParentSignatureScreen(),
+      ),
+      _gridItem(
+        context,
+        Icons.bar_chart,
+        "ព្រឹត្តិការណ៍",
+        Colors.orange,
+        const SchoolNewsEventsScreen(),
+      ),
+    ],
+  );
+}
+
+Widget _gridItem(
+  BuildContext context,
+  IconData icon,
+  String label,
+  Color color,
+  Widget screen,
+) {
+  return GestureDetector(
+    onTap: () => Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => screen),
+    ),
+    child: CategoryCard(icon: icon, label: label, color: color),
+  );
+}
+
+Widget _buildTeacherFeedbackCard() {
+  return Container(
+    padding: const EdgeInsets.all(20),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(20),
+      border: const Border(
+        left: BorderSide(color: Color(0xFF007A7A), width: 6),
+      ),
+    ),
+    child: const Text(
+      "\"Alex បានបង្ហាញពីភាពជាអ្នកដឹកនាំដ៏ឆ្នើមក្នុងអំឡុងពេលពិភាក្សាក្នុងថ្នាក់ថ្ងៃនេះ...\"",
+    ),
+  );
+}
+
+Widget _buildMessageTeacherCard() {
+  return Container(
+    padding: const EdgeInsets.all(15),
+    decoration: BoxDecoration(
+      color: const Color(0xFF006666),
+      borderRadius: BorderRadius.circular(20),
+    ),
+    child: const Row(
+      children: [
+        Icon(Icons.chat_bubble_outline, color: Colors.white),
+        SizedBox(width: 15),
+        Text(
+          "ផ្ញើសារទៅគ្រូ",
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+        ),
+        Spacer(),
+        Icon(Icons.chevron_right, color: Colors.white),
+      ],
+    ),
+  );
+}
+
+Widget _buildIconContainer(IconData icon, Color color) {
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: color.withValues(alpha: .1),
+      borderRadius: BorderRadius.circular(15),
+    ),
+    child: Icon(icon, color: color),
+  );
+}
+
+// Widget _buildQuickActions() {
+//   return Row(
+//     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//     children: [
+//       _buildActionItem(Icons.check_circle_outline, "កត់វត្តមាន", Colors.teal),
+//       _buildActionItem(
+//         Icons.description_outlined,
+//         "ដាក់ពិន្ទុ",
+//         Colors.blueGrey,
+//       ),
+//       _buildActionItem(Icons.campaign_outlined, "ការបោះឆ្នោត", Colors.cyan),
+//     ],
+//   );
+// }
+
+// Widget _buildActionItem(IconData icon, String label, Color color) {
+//   return Column(
+//     children: [
+//       Container(
+//         width: 100,
+//         height: 100,
+//         decoration: BoxDecoration(
+//           color: Colors.white,
+//           borderRadius: BorderRadius.circular(20),
+//           boxShadow: [
+//             BoxShadow(
+//               color: Colors.black.withValues(alpha: .02),
+//               blurRadius: 10,
+//             ),
+//           ],
+//         ),
+//         child: Icon(icon, color: color, size: 30),
+//       ),
+//       const SizedBox(height: 8),
+//       Text(
+//         label,
+//         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+//       ),
+//     ],
+//   );
+// }
+Widget _buildQuickActions(BuildContext context) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      _buildActionItem(
+        context,
+        Icons.check_circle_outline,
+        "កត់វត្តមាន",
+        Colors.teal,
+        const ParentAttendanceMonitor(), // Link to Attendance Screen
+      ),
+      _buildActionItem(
+        context,
+        Icons.auto_graph,
+        "លទ្ធផល",
+        Colors.blueGrey,
+        const StudentReportScreen(), // Link to Homework Screen
+      ),
+      _buildActionItem(
+        context,
+        Icons.campaign_outlined,
+        "ព័ត៌មាន",
+        Colors.cyan,
+        const SchoolNewsEventsScreen(), // Link to News Screen
+      ),
+    ],
+  );
+}
+
+Widget _buildActionItem(
+  BuildContext context,
+  IconData icon,
+  String label,
+  Color color,
+  Widget destination,
+) {
+  return GestureDetector(
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => destination),
+      );
+    },
+    child: Column(
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Icon(icon, color: color, size: 35),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+      ],
+    ),
+  );
 }

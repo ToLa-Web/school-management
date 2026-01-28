@@ -1,4 +1,6 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
 
 class ParentSignatureScreen extends StatefulWidget {
   const ParentSignatureScreen({super.key});
@@ -8,129 +10,104 @@ class ParentSignatureScreen extends StatefulWidget {
 }
 
 class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
+  int _pageIndex = 0;
+  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
   final Color primaryTeal = const Color(0xFF007A7C);
+
+  // List of screens for the navigation
+  late final List<Widget> _screens = [
+    _buildSignatureFormContent(), // Tab 0: Current Task
+    const Center(child: Text("ប្រវត្តិឯកសារ (History)")),
+    const Center(child: Text("សារ (Messages)")),
+    const StudentEditProfileScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: primaryTeal, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Column(
-          children: [
-            const Text(
-              'មតិយោបល់ និងចុះហត្ថលេខា', // Comment and Signature
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
+      // App bar only shows on the Signature tab
+      appBar: _pageIndex == 0
+          ? AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: Icon(Icons.arrow_back_ios, color: primaryTeal, size: 20),
+                onPressed: () => Navigator.pop(context),
               ),
-            ),
-            Text(
-              'ជំហាន ២ នៃ ២', // Step 2 of 2
-              style: TextStyle(color: primaryTeal, fontSize: 12),
-            ),
-          ],
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.info_outline, color: primaryTeal),
-            onPressed: () {},
-          ),
+              title: Column(
+                children: [
+                  const Text(
+                    'មតិយោបល់ និងចុះហត្ថលេខា',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  Text(
+                    'ជំហាន ២ នៃ ២',
+                    style: TextStyle(color: primaryTeal, fontSize: 12),
+                  ),
+                ],
+              ),
+              centerTitle: true,
+            )
+          : null,
+      body: IndexedStack(index: _pageIndex, children: _screens),
+      bottomNavigationBar: CurvedNavigationBar(
+        key: _bottomNavigationKey,
+        index: _pageIndex,
+        height: 60.0,
+        items: const <Widget>[
+          Icon(Icons.draw_rounded, size: 30, color: Colors.white),
+          Icon(Icons.history_edu_rounded, size: 30, color: Colors.white),
+          Icon(Icons.chat_bubble_outline, size: 30, color: Colors.white),
+          Icon(Icons.person_outline, size: 30, color: Colors.white),
         ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Document Preview Summary
-            const Text(
-              'ទិដ្ឋភាពទូទៅនៃឯកសារ',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            _buildDocumentCard(),
-
-            const SizedBox(height: 25),
-
-            // 2. Comment Section
-            const Text(
-              'មតិយោបល់ជូនគ្រូបង្រៀន',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              maxLines: 5,
-              decoration: InputDecoration(
-                hintText: 'សូមបញ្ចូលមតិយោបល់ ឬសំណួរផ្សេងៗ...',
-                filled: true,
-                fillColor: Colors.white,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(15),
-                  borderSide: BorderSide(color: Colors.grey.shade200),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 25),
-
-            // 3. Signature Pad Area
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'ហត្ថលេខា',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text(
-                  'សម្អាត',
-                  style: TextStyle(
-                    color: primaryTeal,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _buildSignaturePad(),
-
-            const SizedBox(height: 15),
-
-            // 4. Confirmation Checkbox
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(Icons.check_circle, color: primaryTeal, size: 20),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: Text(
-                    'តាមរយៈការចុះហត្ថលេខានេះ ខ្ញុំសូមបញ្ជាក់ថាខ្ញុំបានពិនិត្យខ្លឹមសារនៃរបាយការណ៍នេះហើយយល់ព្រមតាមការចុះហត្ថលេខាឌីជីថលនេះមានសុពលភាពស្របច្បាប់។',
-                    style: TextStyle(fontSize: 11, color: Colors.blueGrey),
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 30),
-
-            // 5. Action Buttons
-            _buildActionButtons(),
-          ],
-        ),
+        color: primaryTeal,
+        buttonBackgroundColor: primaryTeal,
+        backgroundColor: const Color(0xFFF8F9FA),
+        animationCurve: Curves.easeInOut,
+        onTap: (index) => setState(() => _pageIndex = index),
       ),
     );
   }
+
+  // --- Main Content: Signature Form ---
+  Widget _buildSignatureFormContent() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'ទិដ្ឋភាពទូទៅនៃឯកសារ',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          _buildDocumentCard(),
+          const SizedBox(height: 25),
+          const Text(
+            'មតិយោបល់ជូនគ្រូបង្រៀន',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 10),
+          _buildCommentField(),
+          const SizedBox(height: 25),
+          _buildSignatureHeader(),
+          const SizedBox(height: 10),
+          _buildSignaturePad(),
+          const SizedBox(height: 15),
+          _buildLegalDisclaimer(),
+          const SizedBox(height: 30),
+          _buildActionButtons(),
+        ],
+      ),
+    );
+  }
+
+  // --- UI Components ---
 
   Widget _buildDocumentCard() {
     return Container(
@@ -139,7 +116,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.02), blurRadius: 10),
+          BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10),
         ],
       ),
       child: Row(
@@ -153,37 +130,24 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
             child: const Icon(Icons.description, color: Colors.blue),
           ),
           const SizedBox(width: 15),
-          Expanded(
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Colors.orange,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    const Text(
-                      'រង់ចាំការចុះហត្ថលេខា',
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+                Text(
+                  'រង់ចាំការចុះហត្ថលេខា',
+                  style: TextStyle(
+                    color: Colors.orange,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                const Text(
+                Text(
                   'របាយការណ៍វឌ្ឍនភាព ប្រចាំត្រីមាសទី ១',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
-                const Text(
-                  'ចេញផ្សាយ៖ ១២ តុលា ២០២៣ • ដោយ អ្នកគ្រូ Henderson',
+                Text(
+                  'ចេញផ្សាយ៖ ១២ តុលា ២០២៣',
                   style: TextStyle(color: Colors.grey, fontSize: 11),
                 ),
               ],
@@ -191,6 +155,44 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCommentField() {
+    return TextField(
+      maxLines: 4,
+      decoration: InputDecoration(
+        hintText: 'សូមបញ្ចូលមតិយោបល់ ឬសំណួរផ្សេងៗ...',
+        filled: true,
+        fillColor: Colors.white,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: Colors.grey.shade200),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: primaryTeal),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSignatureHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'ហត្ថលេខា',
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        TextButton(
+          onPressed: () {},
+          child: Text(
+            'សម្អាត',
+            style: TextStyle(color: primaryTeal, fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
     );
   }
 
@@ -202,26 +204,38 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: primaryTeal.withValues(alpha: 0.2),
-          style: BorderStyle.none,
-        ), // Custom dashed border needed
-      ),
-      child: CustomPaint(
-        painter: DashedPainter(),
-        child: const Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.edit, color: Colors.grey, size: 50),
-              SizedBox(height: 10),
-              Text(
-                'សូមចុះហត្ថលេខានៅទីនេះ',
-                style: TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
-          ),
+          color: Colors.grey.shade300,
+          style: BorderStyle.solid,
         ),
       ),
+      child: const Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.edit, color: Colors.grey, size: 40),
+            Text(
+              'សូមចុះហត្ថលេខានៅទីនេះ',
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLegalDisclaimer() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(Icons.check_circle, color: primaryTeal, size: 20),
+        const SizedBox(width: 10),
+        const Expanded(
+          child: Text(
+            'តាមរយៈការចុះហត្ថលេខានេះ ខ្ញុំសូមបញ្ជាក់ថាខ្ញុំបានពិនិត្យខ្លឹមសារនៃរបាយការណ៍នេះហើយ។',
+            style: TextStyle(fontSize: 11, color: Colors.blueGrey),
+          ),
+        ),
+      ],
     );
   }
 
@@ -237,20 +251,13 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
               borderRadius: BorderRadius.circular(15),
             ),
           ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.border_color, color: Colors.white, size: 18),
-              SizedBox(width: 10),
-              Text(
-                'បញ្ជូន',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
+          child: const Text(
+            'បញ្ជូន',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ),
         const SizedBox(height: 10),
@@ -258,10 +265,6 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
           onPressed: () => Navigator.pop(context),
           style: TextButton.styleFrom(
             minimumSize: const Size(double.infinity, 55),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-              side: BorderSide(color: Colors.grey.shade200),
-            ),
           ),
           child: const Text(
             'បោះបង់',
@@ -271,13 +274,4 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
       ],
     );
   }
-}
-
-class DashedPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Basic drawing logic for a dashed rectangle border
-  }
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

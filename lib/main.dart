@@ -28,6 +28,7 @@ import 'package:tamdansers/Screen/Role_TEACHER/management_class_student_role.dar
 import 'package:tamdansers/Screen/Role_TEACHER/schedule_student_role.dart';
 import 'package:tamdansers/contants/app_colors.dart';
 import 'package:tamdansers/contants/app_text_style.dart';
+import 'package:tamdansers/contants/main_wrapper.dart';
 
 void main() {
   runApp(const MyApp());
@@ -38,6 +39,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      home: MainWrapper(),
       debugShowCheckedModeBanner: false,
       title: 'EduPortal',
       theme: ThemeData(
