@@ -9,8 +9,10 @@ class TeacherCourseScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F7F9),
       body: SafeArea(
         child: Column(
+          
           children: [
             _buildHeader(),
+            
             _buildSearchBar(),
             Expanded(
               child: ListView(
@@ -59,7 +61,8 @@ class TeacherCourseScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildCircleIcon(Icons.arrow_back_ios_new),
+          _buildCircleIcon(Icons.arrow_back_ios_new,
+          ),
           const Text(
             "វគ្គសិក្សារបស់ខ្ញុំ",
             style: TextStyle(
@@ -82,7 +85,8 @@ class TeacherCourseScreen extends StatelessWidget {
         shape: BoxShape.circle,
       ),
 
-      child: Icon(icon, size: 18, color: const Color(0xFF1A3673)),
+      child: 
+      Icon(icon, size: 18, color: const Color(0xFF1A3673)),
     );
   }
 

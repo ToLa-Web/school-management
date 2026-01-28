@@ -23,10 +23,11 @@ import 'package:tamdansers/Screen/Role_STUDENT/schedule_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/score_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/add_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/check_attendance_student_rolee.dart';
-import 'package:tamdansers/Screen/Role_TEACHER/create_class_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/input_score_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/management_class_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/schedule_student_role.dart';
+import 'package:tamdansers/contants/app_colors.dart';
+import 'package:tamdansers/contants/app_text_style.dart';
 
 void main() {
   runApp(const MyApp());
@@ -39,6 +40,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'EduPortal',
+      theme: ThemeData(
+        primaryColor: AppColors.primaryText, // Uses your custom colors
+        textTheme: TextTheme(
+          // This applies your Kantumruy Pro font to all standard Text widgets
+          displayLarge: AppTextStyle.title32,
+          headlineMedium: AppTextStyle.screenTitle28,
+          titleLarge: AppTextStyle.sectionTitle20,
+          bodyLarge: AppTextStyle.fontsize18,
+          bodyMedium: AppTextStyle.body,
+        ),
+      ),
       initialRoute: '/SplashScreen',
       routes: {
         //splash screen
@@ -69,12 +81,12 @@ class MyApp extends StatelessWidget {
         '/StudentHomeworkScreen': (context) => const StudentHomeworkScreen(),
         '/StudentScoreScreen': (context) => const StudentScoreScreen(),
         //Role Teacher
-        '/CreateClassScreen': (context) => const CreateClassScreen(),
+        // '/CreateClassScreen': (context) => const CreateClassScreen(),
         '/AddStudentScreen': (context) => const AddStudentScreen(),
         '/TeacherScheduleScreen': (context) => const TeacherScheduleScreen(),
         '/AttendanceScreen': (context) => const AttendanceScreen(),
-        '/TeacherCourseScreen': (context) => const TeacherCourseScreen(),
-        '/ClassManagementScreen': (context) => const ClassManagementScreen(),
+        // '/TeacherCourseScreen': (context) => const TeacherCourseScreen(),
+        '/TeacherManagementClassScreen': (context) => const TeacherManagementClassScreen(),
         '/ScoreInputScreen': (context) => const ScoreInputScreen(),
         //Role Parent
         '/ParentHomeworkScreen': (context) => const ParentHomeworkScreen(),

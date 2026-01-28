@@ -6,7 +6,6 @@ class TeacherScheduleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color primaryTeal = Color(0xFF007A7C);
-
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       appBar: AppBar(

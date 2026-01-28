@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tamdansers/contants/app_image.dart'; // Ensure this path is correct
 
 class TeacherLoginScreen extends StatefulWidget {
   const TeacherLoginScreen({super.key});
@@ -12,11 +14,10 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Primary Teal color from image_10584b
     const Color primaryTeal = Color(0xFF007A8C);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FA), // Off-white background
+      backgroundColor: const Color(0xFFF7F9FA),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -26,8 +27,8 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             child: Container(
               height: 40,
               width: 40,
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0F2F1), // Light teal circle
+              decoration: const BoxDecoration(
+                color: Color(0xFFE0F2F1),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
@@ -55,20 +56,21 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
         child: Column(
           children: [
             const SizedBox(height: 30),
-
-            // 1. Icon Container (Matches image_10584b)
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 color: const Color(0xFFE0F2F1),
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: const Icon(Icons.school, size: 60, color: primaryTeal),
+              child: SvgPicture.asset(
+                AppImages.imageTeacher,
+                height: 120,
+                fit: BoxFit.contain,
+              ),
             ),
 
             const SizedBox(height: 24),
 
-            // 2. Main Title (Matches image_10584b)
             const Text(
               "ចូលប្រើជាគ្រូបង្រៀន",
               style: TextStyle(
@@ -86,7 +88,6 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
             const SizedBox(height: 40),
 
-            // 3. ID Input Field
             _buildLabel("លេខសម្គាល់បុគ្គលិក ឬ អ៊ីមែល"),
             TextField(
               decoration: InputDecoration(
@@ -106,7 +107,6 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
             const SizedBox(height: 20),
 
-            // 4. Password Field with Visibility Toggle
             _buildLabel("លេខសម្ងាត់"),
             TextField(
               obscureText: _isObscured,
@@ -131,7 +131,6 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
               ),
             ),
 
-            // 5. Forgot Password
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -145,7 +144,6 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
             const SizedBox(height: 10),
 
-            // 6. Login Button with Arrow (Matches image_10584b)
             SizedBox(
               width: double.infinity,
               height: 55,
@@ -157,11 +155,12 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                   ),
                 ),
                 onPressed: () {
+                  // Ensure this route is defined in your main.dart
                   Navigator.pushNamed(context, '/TeacherDashboard');
                 },
-                child: Row(
+                child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Text(
                       "ចូលប្រើ",
                       style: TextStyle(fontSize: 18, color: Colors.white),
@@ -174,13 +173,9 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             ),
 
             const SizedBox(height: 40),
-            const Text(
-              "មិនទាន់មានគណនី?",
-              style: TextStyle(color: Colors.blue),
-            ),
+            const Text("មិនទាន់មានគណនី?", style: TextStyle(color: Colors.blue)),
             const SizedBox(height: 12),
 
-            // 7. Register Outline Button
             OutlinedButton(
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: primaryTeal),
@@ -199,9 +194,9 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             ),
 
             const SizedBox(height: 40),
-            Row(
+            const Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
+              children: [
                 Icon(Icons.help_outline, size: 16, color: Colors.grey),
                 SizedBox(width: 5),
                 Text(
@@ -212,7 +207,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             ),
             const SizedBox(height: 20),
             const Text(
-              "Alan 1.11.0\n© 2096 EduPortal Systems Inc.",
+              "Alan 1.11.0\n© 2026 EduPortal Systems Inc.",
               textAlign: TextAlign.center,
               style: TextStyle(fontSize: 10, color: Colors.grey),
             ),

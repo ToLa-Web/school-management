@@ -1,3 +1,5 @@
+
+import 'package:curved_navigation_bar/curved_navigation_bar.dart'; // Ensure this is in pubspec.yaml
 import 'package:flutter/material.dart';
 import 'package:tamdansers/Role_PARENT/attendance_son_role.dart';
 import 'package:tamdansers/Role_PARENT/comment_and_signature_son_role.dart';
@@ -11,101 +13,146 @@ void main() => runApp(
   const MaterialApp(debugShowCheckedModeBanner: false, home: ParentDashboard()),
 );
 
-class ParentDashboard extends StatelessWidget {
+// --- MAIN WRAPPER WITH NAVIGATION ---
+class ParentDashboard extends StatefulWidget {
   const ParentDashboard({super.key});
+
+  @override
+  State<ParentDashboard> createState() => _ParentDashboardState();
+}
+
+class _ParentDashboardState extends State<ParentDashboard> {
+  int _pageIndex = 0;
+  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
+
+  // Define your screens here
+  final List<Widget> _screens = [
+    const ParentHomeContent(), // Index 0: Your original dashboard
+    const Center(child: Text("ប្រតិទិន (Calendar)")), // Index 1
+    const Center(child: Text("សារ (Messages)")), // Index 2
+    const ParentEditProfileScreen(),
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              _buildParentHeader(),
-              const SizedBox(height: 20),
-              _buildStudentProfileCard(context),
-              const SizedBox(height: 20),
-              _buildAttendanceStatusCard(),
-              const SizedBox(height: 25),
-              _buildParentGridMenu(context),
-              const SizedBox(height: 30),
+      body: IndexedStack(index: _pageIndex, children: _screens),
+      bottomNavigationBar: CurvedNavigationBar(
+        key: _bottomNavigationKey,
+        index: _pageIndex,
+        height: 60.0,
+        items: const <Widget>[
+          Icon(Icons.grid_view_rounded, size: 30, color: Colors.white),
+          Icon(Icons.calendar_month_outlined, size: 30, color: Colors.white),
+          Icon(Icons.chat_bubble, size: 30, color: Colors.white),
+          Icon(Icons.settings, size: 30, color: Colors.white),
+        ],
+        color: const Color(0xFF007A7A),
+        buttonBackgroundColor: const Color(0xFF007A7A),
+        backgroundColor: const Color(0xFFF5F7F9),
+        animationCurve: Curves.easeInOut,
+        animationDuration: const Duration(milliseconds: 300),
+        onTap: (index) {
+          setState(() {
+            _pageIndex = index;
+          });
+        },
+      ),
+    );
+  }
+}
 
-              // --- REPLACED COURSE SECTION WITH HOMEWORK (IMAGE 9c1955) ---
-              _buildSectionHeader("កិច្ចការបន្ទាប់", actionText: "មើលទាំងអស់"),
-              const SizedBox(height: 15),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildHomeworkCard(
-                      subject: "ប្រវត្តិវិទ្យា",
-                      title: "The French Revolution:\nNarrative Essay",
-                      deadline: "ឈប់កំណត់ថ្ងៃស្អែក",
-                      dotColor: Colors.orange,
-                    ),
-                    const SizedBox(width: 15),
-                    _buildHomeworkCard(
-                      subject: "គីមីវិទ្យា",
-                      title: "Acid-Base\nReport",
-                      deadline: "ឈប់កំណត់ថ្ងៃស្អែក",
-                      dotColor: const Color(0xFF007A7A),
-                      isIconCalendar: true,
-                    ),
-                  ],
-                ),
-              ),
+// --- DASHBOARD CONTENT (Moved from original ParentDashboard) ---
+class ParentHomeContent extends StatelessWidget {
+  const ParentHomeContent({super.key});
 
-              const SizedBox(height: 30),
-
-              // --- UPCOMING EXAMS (IMAGE 9b43fa) ---
-              _buildSectionHeader("ការប្រឡងខាងមុខ", actionText: "មើលទាំងអស់"),
-              const SizedBox(height: 15),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildExamCard(
-                      "គណិតវិទ្យាកម្រិតខ្ពស់",
-                      "នៅសល់ ២ ថ្ងៃ",
-                      "ចន្ទ, ១២ តុលា",
-                      "assets/images/MATH.jpg",
-                    ),
-                    const SizedBox(width: 15),
-                    _buildExamCard(
-                      "វិទ្យាសាស្ត្រទូទៅ",
-                      "សប្តាហ៍ក្រោយ",
-                      "សុក្រ, ១៦ តុលា",
-                      "assets/images/2011.jpg",
-                    ),
-                    _buildExamCard(
-                      "គណិតវិទ្យាកម្រិតខ្ពស់",
-                      "នៅសល់ ២ ថ្ងៃ",
-                      "ចន្ទ, ១២ តុលា",
-                      "assets/images/images.jpg",
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 30),
-              _buildSectionHeader("មតិយោបល់គ្រូបង្រៀន", hasNew: true),
-              const SizedBox(height: 15),
-              _buildTeacherFeedbackCard(),
-              const SizedBox(height: 25),
-              _buildMessageTeacherCard(),
-              const SizedBox(height: 100),
-            ],
-          ),
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 20),
+            _buildParentHeader(),
+            const SizedBox(height: 20),
+            _buildStudentProfileCard(context),
+            const SizedBox(height: 20),
+            _buildAttendanceStatusCard(),
+            const SizedBox(height: 25),
+            _buildParentGridMenu(context),
+            const SizedBox(height: 30),
+            _buildSectionHeader("កិច្ចការបន្ទាប់", actionText: "មើលទាំងអស់"),
+            const SizedBox(height: 15),
+            _buildHomeworkList(),
+            const SizedBox(height: 30),
+            _buildSectionHeader("ការប្រឡងខាងមុខ", actionText: "មើលទាំងអស់"),
+            const SizedBox(height: 15),
+            _buildExamList(),
+            const SizedBox(height: 30),
+            _buildSectionHeader("មតិយោបល់គ្រូបង្រៀន", hasNew: true),
+            const SizedBox(height: 15),
+            _buildTeacherFeedbackCard(),
+            const SizedBox(height: 25),
+            _buildMessageTeacherCard(),
+            const SizedBox(height: 100),
+          ],
         ),
       ),
-      bottomNavigationBar: _buildParentBottomNav(),
     );
   }
 
-  // --- NEW COMPONENT: HOMEWORK CARD (From Image 9c1955) ---
+  // --- UI HELPER METHODS (Keep these as they were in your code) ---
+
+  Widget _buildHomeworkList() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildHomeworkCard(
+            subject: "ប្រវត្តិវិទ្យា",
+            title: "The French Revolution:\nNarrative Essay",
+            deadline: "ឈប់កំណត់ថ្ងៃស្អែក",
+            dotColor: Colors.orange,
+          ),
+          const SizedBox(width: 15),
+          _buildHomeworkCard(
+            subject: "គីមីវិទ្យា",
+            title: "Acid-Base\nReport",
+            deadline: "ឈប់កំណត់ថ្ងៃស្អែក",
+            dotColor: const Color(0xFF007A7A),
+            isIconCalendar: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExamList() {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _buildExamCard(
+            "គណិតវិទ្យាកម្រិតខ្ពស់",
+            "នៅសល់ ២ ថ្ងៃ",
+            "ចន្ទ, ១២ តុលា",
+            "assets/images/MATH.jpg",
+          ),
+          const SizedBox(width: 15),
+          _buildExamCard(
+            "វិទ្យាសាស្ត្រទូទៅ",
+            "សប្តាហ៍ក្រោយ",
+            "សុក្រ, ១៦ តុលា",
+            "assets/images/2011.jpg",
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHomeworkCard({
     required String subject,
     required String title,
@@ -174,7 +221,6 @@ class ParentDashboard extends StatelessWidget {
     );
   }
 
-  // --- NEW COMPONENT: EXAM CARD (From Image 9b43fa) ---
   Widget _buildExamCard(
     String title,
     String timeLeft,
@@ -212,8 +258,7 @@ class ParentDashboard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    // color: Colors.white.withOpacity(0.9),
-                    color: Colors.white.withValues(alpha: 0.5),
+                    color: Colors.white.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
@@ -249,7 +294,7 @@ class ParentDashboard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: timeLeft.contains("ថ្ងៃ")
-                            ? Colors.orange.withValues(alpha: 0.1)
+                            ? Colors.orange.withOpacity(0.1)
                             : const Color(0xFFE0F2F2),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -280,7 +325,6 @@ class ParentDashboard extends StatelessWidget {
     );
   }
 
-  // --- HEADER & HELPERS ---
   Widget _buildSectionHeader(
     String title, {
     bool hasNew = false,
@@ -320,31 +364,20 @@ class ParentDashboard extends StatelessWidget {
   }
 
   Widget _buildParentHeader() {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: const Icon(
-            Icons.grid_view_rounded,
-            color: Color(0xFF007A7A),
-            size: 24,
-          ),
-        ),
-        const Text(
+        Icon(Icons.grid_view_rounded, color: Color(0xFF007A7A), size: 28),
+        Text(
           "ផ្ទាំងគ្រប់គ្រងអាណាព្យាបាល",
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const Icon(Icons.notifications_none, color: Colors.black),
+        Icon(Icons.notifications_none, color: Colors.black, size: 28),
       ],
     );
   }
 
-  Widget _buildStudentProfileCard(context) {
+  Widget _buildStudentProfileCard(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
@@ -354,15 +387,12 @@ class ParentDashboard extends StatelessWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () {
-              // Navigate to your ParentEditProfileScreen
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const ParentEditProfileScreen(),
-                ),
-              );
-            },
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const ParentEditProfileScreen(),
+              ),
+            ),
             child: const CircleAvatar(
               radius: 25,
               backgroundImage: NetworkImage(
@@ -380,7 +410,7 @@ class ParentDashboard extends StatelessWidget {
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  "ថ្នាក់ទី ១០-B • អត្តលេខ: #8829",
+                  "ថ្នាក់ទី ១០-B • #8829",
                   style: TextStyle(color: Color(0xFF007A7A), fontSize: 12),
                 ),
               ],
@@ -421,7 +451,7 @@ class ParentDashboard extends StatelessWidget {
     );
   }
 
-  Widget _buildParentGridMenu(context) {
+  Widget _buildParentGridMenu(BuildContext context) {
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -430,70 +460,51 @@ class ParentDashboard extends StatelessWidget {
       crossAxisSpacing: 15,
       childAspectRatio: 1.1,
       children: [
-
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ParentHomeworkScreen(),
-              ),
-            );
-          },
-          child: CategoryCard(
-            icon: Icons.schedule,
-            label: "កាលវិភាគ",
-            color: Colors.redAccent,
-          ),
+        _gridItem(
+          context,
+          Icons.schedule,
+          "កាលវិភាគ",
+          Colors.redAccent,
+          const ParentHomeworkScreen(),
         ),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ParentAttendanceMonitor(),
-              ),
-            );
-          },
-          child: CategoryCard(
-            icon: Icons.check_circle_outline,
-            label: "តាមដានវត្តមាន",
-            color: Colors.green,
-          ),
+        _gridItem(
+          context,
+          Icons.check_circle_outline,
+          "តាមដានវត្តមាន",
+          Colors.green,
+          const ParentAttendanceMonitor(),
         ),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const ParentSignatureScreen(),
-              ),
-            );
-          },
-          child: CategoryCard(
-            icon: Icons.edit_note,
-            label: "មតិយោបល់",
-            // sub: "ត្រូវការពិនិត្យ",
-            color: Colors.purple,
-            // hasAlert: true,
-          ),
+        _gridItem(
+          context,
+          Icons.edit_note,
+          "មតិយោបល់",
+          Colors.purple,
+          const ParentSignatureScreen(),
         ),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const SchoolNewsEventsScreen(),
-              ),
-            );
-          },
-          child: CategoryCard(
-            icon: Icons.bar_chart,
-            label: "ព្រឹត្តិការណ៍ និងព័ត៌មាន",
-            color: Colors.orange,
-          ),
+        _gridItem(
+          context,
+          Icons.bar_chart,
+          "ព្រឹត្តិការណ៍",
+          Colors.orange,
+          const SchoolNewsEventsScreen(),
         ),
       ],
+    );
+  }
+
+  Widget _gridItem(
+    BuildContext context,
+    IconData icon,
+    String label,
+    Color color,
+    Widget screen,
+  ) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => screen),
+      ),
+      child: CategoryCard(icon: icon, label: label, color: color),
     );
   }
 
@@ -530,68 +541,6 @@ class ParentDashboard extends StatelessWidget {
           ),
           Spacer(),
           Icon(Icons.chevron_right, color: Colors.white),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildParentBottomNav() {
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      selectedItemColor: const Color(0xFF007A7A),
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.grid_view_rounded),
-          label: 'ទំព័រដើម',
-        ),
-        BottomNavigationBarItem(icon: Icon(Icons.star_outline), label: 'កិច្ច'),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.calendar_month_outlined),
-          label: 'ប្រតិទិន',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.mail_outline),
-          label: 'ប្រអប់សំបុត្រ',
-        ),
-      ],
-    );
-  }
-}
-
-// ignore: unused_element
-class _MenuCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String sub;
-  final Color color;
-  final bool hasAlert;
-  const _MenuCard({
-    required this.icon,
-    required this.label,
-    required this.sub,
-    required this.color,
-    // ignore: unused_element_parameter
-    this.hasAlert = false,
-  });
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, color: color),
-          const SizedBox(height: 12),
-          Text(
-            label,
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-          Text(sub, style: const TextStyle(color: Colors.grey, fontSize: 9)),
         ],
       ),
     );
