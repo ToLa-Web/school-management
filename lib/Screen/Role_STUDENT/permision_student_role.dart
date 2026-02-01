@@ -734,8 +734,6 @@ class _StudentPermissionScreenState extends State<StudentPermissionScreen> {
   }
 }
 
-// --- Independent Classes (Outside everything else) ---
-
 class _Legend extends StatelessWidget {
   final Color color;
   final String label;

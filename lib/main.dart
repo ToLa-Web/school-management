@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tamdansers/Login/loading.dart';
+import 'package:tamdansers/Login/login_as_admin.dart';
 import 'package:tamdansers/Login/login_as_parent.dart';
 import 'package:tamdansers/Login/login_as_student.dart';
 import 'package:tamdansers/Login/login_as_teacher.dart';
@@ -10,12 +11,18 @@ import 'package:tamdansers/Role_PARENT/comment_and_signature_son_role.dart';
 import 'package:tamdansers/Role_PARENT/events_news_son_role.dart';
 import 'package:tamdansers/Role_PARENT/homework_son_role.dart';
 import 'package:tamdansers/Role_PARENT/result_monthly_son_role.dart';
+import 'package:tamdansers/Screen/Dashboard/admin_dashboard.dart';
 import 'package:tamdansers/Screen/Dashboard/parent_dashboard.dart';
 import 'package:tamdansers/Screen/Dashboard/student_dashboard.dart';
 import 'package:tamdansers/Screen/Dashboard/teacher_dashboard.dart';
 import 'package:tamdansers/Screen/Edit-Profile/parent_edit_profile.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
 import 'package:tamdansers/Screen/Edit-Profile/teacher_edit_profile.dart';
+import 'package:tamdansers/Screen/Role_Admin/admin_control_parent.dart';
+import 'package:tamdansers/Screen/Role_Admin/admin_control_report.dart';
+import 'package:tamdansers/Screen/Role_Admin/admin_control_student.dart';
+import 'package:tamdansers/Screen/Role_Admin/admin_control_teacher.dart'
+    hide AdminDashboard;
 import 'package:tamdansers/Screen/Role_STUDENT/attendance_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/homework_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/permision_student_role.dart';
@@ -45,7 +52,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: AppColors.primaryText, // Uses your custom colors
         textTheme: TextTheme(
-          // This applies your Kantumruy Pro font to all standard Text widgets
+          
           displayLarge: AppTextStyle.title32,
           headlineMedium: AppTextStyle.screenTitle28,
           titleLarge: AppTextStyle.sectionTitle20,
@@ -62,12 +69,14 @@ class MyApp extends StatelessWidget {
         '/ParentLoginScreen': (context) => const ParentLoginScreen(),
         '/login-teacher': (context) => const TeacherLoginScreen(),
         '/login-student': (context) => const StudentLoginScreen(),
+        '/AdminLoginScreen': (context) => const AdminLoginPage(),
         //Register Screen
         '/RegisterScreen': (context) => const RegisterScreen(),
         //Dashboards
         '/StudentDashboard': (context) => const StudentDashboard(),
         '/TeacherDashboard': (context) => const TeacherDashboard(),
         '/ParentDashboard': (context) => const ParentDashboard(),
+        '/AdminDashboard ': (context) => AdminDashboard(),
         //Edit Profile Screens can be added here
         '/StudentEditProfileScreen': (context) =>
             const StudentEditProfileScreen(),
@@ -88,7 +97,8 @@ class MyApp extends StatelessWidget {
         '/TeacherScheduleScreen': (context) => const TeacherScheduleScreen(),
         '/AttendanceScreen': (context) => const AttendanceScreen(),
         // '/TeacherCourseScreen': (context) => const TeacherCourseScreen(),
-        '/TeacherManagementClassScreen': (context) => const TeacherManagementClassScreen(),
+        '/TeacherManagementClassScreen': (context) =>
+            const TeacherManagementClassScreen(),
         '/ScoreInputScreen': (context) => const ScoreInputScreen(),
         //Role Parent
         '/ParentHomeworkScreen': (context) => const ParentHomeworkScreen(),
@@ -97,6 +107,11 @@ class MyApp extends StatelessWidget {
             const ParentAttendanceMonitor(),
         '/SchoolNewsEventsScreen': (context) => const SchoolNewsEventsScreen(),
         '/StudentReportScreen': (context) => const StudentReportScreen(),
+        //Role Admin
+        '/AdminControlStudent': (context) => AdminControlStudent(),
+        '/AdminControlTeacher': (context) => const AdminControlTeacher(),
+        '/AdminControlParent': (context) => const AdminControlParent(),
+        '/AdminReportSchool': (context) => const AdminReportSchool(),
       },
     );
   }
