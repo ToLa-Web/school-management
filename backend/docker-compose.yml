@@ -1,0 +1,30 @@
+﻿version: "3.9"
+
+services:
+  auth-service:
+    container_name: auth_service
+    build:
+      context: ./services/auth-service/AuthService
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__AuthDb: Host=auth-db;Port=5432;Database=auth_db;Username=auth_user;Password=auth_pass
+      EmailSettings__AppPassword: ${EMAILSETTINGS_APP_PASSWORD}
+    depends_on:
+      - auth-db
+
+  auth-db:
+    container_name: auth_db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth_db_data:/var/lib/postgresql/data
+
+volumes:
+  auth_db_data:

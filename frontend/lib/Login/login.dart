@@ -1,0 +1,256 @@
+// import 'package:flutter/material.dart';
+
+// class LoginScreen extends StatelessWidget {
+//   final int initialTab; 
+//   const LoginScreen({super.key, this.initialTab = 1});
+//   @override
+//   Widget build(BuildContext context) {
+//     return DefaultTabController(
+//       length: 3,
+//       initialIndex: initialTab, // This is the magic part that sets the tab!
+//       child: Scaffold(
+//         backgroundColor: Colors.white,
+//         body: SingleChildScrollView(
+//           child: Column(
+//             children: [
+//               const SizedBox(height: 60),
+//               // Logo from your image
+//               Container(
+//                 padding: const EdgeInsets.all(20),
+//                 decoration: BoxDecoration(
+//                   color: const Color(0xFFE3F2FD),
+//                   borderRadius: BorderRadius.circular(20),
+//                 ),
+//                 child: const Icon(
+//                   Icons.school,
+//                   size: 60,
+//                   color: Color(0xFF0D47A1),
+//                 ),
+//               ),
+//               const SizedBox(height: 24),
+//               const Text(
+//                 "សូមស្វាគមន៍មកវិញ",
+//                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+//               ),
+//               const SizedBox(height: 30),
+
+//               // TabBar from your image
+//               Container(
+//                 margin: const EdgeInsets.symmetric(horizontal: 24),
+//                 padding: const EdgeInsets.all(4),
+//                 decoration: BoxDecoration(
+//                   color: const Color(0xFFF5F7F9),
+//                   borderRadius: BorderRadius.circular(12),
+//                 ),
+//                 child: TabBar(
+//                   indicator: BoxDecoration(
+//                     color: const Color(0xFF0D47A1),
+//                     borderRadius: BorderRadius.circular(8),
+//                   ),
+//                   labelColor: Colors.white,
+//                   unselectedLabelColor: Colors.grey,
+//                   tabs: const [
+//                     Tab(text: "គ្រូបង្រៀន"),
+//                     Tab(text: "សិស្ស"),
+//                     Tab(text: "មាតាបិតា"),
+//                   ],
+//                 ),
+//               ),
+
+//               // ... Add your TextFields and Login Button here ...
+//             ],
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+// }
+import 'package:flutter/material.dart';
+
+class LoginScreen extends StatelessWidget {
+  final int initialTab;
+  const LoginScreen({super.key, this.initialTab = 1});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 3,
+      initialIndex: initialTab, // Set automatically from role selection
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Column(
+          children: [
+            const SizedBox(height: 60),
+            // Fixed Logo Section
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE3F2FD),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: const Icon(
+                Icons.school,
+                size: 60,
+                color: Color(0xFF0D47A1),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "សូមស្វាគមន៍មកវិញ",
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 30),
+
+            // Fixed TabBar Selector
+            Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF5F7F9),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: TabBar(
+                indicator: BoxDecoration(
+                  color: const Color(0xFF0D47A1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.grey,
+                tabs: const [
+                  Tab(text: "គ្រូបង្រៀន"),
+                  Tab(text: "សិស្ស"),
+                  Tab(text: "មាតាបិតា"),
+                ],
+              ),
+            ),
+
+            // Dynamic Content Area: Only this part changes
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildLoginForm(
+                    context,
+                    "គ្រូបង្រៀន",
+                    Icons.badge_outlined,
+                  ), // Teacher
+                  _buildLoginForm(
+                    context,
+                    "សិស្ស",
+                    Icons.school_outlined,
+                  ), // Student
+                  _buildLoginForm(
+                    context,
+                    "មាតាបិតា",
+                    Icons.family_restroom,
+                  ), // Parent
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginForm(
+    BuildContext context,
+    String roleName,
+    IconData roleIcon,
+  ) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "ចូលប្រើជា $roleName",
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.blueGrey,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Identity Field
+          _buildTextField(
+            label: roleName == "គ្រូបង្រៀន"
+                ? "លេខសម្គាល់គ្រូ"
+                : "លេខសម្គាល់សិស្ស",
+            hint: "បញ្ចូលលេខសម្គាល់របស់អ្នក",
+            icon: Icons.person_outline,
+          ),
+
+          const SizedBox(height: 16),
+
+          // Password Field
+          _buildTextField(
+            label: "លេខសម្ងាត់",
+            hint: "••••••••",
+            icon: Icons.lock_outline,
+            isPassword: true,
+          ),
+
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton(
+              onPressed: () {},
+              child: const Text(
+                "ភ្លេចលេខសម្ងាត់?",
+                style: TextStyle(color: Color(0xFF0D47A1)),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // Action Button
+          SizedBox(
+            width: double.infinity,
+            height: 55,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D47A1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {},
+              child: const Text(
+                "ចូលប្រើ",
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required String label,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        TextField(
+          obscureText: isPassword,
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: Colors.grey),
+            hintText: hint,
+            filled: true,
+            fillColor: const Color(0xFFF5F7F9),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
