@@ -17,8 +17,8 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
   // List of screens for the navigation
   late final List<Widget> _screens = [
     _buildSignatureFormContent(), // Tab 0: Current Task
-    const Center(child: Text("ប្រវត្តិឯកសារ (History)")),
-    const Center(child: Text("សារ (Messages)")),
+    const Center(child: Text("Document History")),
+    const Center(child: Text("Messages")),
     const StudentEditProfileScreen(),
   ];
 
@@ -38,7 +38,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
               title: Column(
                 children: [
                   const Text(
-                    'មតិយោបល់ និងចុះហត្ថលេខា',
+                    'Comments & Signature',
                     style: TextStyle(
                       color: Colors.black,
                       fontWeight: FontWeight.bold,
@@ -46,7 +46,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
                     ),
                   ),
                   Text(
-                    'ជំហាន ២ នៃ ២',
+                    'Step 2 of 2',
                     style: TextStyle(color: primaryTeal, fontSize: 12),
                   ),
                 ],
@@ -82,14 +82,14 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'ទិដ្ឋភាពទូទៅនៃឯកសារ',
+            'Document Overview',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
           _buildDocumentCard(),
           const SizedBox(height: 25),
           const Text(
-            'មតិយោបល់ជូនគ្រូបង្រៀន',
+            'Comments to Teacher',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
@@ -135,7 +135,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'រង់ចាំការចុះហត្ថលេខា',
+                  'Pending Signature',
                   style: TextStyle(
                     color: Colors.orange,
                     fontSize: 10,
@@ -143,11 +143,11 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
                   ),
                 ),
                 Text(
-                  'របាយការណ៍វឌ្ឍនភាព ប្រចាំត្រីមាសទី ១',
+                  'Progress Report - Term 1',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 Text(
-                  'ចេញផ្សាយ៖ ១២ តុលា ២០២៣',
+                  'Published: 12 Oct 2023',
                   style: TextStyle(color: Colors.grey, fontSize: 11),
                 ),
               ],
@@ -162,7 +162,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
     return TextField(
       maxLines: 4,
       decoration: InputDecoration(
-        hintText: 'សូមបញ្ចូលមតិយោបល់ ឬសំណួរផ្សេងៗ...',
+        hintText: 'Enter comments or questions...',
         filled: true,
         fillColor: Colors.white,
         enabledBorder: OutlineInputBorder(
@@ -182,13 +182,13 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text(
-          'ហត្ថលេខា',
+          'Signature',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         TextButton(
           onPressed: () {},
           child: Text(
-            'សម្អាត',
+            'Clear',
             style: TextStyle(color: primaryTeal, fontWeight: FontWeight.bold),
           ),
         ),
@@ -214,7 +214,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
           children: [
             Icon(Icons.edit, color: Colors.grey, size: 40),
             Text(
-              'សូមចុះហត្ថលេខានៅទីនេះ',
+              'Please sign here',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ],
@@ -231,7 +231,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
         const SizedBox(width: 10),
         const Expanded(
           child: Text(
-            'តាមរយៈការចុះហត្ថលេខានេះ ខ្ញុំសូមបញ្ជាក់ថាខ្ញុំបានពិនិត្យខ្លឹមសារនៃរបាយការណ៍នេះហើយ។',
+            'By signing, I confirm that I have reviewed the contents of this report.',
             style: TextStyle(fontSize: 11, color: Colors.blueGrey),
           ),
         ),
@@ -252,7 +252,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
             ),
           ),
           child: const Text(
-            'បញ្ជូន',
+            'Submit',
             style: TextStyle(
               color: Colors.white,
               fontSize: 18,
@@ -267,7 +267,7 @@ class _ParentSignatureScreenState extends State<ParentSignatureScreen> {
             minimumSize: const Size(double.infinity, 55),
           ),
           child: const Text(
-            'បោះបង់',
+            'Cancel',
             style: TextStyle(color: Colors.grey, fontSize: 16),
           ),
         ),

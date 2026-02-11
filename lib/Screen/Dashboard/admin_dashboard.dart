@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:tamdansers/Screen/Role_Admin/admin_control_parent.dart';
 import 'package:tamdansers/Screen/Role_Admin/admin_control_report.dart';
 import 'package:tamdansers/Screen/Role_Admin/admin_control_student.dart';
-import 'package:tamdansers/Screen/Role_Admin/admin_control_teacher.dart'
-    hide AdminControlParent;
+import 'package:tamdansers/Screen/Role_Admin/admin_control_teacher.dart';
 // Ensure these imports match your actual file paths
 // import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
 // import 'package:tamdansers/contants/app_text_style.dart';
@@ -117,7 +116,7 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "លោក ម៉ៅ វិបុល",
+                    "Mr. Mao Vibol",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -125,7 +124,7 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
                     ),
                   ),
                   Text(
-                    "អភិបាលសាលា • #29401",
+                    "School Principal • #29401",
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
@@ -136,7 +135,7 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
           ),
           const SizedBox(height: 30),
           const Text(
-            "ជវាំងគ្រប់គ្រងអភិបាល",
+            "Admin Control Panel",
             style: TextStyle(
               color: Colors.white,
               fontSize: 22,
@@ -144,14 +143,13 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
             ),
           ),
           const Text(
-            "ទិដ្ឋភាពទូទៅនៃប្រព័ន្ធគ្រប់គ្រងសាលារៀន",
+            "Overview of the school management system",
             style: TextStyle(color: Colors.white60, fontSize: 12),
           ),
         ],
       ),
     );
   }
-
   // --- STATS SECTION ---
   Widget _buildStatsRow() {
     return Transform.translate(
@@ -160,11 +158,11 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
         padding: const EdgeInsets.symmetric(horizontal: 15),
         child: Row(
           children: [
-            _statCard("សរុបសិស្ស", "១២០០", hasIncrease: true),
+            _statCard("Total Students", "1200", hasIncrease: true),
             const SizedBox(width: 10),
-            _statCard("គ្រូ", "៨០"),
+            _statCard("Teachers", "80"),
             const SizedBox(width: 10),
-            _statCard("មាតាបិតា", "៩៥០"),
+            _statCard("Parents", "950"),
           ],
         ),
       ),
@@ -200,7 +198,7 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
                 if (hasIncrease) ...[
                   const Spacer(),
                   const Text(
-                    "+៥%",
+                    "+5%",
                     style: TextStyle(
                       color: Colors.green,
                       fontSize: 10,
@@ -226,13 +224,13 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "ម៉ូឌុលគ្រប់គ្រង",
+                "Management Modules",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               TextButton(
                 onPressed: () {},
                 child: const Text(
-                  "មើលទាំងអស់",
+                  "View All",
                   style: TextStyle(color: Colors.blue),
                 ),
               ),
@@ -247,8 +245,8 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
             childAspectRatio: 1.1,
             children: [
               _menuItem(
-                "គ្រប់គ្រងគ្រូបង្រៀន",
-                "គ្រូសកម្ម: ៧៨ នាក់",
+                "Manage Teachers",
+                "Active teachers: 78",
                 Icons.person,
                 Colors.indigo,
                 onTap: () {
@@ -262,8 +260,8 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
                 },
               ),
               _menuItem(
-                "គ្រប់គ្រងសិស្ស",
-                "សិស្សសកម្ម: ១១៨០ នាក់",
+                "Manage Students",
+                "Active students: 1180",
                 Icons.school,
                 Colors.indigo,
                 onTap: () {
@@ -277,8 +275,8 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
                 },
               ),
               _menuItem(
-                "គ្រប់គ្រងអាណាព្យាបាល",
-                "អាណាព្យាបាល: ១៨០ នាក់",
+                "Manage Parents",
+                "Parents: 180",
                 Icons.person_2_outlined,
                 Colors.indigo,
                 onTap: () {
@@ -293,8 +291,8 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
               ),
               // ... Repeat for other items ...
               _menuItem(
-                "របាយការណ៍សាលា",
-                "របាយការណ៍ប្រចាំខែ",
+                "School Reports",
+                "Monthly Reports",
                 Icons.campaign,
                 Colors.indigo,
                 onTap: () {

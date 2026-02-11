@@ -28,8 +28,8 @@ class _ParentDashboardState extends State<ParentDashboard> {
   // Define your screens here
   final List<Widget> _screens = [
     const ParentHomeContent(), // Index 0: Your original dashboard
-    const Center(child: Text("ប្រតិទិន (Calendar)")), // Index 1
-    const Center(child: Text("សារ (Messages)")), // Index 2
+    const Center(child: Text("Calendar")), // Index 1
+    const Center(child: Text("Messages")), // Index 2
     const ParentEditProfileScreen(),
   ];
 
@@ -84,19 +84,19 @@ class ParentHomeContent extends StatelessWidget {
             const SizedBox(height: 25),
             _buildParentGridMenu(context),
             const SizedBox(height: 25),
-            _buildSectionTitle("សកម្មភាពរហ័ស", actionText: "គ្រប់គ្រង"),
+            _buildSectionTitle("Quick Actions", actionText: "Manage"),
             const SizedBox(height: 25),
             _buildQuickActions(context),
             const SizedBox(height: 30),
-            _buildSectionHeader("កិច្ចការបន្ទាប់", actionText: "មើលទាំងអស់"),
+            _buildSectionHeader("Upcoming Tasks", actionText: "View All"),
             const SizedBox(height: 15),
             _buildHomeworkList(),
             const SizedBox(height: 30),
-            _buildSectionHeader("ការប្រឡងខាងមុខ", actionText: "មើលទាំងអស់"),
+            _buildSectionHeader("Upcoming Exams", actionText: "View All"),
             const SizedBox(height: 15),
             _buildExamList(),
             const SizedBox(height: 30),
-            _buildSectionHeader("មតិយោបល់គ្រូបង្រៀន", hasNew: true),
+            _buildSectionHeader("Teacher Feedback", hasNew: true),
             const SizedBox(height: 15),
             _buildTeacherFeedbackCard(),
             const SizedBox(height: 25),
@@ -116,16 +116,16 @@ class ParentHomeContent extends StatelessWidget {
       child: Row(
         children: [
           _buildHomeworkCard(
-            subject: "ប្រវត្តិវិទ្យា",
+            subject: "History",
             title: "The French Revolution:\nNarrative Essay",
-            deadline: "ឈប់កំណត់ថ្ងៃស្អែក",
+            deadline: "Due Tomorrow",
             dotColor: Colors.orange,
           ),
           const SizedBox(width: 15),
           _buildHomeworkCard(
-            subject: "គីមីវិទ្យា",
+            subject: "Chemistry",
             title: "Acid-Base\nReport",
-            deadline: "ឈប់កំណត់ថ្ងៃស្អែក",
+            deadline: "Due Tomorrow",
             dotColor: const Color(0xFF007A7A),
             isIconCalendar: true,
           ),
@@ -140,16 +140,16 @@ class ParentHomeContent extends StatelessWidget {
       child: Row(
         children: [
           _buildExamCard(
-            "គណិតវិទ្យាកម្រិតខ្ពស់",
-            "នៅសល់ ២ ថ្ងៃ",
-            "ចន្ទ, ១២ តុលា",
+            "Advanced Mathematics",
+            "2 days left",
+            "Mon, Oct 12",
             "assets/images/MATH.jpg",
           ),
           const SizedBox(width: 15),
           _buildExamCard(
-            "វិទ្យាសាស្ត្រទូទៅ",
-            "សប្តាហ៍ក្រោយ",
-            "សុក្រ, ១៦ តុលា",
+            "General Science",
+            "Next week",
+            "Fri, Oct 16",
             "assets/images/2011.jpg",
           ),
         ],
@@ -297,7 +297,7 @@ class ParentHomeContent extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: timeLeft.contains("ថ្ងៃ")
+                        color: timeLeft.contains("day")
                             ? Colors.orange.withOpacity(0.1)
                             : const Color(0xFFE0F2F2),
                         borderRadius: BorderRadius.circular(8),
@@ -305,7 +305,7 @@ class ParentHomeContent extends StatelessWidget {
                       child: Text(
                         timeLeft,
                         style: TextStyle(
-                          color: timeLeft.contains("ថ្ងៃ")
+                          color: timeLeft.contains("day")
                               ? Colors.orange
                               : const Color(0xFF007A7A),
                           fontSize: 10,
@@ -332,7 +332,7 @@ class ParentHomeContent extends StatelessWidget {
   Widget _buildSectionHeader(
     String title, {
     bool hasNew = false,
-    String actionText = "ប្រវត្តិ",
+    String actionText = "History",
   }) {
     return Row(
       children: [
@@ -349,7 +349,7 @@ class ParentHomeContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: const Text(
-              "ថ្មី",
+              "New",
               style: TextStyle(color: Colors.white, fontSize: 10),
             ),
           ),
@@ -395,7 +395,7 @@ Widget _buildParentHeader() {
     children: [
       Icon(Icons.grid_view_rounded, color: Color(0xFF007A7A), size: 28),
       Text(
-        "ផ្ទាំងគ្រប់គ្រងអាណាព្យាបាល",
+        "Parent Dashboard",
         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
       Icon(Icons.notifications_none, color: Colors.black, size: 28),
@@ -436,7 +436,7 @@ Widget _buildStudentProfileCard(BuildContext context) {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
-                "ថ្នាក់ទី ១០-B • #8829",
+                "Grade 10-B • #8829",
                 style: TextStyle(color: Color(0xFF007A7A), fontSize: 12),
               ),
             ],
@@ -460,7 +460,7 @@ Widget _buildAttendanceStatusCard() {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          "បានមកដល់ថ្ងៃនេះ",
+          "Arrived Today",
           style: TextStyle(
             color: Colors.white,
             fontSize: 22,
@@ -469,7 +469,7 @@ Widget _buildAttendanceStatusCard() {
         ),
         SizedBox(height: 8),
         Text(
-          "ស្កេនចូលម៉ោង 08:30 ព្រឹក (ទាន់ពេល)",
+          "Scanned in at 08:30 AM (On time)",
           style: TextStyle(color: Colors.white70, fontSize: 13),
         ),
       ],
@@ -489,28 +489,28 @@ Widget _buildParentGridMenu(BuildContext context) {
       _gridItem(
         context,
         Icons.home_work_rounded,
-        "កិច្ចការផ្ទះ",
+        "Homework",
         Colors.redAccent,
         const ParentHomeworkScreen(),
       ),
       _gridItem(
         context,
         Icons.check_circle_outline,
-        "តាមដានវត្តមាន",
+        "Track Attendance",
         Colors.green,
         const ParentAttendanceMonitor(),
       ),
       _gridItem(
         context,
         Icons.edit_note,
-        "មតិយោបល់",
+        "Feedback",
         Colors.purple,
         const ParentSignatureScreen(),
       ),
       _gridItem(
         context,
         Icons.bar_chart,
-        "ព្រឹត្តិការណ៍",
+        "Events",
         Colors.orange,
         const SchoolNewsEventsScreen(),
       ),
@@ -545,7 +545,7 @@ Widget _buildTeacherFeedbackCard() {
       ),
     ),
     child: const Text(
-      "\"Alex បានបង្ហាញពីភាពជាអ្នកដឹកនាំដ៏ឆ្នើមក្នុងអំឡុងពេលពិភាក្សាក្នុងថ្នាក់ថ្ងៃនេះ...\"",
+      '"Alex showed excellent leadership during today\'s class discussion..."',
     ),
   );
 }
@@ -562,7 +562,7 @@ Widget _buildMessageTeacherCard() {
         Icon(Icons.chat_bubble_outline, color: Colors.white),
         SizedBox(width: 15),
         Text(
-          "ផ្ញើសារទៅគ្រូ",
+          "Message the Teacher",
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         Spacer(),
@@ -631,21 +631,21 @@ Widget _buildQuickActions(BuildContext context) {
       _buildActionItem(
         context,
         Icons.check_circle_outline,
-        "កត់វត្តមាន",
+        "Mark Attendance",
         Colors.teal,
         const ParentAttendanceMonitor(), // Link to Attendance Screen
       ),
       _buildActionItem(
         context,
         Icons.auto_graph,
-        "លទ្ធផល",
+        "Results",
         Colors.blueGrey,
         const StudentReportScreen(), // Link to Homework Screen
       ),
       _buildActionItem(
         context,
         Icons.campaign_outlined,
-        "ព័ត៌មាន",
+        "Announcements",
         Colors.cyan,
         const SchoolNewsEventsScreen(), // Link to News Screen
       ),

@@ -69,7 +69,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
             const SizedBox(height: 24),
 
             const Text(
-              "ចូលប្រើប្រាស់ជាសិស្ស",
+              "Login as Student",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -78,21 +78,21 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              "សូមបញ្ចូលព័ត៌មានរបស់អ្នកដើម្បីចូលប្រើប្រាស់",
+              "Please Input your information here",//សូមបញ្ចូលព័ត៌មានរបស់អ្នកដើម្បីចូលប្រើប្រាស់
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.black, fontSize: 14),
             ),
 
             const SizedBox(height: 40),
 
-            _buildLabel("លេខសម្គាល់សិស្ស ឬ អ៊ីមែល"),
+            _buildLabel("ID or Email"),
             TextField(
               decoration: InputDecoration(
                 prefixIcon: const Icon(
                   Icons.person_outline,
                   color: Colors.grey,
                 ),
-                hintText: "បញ្ចូលលេខសម្គាល់ ឬ អ៊ីមែល",
+                hintText: "Please Input ID or Email",
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -104,7 +104,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
 
             const SizedBox(height: 20),
 
-            _buildLabel("លេខសម្ងាត់"),
+            _buildLabel("Password"),
             TextField(
               obscureText: _isObscured,
               decoration: InputDecoration(
@@ -133,7 +133,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
               child: TextButton(
                 onPressed: () {},
                 child: const Text(
-                  "ភ្លេចលេខសម្ងាត់?",
+                  "Forgot Password?",
                   style: TextStyle(
                     color: studentPrimary,
                     fontWeight: FontWeight.w600,
@@ -161,7 +161,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "ចូលប្រើ",
+                      "Login",
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     SizedBox(width: 8),
@@ -173,7 +173,10 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
 
             const SizedBox(height: 40),
 
-            const Text("មិនទាន់មានគណនី?", style: TextStyle(color: Colors.blue)),
+            const Text(
+              "Don't have account?",
+              style: TextStyle(color: Colors.blue),
+            ),
             const SizedBox(height: 12),
             OutlinedButton(
               style: OutlinedButton.styleFrom(
@@ -187,7 +190,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
                 Navigator.pushNamed(context, '/RegisterScreen');
               },
               child: const Text(
-                "ចុះឈ្មោះគណនីថ្មី",
+                "Sign in",
                 style: TextStyle(
                   color: studentPrimary,
                   fontWeight: FontWeight.bold,
@@ -196,31 +199,11 @@ class _StudentLoginScreenState extends State<StudentLoginScreen> {
             ),
 
             const SizedBox(height: 40),
-
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.help_outline, size: 18, color: Colors.grey),
-                SizedBox(width: 6),
-                Text(
-                  "ត្រូវការជំនួយក្នុងការចូលប្រើ?",
-                  style: TextStyle(color: Colors.grey, fontSize: 13),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Alan 1.11.0\n© 2026 EduPortal Systems Inc.",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10, color: Colors.grey, height: 1.5),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
-
   Widget _buildLabel(String text) {
     return Align(
       alignment: Alignment.centerLeft,

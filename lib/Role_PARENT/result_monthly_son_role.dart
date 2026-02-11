@@ -16,10 +16,10 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
 
   // List of screens for navigation
   late final List<Widget> _screens = [
-    const Center(child: Text("ទំព័រដើម (Home)")),
+    const Center(child: Text("Home")),
     _buildReportContent(), // Your original report UI
-    const Center(child: Text("វត្តមាន (Attendance)")),
-    const Center(child: Text("សារ (Messages)")),
+    const Center(child: Text("Attendance")),
+    const Center(child: Text("Messages")),
   ];
 
   @override
@@ -40,9 +40,9 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
                 ),
                 onPressed: () => Navigator.pop(context),
               ),
-              
+
               title: const Text(
-                'ព្រឹត្តិបត្រពិន្ទុប្រចាំខែ',
+                'Monthly Score Report',
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -100,7 +100,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
           _buildGraphSection(),
           const SizedBox(height: 25),
           const Text(
-            'ពិន្ទុតាមមុខវិជ្ជា',
+            'Subject Scores',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 15),
@@ -131,11 +131,11 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
               style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Text(
-              'ថ្នាក់ទី ១០ • បន្ទប់ B',
+              'Grade 10 • Room B',
               style: TextStyle(color: Color(0xFF007A8C), fontSize: 14),
             ),
             Text(
-              'កញ្ញា ២០២៣',
+              'Sep 2023',
               style: TextStyle(color: Colors.grey, fontSize: 14),
             ),
           ],
@@ -149,7 +149,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
       children: [
         Expanded(
           child: _buildSummaryCard(
-            title: 'ពិន្ទុមធ្យម',
+            title: 'Average Score',
             value: '87.5%',
             subtext: '+2.5%',
             icon: Icons.star_outline,
@@ -159,9 +159,9 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
         const SizedBox(width: 15),
         Expanded(
           child: _buildSummaryCard(
-            title: 'វត្តមាន',
+            title: 'Attendance',
             value: '98%',
-            subtext: '២១/២២ ថ្ងៃ',
+            subtext: '21/22 days',
             icon: Icons.event_available,
             isTrendUp: null,
           ),
@@ -183,25 +183,19 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
-                'និន្នាការនៃការសិក្សា',
-                style: TextStyle(color: Colors.grey),
-              ),
+              const Text('Study Trends', style: TextStyle(color: Colors.grey)),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: const Text(
-                  'កក្កដា - កញ្ញា',
-                  style: TextStyle(fontSize: 10),
-                ),
+                child: const Text('Jul - Sep', style: TextStyle(fontSize: 10)),
               ),
             ],
           ),
           const Text(
-            'វឌ្ឍនភាព ៣ ខែ',
+            '3-Month Progress',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 20),
@@ -213,7 +207,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
           const SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [Text('កក្កដា'), Text('សីហា'), Text('កញ្ញា')],
+            children: const [Text('Jul'), Text('Aug'), Text('Sep')],
           ),
         ],
       ),
@@ -224,7 +218,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
     return Column(
       children: [
         _buildSubjectTile(
-          'គណិតវិទ្យា',
+          'Mathematics',
           '92%',
           'A',
           Icons.calculate_outlined,
@@ -232,7 +226,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
           true,
         ),
         _buildSubjectTile(
-          'អក្សរសាស្ត្រអង់គ្លេស',
+          'English',
           '88%',
           'B+',
           Icons.menu_book,
@@ -240,7 +234,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
           null,
         ),
         _buildSubjectTile(
-          'រូបវិទ្យា',
+          'Physics',
           '74%',
           'C',
           Icons.science_outlined,
@@ -267,7 +261,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
           Icon(Icons.picture_as_pdf, color: Colors.white),
           SizedBox(width: 10),
           Text(
-            'ទាញយករបាយការណ៍ទាំងស្រុង (PDF)',
+            'Download Full Report (PDF)',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ],
@@ -357,7 +351,7 @@ class _StudentReportScreenState extends State<StudentReportScreen> {
                   ),
                 ),
                 const Text(
-                  'កម្រិតមូលដ្ឋាន',
+                  'Baseline Level',
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],

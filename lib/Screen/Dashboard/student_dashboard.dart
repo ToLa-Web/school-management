@@ -26,10 +26,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
 
   final List<Widget> _screens = [
     const StudentHomeContent(),
-    Center(
-      child: Text("បណ្ណាល័យ (Library)", style: AppTextStyle.sectionTitle20),
-    ),
-    Center(child: Text("សារ (Messages)", style: AppTextStyle.sectionTitle20)),
+    Center(child: Text("Library", style: AppTextStyle.sectionTitle20)),
+    Center(child: Text("Messages", style: AppTextStyle.sectionTitle20)),
     const StudentEditProfileScreen(),
   ];
 
@@ -78,26 +76,26 @@ class StudentHomeContent extends StatelessWidget {
             const SizedBox(height: 20),
             _buildHeader(context),
             const SizedBox(height: 30),
-            _buildSectionTitle("ជម្រើសសិក្សា"),
+            _buildSectionTitle("Learning Options"),
             const SizedBox(height: 15),
             _buildGridMenu(context),
             const SizedBox(height: 30),
-            _buildSectionTitle("វគ្គសិក្សា", actionText: "មើលទាំងអស់"),
+            _buildSectionTitle("Courses", actionText: "View All"),
             const SizedBox(height: 15),
             const CourseProgressCard(
-              title: "គណិតវិទ្យាកម្រិតខ្ពស់ II",
-              subtitle: "28 មេរៀន • 112 លំហាត់",
+              title: "Advanced Mathematics II",
+              subtitle: "28 lessons • 112 exercises",
               progress: 0.75,
               percentage: "75%",
               imagePath:
                   'https://img.freepik.com/free-vector/mans-face-flat-style_90220-2877.jpg?w=740',
             ),
             const SizedBox(height: 30),
-            _buildSectionTitle("សកម្មភាពថ្មីៗ"),
+            _buildSectionTitle("Recent Activity"),
             const SizedBox(height: 15),
             const ActivityList(),
             const SizedBox(height: 30),
-            _buildSectionTitle("កិច្ចការបន្ទាប់", actionText: "មើលទាំងអស់"),
+            _buildSectionTitle("Upcoming Tasks", actionText: "View All"),
             const SizedBox(height: 15),
             _buildNextTasksList(),
             const SizedBox(height: 100),
@@ -130,7 +128,7 @@ class StudentHomeContent extends StatelessWidget {
           children: [
             Text("Alex Rivera", style: AppTextStyle.fontsize18),
             Text(
-              "ថ្នាក់ទី 11-1 • #29401",
+              "Grade 11-1 • #29401",
               style: AppTextStyle.body.copyWith(
                 color: Colors.grey,
                 fontSize: 12,
@@ -188,41 +186,41 @@ class StudentHomeContent extends StatelessWidget {
         _menuIcon(
           context,
           Icons.calendar_today,
-          "វត្តមាន",
+          "Attendance",
           Colors.orange,
           const AttendanceDashboard(),
         ),
         _menuIcon(
           context,
           Icons.show_chart,
-          "ប្រចាំខែ",
+          "Monthly",
           Colors.teal,
           const StudentScoreScreen(),
         ),
         _menuIcon(
           context,
           Icons.people,
-          "សុំអនុញ្ញាត",
+          "Permission",
           Colors.blue,
           const StudentPermissionScreen(),
         ),
         _menuIcon(
           context,
           Icons.edit_note,
-          "កិច្ចការផ្ទះ",
+          "Homework",
           Colors.green,
           const StudentHomeworkScreen(),
         ),
         _menuIcon(
           context,
           Icons.schedule,
-          "កាលវិភាគ",
+          "Schedule",
           Colors.redAccent,
           const StudentScheduleScreen(),
         ),
         const CategoryCard(
           icon: Icons.qr_code_scanner,
-          label: "កូដ QR",
+          label: "QR Code",
           color: Colors.blue,
         ),
       ],
@@ -252,16 +250,16 @@ class StudentHomeContent extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         children: const [
           NextTaskCard(
-            subject: "ប្រវត្តិវិទ្យា",
+            subject: "History",
             title: "The French Revolution:\nNarrative Essay",
-            dueDate: "ឈប់កំណត់ថ្ងៃស្អែក",
+            dueDate: "Due Tomorrow",
             color: Colors.orange,
           ),
           SizedBox(width: 15),
           NextTaskCard(
-            subject: "គីមីវិទ្យា",
+            subject: "Chemistry",
             title: "Acid-Base\nReport",
-            dueDate: "ឈប់កំណត់ថ្ងៃស្អែក",
+            dueDate: "Due Tomorrow",
             color: Color(0xFF007A7A),
           ),
         ],

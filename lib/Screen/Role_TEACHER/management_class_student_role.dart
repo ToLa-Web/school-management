@@ -4,7 +4,6 @@ import 'package:tamdansers/Screen/Dashboard/teacher_dashboard.dart';
 import 'package:tamdansers/Screen/Edit-Profile/teacher_edit_profile.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/add_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/create_class_role.dart';
-
 void main() {
   runApp(
     const MaterialApp(
@@ -14,18 +13,24 @@ void main() {
   );
 }
 
-// --- 1. THE MAIN DASHBOARD SHELL ---
+// --- 1. MAIN NAVIGATION WRAPPER ---
 class TeacherManagementClassScreen extends StatefulWidget {
   const TeacherManagementClassScreen({super.key});
 
   @override
   State<TeacherManagementClassScreen> createState() => _TeacherDashboardState();
 }
+
 class _TeacherDashboardState extends State<TeacherManagementClassScreen> {
   int _pageIndex = 0;
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
-  // Integrated your screens list
+
+  // Screens for the Bottom Navigation Bar
   final List<Widget> _screens = [
+    // const TeacherHomeContent(), // Classroom Management with Search/Filter
+    // const Center(child: Text("Course Screen")),
+    // const Center(child: Text("Add Student Screen")),
+    // const Center(child: Text("Settings/Profile Screen")),
     const TeacherHomeContent(), // Your Classroom Management UI
     const TeacherCourseScreen(), // Placeholder for Course Screen
     const AddStudentScreen(),
@@ -36,7 +41,6 @@ class _TeacherDashboardState extends State<TeacherManagementClassScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7F9),
-      // Use IndexedStack to preserve the scroll state of your lists when switching tabs
       body: IndexedStack(index: _pageIndex, children: _screens),
       bottomNavigationBar: CurvedNavigationBar(
         key: _bottomNavigationKey,
@@ -63,19 +67,57 @@ class _TeacherDashboardState extends State<TeacherManagementClassScreen> {
   }
 }
 
-// --- 2. THE HOME CONTENT (Classroom Management) ---
-class TeacherHomeContent extends StatelessWidget {
+// --- 2. HOME CONTENT (With Search and Filter Logic) ---
+class TeacherHomeContent extends StatefulWidget {
   const TeacherHomeContent({super.key});
 
   @override
+  State<TeacherHomeContent> createState() => _TeacherHomeContentState();
+}
+
+class _TeacherHomeContentState extends State<TeacherHomeContent> {
+  // Mock Data: This represents your database
+  final List<Map<String, String>> _allClasses = [
+    {"grade": "Grade 7A", "teacher": "Teap Thita", "students": "36 students"},
+    {"grade": "Grade 8B", "teacher": "Sok Chea", "students": "30 students"},
+    {"grade": "Grade 12", "teacher": "Dr. Smith", "students": "25 students"},
+    {"grade": "Grade 10", "teacher": "Ly Hour", "students": "40 students"},
+    {"grade": "Grade 7C", "teacher": "Vannak", "students": "32 students"},
+  ];
+
+  // State variables for filtering
+  String _searchQuery = "";
+  String _selectedGradeFilter = "All";
+
+  @override
   Widget build(BuildContext context) {
+    // FILTERING LOGIC
+    // We filter the list every time the build method is called (whenever setState is triggered)
+    final List<Map<String, String>> filteredClasses = _allClasses.where((
+      classItem,
+    ) {
+      final String grade = classItem['grade']!.toLowerCase();
+      final String teacher = classItem['teacher']!.toLowerCase();
+      final String query = _searchQuery.toLowerCase();
+
+      // Check if search matches grade or teacher name
+      bool matchesSearch = grade.contains(query) || teacher.contains(query);
+
+      // Check if matches the selected ChoiceChip
+      bool matchesGrade =
+          _selectedGradeFilter == "All" ||
+          classItem['grade']!.contains(_selectedGradeFilter);
+
+      return matchesSearch && matchesGrade;
+    }).toList();
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          'គ្រប់គ្រងថ្នាក់រៀន',
+          'Classroom Management',
           style: TextStyle(
             color: Colors.black,
             fontWeight: FontWeight.bold,
@@ -99,8 +141,13 @@ class TeacherHomeContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextField(
+                    onChanged: (value) {
+                      setState(() {
+                        _searchQuery = value;
+                      });
+                    },
                     decoration: InputDecoration(
-                      hintText: 'ស្វែងរក...',
+                      hintText: 'Search by grade or teacher',
                       prefixIcon: const Icon(Icons.search, color: Colors.grey),
                       filled: true,
                       fillColor: Colors.white,
@@ -113,7 +160,7 @@ class TeacherHomeContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                ElevatedButton.icon(
+                ElevatedButton(
                   onPressed: () {
                     // Navigate to the Create Class Screen
                     Navigator.push(
@@ -123,17 +170,14 @@ class TeacherHomeContent extends StatelessWidget {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.add_circle_outline, size: 20),
-                  label: const Text('បង្កើតថ្នាក់'),
                   style: ElevatedButton.styleFrom(
-                    // FIXED: iconStyleFrom changed to styleFrom
                     backgroundColor: const Color(0xFF4A80F0),
                     foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    shape: const CircleBorder(),
+                    padding: const EdgeInsets.all(12),
                   ),
-                )
+                  child: const Icon(Icons.add, size: 24),
+                ),
               ],
             ),
           ),
@@ -143,50 +187,56 @@ class TeacherHomeContent extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
-              children: ['ទាំងអស់', 'ថ្នាក់ទី 12', 'ថ្នាក់ទី 11', 'ថ្នាក់ទី 10',
-                    'ថ្នាក់ទី 9',
-                  'ថ្នាក់ទី 8',
-                  'ថ្នាក់ទី 7',
-                  'ថ្នាក់ទី 6',
-                  'ថ្នាក់ទី 5',
-                  ]
-                  .map((label) {
+              children:
+                  [
+                    'All',
+                    'Grade 12',
+                    'Grade 11',
+                    'Grade 10',
+                    'Grade 9',
+                    'Grade 8',
+                    'Grade 7',
+                  ].map((label) {
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: ChoiceChip(
                         label: Text(label),
-                        selected: label == 'ទាំងអស់',
-                        onSelected: (bool selected) {},
+                        selected: _selectedGradeFilter == label,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            _selectedGradeFilter = selected ? label : "All";
+                          });
+                        },
                         selectedColor: const Color(0xFF4A80F0),
                         labelStyle: TextStyle(
-                          color: label == 'ទាំងអស់'
+                          color: _selectedGradeFilter == label
                               ? Colors.white
                               : Colors.black,
                         ),
                       ),
                     );
-                  })
-                  .toList(),
+                  }).toList(),
             ),
           ),
 
           // Classroom List
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.all(16),
-              children: const [
-                ClassCard(
-                  grade: "ថ្នាក់ទី 7A",
-                  teacher: "ទេព ធីតា",
-                  students: "36 នាក់",
-                ),
-                ClassCard(
-                  grade: "ថ្នាក់ទី 8B",
-                  teacher: "សុខ ជា",
-                  students: "30 នាក់",
-                ),
-              ],
-            ),
+            child: filteredClasses.isEmpty
+                ? const Center(
+                    child: Text("No classes found matching your search."),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: filteredClasses.length,
+                    itemBuilder: (context, index) {
+                      final item = filteredClasses[index];
+                      return ClassCard(
+                        grade: item['grade']!,
+                        teacher: item['teacher']!,
+                        students: item['students']!,
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -202,7 +252,6 @@ class ClassCard extends StatelessWidget {
     required this.grade,
     required this.teacher,
     required this.students,
-    
   });
 
   @override
@@ -211,6 +260,7 @@ class ClassCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       clipBehavior: Clip.antiAlias,
+      elevation: 2,
       child: Column(
         children: [
           Container(
@@ -228,22 +278,33 @@ class ClassCard extends StatelessWidget {
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 16,
+                fontSize: 18,
               ),
             ),
           ),
           ListTile(
             title: Text(
-              "អ្នកគ្រូ $teacher",
+              "Teacher: $teacher",
               style: const TextStyle(
                 color: Color(0xFF4A80F0),
                 fontWeight: FontWeight.bold,
               ),
             ),
-            subtitle: const Text("គ្រូបន្ទុកថ្នាក់"),
-            trailing: Chip(
-              label: Text(students),
-              avatar: const Icon(Icons.people, size: 16),
+            subtitle: const Text("Homeroom Teacher"),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.people, size: 16, color: Colors.grey),
+                  const SizedBox(width: 4),
+                  Text(students, style: const TextStyle(fontSize: 12)),
+                ],
+              ),
             ),
           ),
         ],

@@ -9,10 +9,8 @@ class TeacherCourseScreen extends StatelessWidget {
       backgroundColor: const Color(0xFFF5F7F9),
       body: SafeArea(
         child: Column(
-          
           children: [
             _buildHeader(),
-            
             _buildSearchBar(),
             Expanded(
               child: ListView(
@@ -20,27 +18,27 @@ class TeacherCourseScreen extends StatelessWidget {
                 children: [
                   _buildCourseCard(
                     context,
-                    title: "គណិតវិទ្យាថ្នាក់ទី១០",
-                    level: "មធ្យមសិក្សា",
-                    studentCount: "៤២ នាក់",
+                    title: "Mathematics - Grade 10",
+                    level: "Secondary",
+                    studentCount: "42 students",
                     progress: 0.75,
-                    percentText: "៧៥%",
+                    percentText: "75%",
                   ),
                   _buildCourseCard(
                     context,
-                    title: "រូបវិទ្យាថ្នាក់ទី១២",
-                    level: "មធ្យមសិក្សា",
-                    studentCount: "៣៨ នាក់",
+                    title: "Physics - Grade 12",
+                    level: "Secondary",
+                    studentCount: "38 students",
                     progress: 0.45,
-                    percentText: "៤៥%",
+                    percentText: "45%",
                   ),
                   _buildCourseCard(
                     context,
-                    title: "ភាសាខ្មែរថ្នាក់ទី៥",
-                    level: "បឋមសិក្សា",
-                    studentCount: "៣០ នាក់",
+                    title: "Khmer Language - Grade 5",
+                    level: "Primary",
+                    studentCount: "30 students",
                     progress: 0.90,
-                    percentText: "៩០%",
+                    percentText: "90%",
                   ),
                   const SizedBox(
                     height: 100,
@@ -61,10 +59,9 @@ class TeacherCourseScreen extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildCircleIcon(Icons.arrow_back_ios_new,
-          ),
+          _buildCircleIcon(Icons.arrow_back_ios_new),
           const Text(
-            "វគ្គសិក្សារបស់ខ្ញុំ",
+            "My Courses",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -85,8 +82,7 @@ class TeacherCourseScreen extends StatelessWidget {
         shape: BoxShape.circle,
       ),
 
-      child: 
-      Icon(icon, size: 18, color: const Color(0xFF1A3673)),
+      child: Icon(icon, size: 18, color: const Color(0xFF1A3673)),
     );
   }
 
@@ -101,7 +97,7 @@ class TeacherCourseScreen extends StatelessWidget {
         ),
         child: const TextField(
           decoration: InputDecoration(
-            hintText: "ស្វែងរកវគ្គសិក្សា...",
+            hintText: "Search courses...",
             prefixIcon: Icon(Icons.search, color: Colors.grey),
             border: InputBorder.none,
             contentPadding: EdgeInsets.symmetric(vertical: 15),
@@ -184,7 +180,7 @@ class TeacherCourseScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                "វឌ្ឍនភាពកម្មវិធីសិក្សា",
+                "Course Progress",
                 style: TextStyle(color: Colors.grey, fontSize: 13),
               ),
               Text(
@@ -208,9 +204,9 @@ class TeacherCourseScreen extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildActionButton(Icons.description, "ឯកសារមេរៀន"),
-              _buildActionButton(Icons.assignment, "កិច្ចការផ្ទះ"),
-              _buildActionButton(Icons.person_search, "បញ្ជីសិស្ស"),
+              _buildActionButton(Icons.description, "Materials"),
+              _buildActionButton(Icons.assignment, "Homework"),
+              _buildActionButton(Icons.person_search, "Student List"),
             ],
           ),
         ],

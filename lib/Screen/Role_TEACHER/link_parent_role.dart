@@ -22,14 +22,14 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "គ្រប់គ្រងអាណាព្យាបាល",
+          "Parent Management",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              "បោះបង់",
+              "Cancel",
               style: TextStyle(color: Colors.blueGrey),
             ),
           ),
@@ -48,12 +48,12 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
               child: Row(
                 children: [
                   _buildTab(
-                    "អាណាព្យាបាលថ្មី",
+                    "New Parent",
                     isNewParent,
                     () => setState(() => isNewParent = true),
                   ),
                   _buildTab(
-                    "អាណាព្យាបាលមានស្រាប់",
+                    "Existing Parent",
                     !isNewParent,
                     () => setState(() => isNewParent = false),
                   ),
@@ -99,27 +99,27 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
                   ),
                   const SizedBox(height: 10),
                   const Text(
-                    "ផ្ទុករូបថត",
+                    "Upload Photo",
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                   ),
                   const Text(
-                    "ចុចដើម្បីបញ្ចូលរូបថតអាណាព្យាបាល",
+                    "Tap to add parent photo",
                     style: TextStyle(color: Colors.grey, fontSize: 12),
                   ),
 
                   const SizedBox(height: 20),
                   _buildInputField(
-                    "ឈ្មោះពេញ (ខ្មែរ/អង់គ្លេស) *",
-                    "ឧទាហរណ៍៖ សុខ ដារ៉ា / Sok Dara",
+                    "Full Name (Khmer/English) *",
+                    "Example: Sok Dara / Sok Dara",
                   ),
                   const SizedBox(height: 15),
                   _buildInputField(
-                    "លេខទូរស័ព្ទ *",
+                    "Phone number *",
                     "012 345 678",
                     prefix: "🇰🇭 +855",
                   ),
                   const SizedBox(height: 15),
-                  _buildDropdownField("ទំនាក់ទំនង *", "ជ្រើសរើសទំនាក់ទំនង"),
+                  _buildDropdownField("Relationship *", "Select relationship"),
                 ],
               ),
             ),
@@ -139,7 +139,7 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       const Text(
-                        "ភ្ជាប់ជាមួយសិស្ស",
+                        "Link with student",
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
@@ -155,7 +155,7 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: const Text(
-                          "បានជ្រើសរើស ១",
+                          "Selected 1",
                           style: TextStyle(
                             color: Colors.blue,
                             fontSize: 10,
@@ -168,7 +168,7 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
                   const SizedBox(height: 15),
                   TextField(
                     decoration: InputDecoration(
-                      hintText: "ស្វែងរកតាមអត្តលេខ ឬ ឈ្មោះ...",
+                      hintText: "Search by ID or name...",
                       prefixIcon: const Icon(Icons.search),
                       filled: true,
                       fillColor: Colors.grey.shade50,
@@ -196,7 +196,7 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
                 ),
                 onPressed: () {},
                 child: const Text(
-                  "បញ្ជាក់ និង ផ្ញើការអញ្ជើញ >",
+                  "Confirm & Send Invitation >",
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 16,

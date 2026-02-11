@@ -17,7 +17,7 @@ class RoleSelectionScreen extends StatelessWidget {
             children: [
               // 1. Title at the top
               const Text(
-                "ជ្រើសរើសមុខងារ",
+                "Select Your Role",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -36,21 +36,21 @@ class RoleSelectionScreen extends StatelessWidget {
 
               // 3. Teacher Button
               _buildLargeButton(
-                text: "គ្រូបង្រៀន",
+                text: "Teacher",
                 onPressed: () => Navigator.pushNamed(context, '/login-teacher'),
               ),
               const SizedBox(height: 15),
 
               // 4. Student Button
               _buildLargeButton(
-                text: "សិស្ស",
+                text: "Student",
                 onPressed: () => Navigator.pushNamed(context, '/login-student'),
               ),
               const SizedBox(height: 15),
 
               // 5. Parent Button
               _buildLargeButton(
-                text: "អាណាព្យាបាលសិស្ស",
+                text: "Parent",
                 onPressed: () =>
                     Navigator.pushNamed(context, '/ParentLoginScreen'),
               ),

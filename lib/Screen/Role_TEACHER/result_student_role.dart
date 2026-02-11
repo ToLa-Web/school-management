@@ -20,7 +20,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          "លទ្ធផល និង ចំណាត់ថ្នាក់",
+          "Results & Rankings",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -35,7 +35,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
             const SizedBox(height: 25),
 
             const Text(
-              "ជ្រើសរើសសិស្ស",
+              "Select Student",
               style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 15),
@@ -49,13 +49,13 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  "ពិន្ទុតាមមុខវិជ្ជា",
+                  "Subject Scores",
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 TextButton.icon(
                   onPressed: () {},
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text("បន្ថែមមុខវិជ្ជា"),
+                  label: const Text("Add Subject"),
                 ),
               ],
             ),
@@ -63,22 +63,22 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
 
             // Score List
             _buildScoreItem(
-              "គណិតវិទ្យា",
-              "មុខវិជ្ជាគោល",
+              "Mathematics",
+              "Core Subject",
               85,
               Colors.blue.shade100,
               Icons.grid_view_rounded,
             ),
             _buildScoreItem(
-              "វិទ្យាសាស្ត្រ",
-              "មុខវិជ្ជាគោល",
+              "Science",
+              "Core Subject",
               92,
               Colors.green.shade100,
               Icons.science_outlined,
             ),
             _buildScoreItem(
-              "ប្រវត្តិវិទ្យា",
-              "មុខវិជ្ជាជ្រើសរើស",
+              "History",
+              "Elective Subject",
               78,
               Colors.orange.shade100,
               Icons.menu_book_rounded,
@@ -106,7 +106,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                       backgroundColor: Colors.white,
                     ),
                     child: const Text(
-                      "រក្សាទុកជាសេចក្តីព្រាង",
+                      "Save as Draft",
                       style: TextStyle(color: Colors.blue),
                     ),
                   ),
@@ -116,7 +116,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () {},
                     icon: const Icon(Icons.send_rounded, size: 18),
-                    label: const Text("ប្រកាសលទ្ធផល"),
+                    label: const Text("Publish Results"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue,
                       padding: const EdgeInsets.symmetric(vertical: 15),
@@ -144,9 +144,9 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: "ការវាយតម្លៃពាក់កណ្តាលឆមាស • មករា ២០២៦",
+          value: "Midterm Assessment • Jan 2026",
           isExpanded: true,
-          items: ["ការវាយតម្លៃពាក់កណ្តាលឆមាស • មករា ២០២៦"].map((String value) {
+          items: ["Midterm Assessment • Jan 2026"].map((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));
           }).toList(),
           onChanged: (_) {},
@@ -161,10 +161,10 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
       child: ListView(
         scrollDirection: Axis.horizontal,
         children: [
-          _buildStudentAvatar("លឿន", "4.0", true),
-          _buildStudentAvatar("វិបុល", "", false),
-          _buildStudentAvatar("ឆវី", "", false),
-          _buildStudentAvatar("ដេវីត", "", false),
+          _buildStudentAvatar("Leun", "4.0", true),
+          _buildStudentAvatar("Vibol", "", false),
+          _buildStudentAvatar("Chavy", "", false),
+          _buildStudentAvatar("David", "", false),
         ],
       ),
     );
@@ -310,7 +310,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
           const Icon(Icons.edit_outlined, color: Colors.grey),
           const SizedBox(width: 15),
           const Text(
-            "បញ្ចូលឈ្មោះមុខវិជ្ជា",
+            "Enter subject name",
             style: TextStyle(color: Colors.grey),
           ),
           const Spacer(),
@@ -343,7 +343,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "សេចក្តីសង្ខេបនៃលទ្ធផល",
+            "Summary of Results",
             style: TextStyle(
               color: Colors.white70,
               fontWeight: FontWeight.bold,
@@ -353,14 +353,14 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSummaryStat("ពិន្ទុសរុប", "២៥៥", "នៃ ៣០០"),
+              _buildSummaryStat("Total Score", "255", "of 300"),
               _buildSummaryStat(
-                "មធ្យមភាគ",
-                "៨៥%",
-                "+២% ធៀបនឹងខែមុន",
+                "Average",
+                "85%",
+                "+2% compared to last month",
                 color: Colors.blue,
               ),
-              _buildSummaryStat("ចំណាត់ថ្នាក់", "ទី២", "ភ្នក្នុង ១០២%"),
+              _buildSummaryStat("Rank", "2", "out of 102"),
             ],
           ),
         ],

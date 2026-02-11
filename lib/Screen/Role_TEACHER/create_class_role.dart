@@ -9,8 +9,60 @@ class CreateClassScreen extends StatefulWidget {
 
 class _CreateClassScreenState extends State<CreateClassScreen> {
   final Color primaryTeal = const Color(0xFF00B2B2);
-  final List<String> days = ['ច', 'អង្គ', 'ព', 'ព្រ', 'សុ', 'សៅ', 'អា'];
+  final List<String> days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   int selectedDayIndex = 0;
+
+  // --- Selection State Variables ---
+  String? selectedClassName;
+  String? selectedGradeLevel;
+  String? selectedSubject;
+
+  // --- Time State Variables ---
+  TimeOfDay startTime = const TimeOfDay(hour: 8, minute: 0);
+  TimeOfDay endTime = const TimeOfDay(hour: 10, minute: 30);
+
+  // --- Data Lists ---
+  final List<String> classNames = ['Class A', 'Class B', 'Class C', 'Class D'];
+  final List<String> gradeLevels = [
+    'Grade 7',
+    'Grade 8',
+    'Grade 9',
+    'Grade 10',
+    'Grade 11',
+    'Grade 12',
+  ];
+  final List<String> subjects = [
+    'Mathematics',
+    'Physics',
+    'Chemistry',
+    'Biology',
+    'English',
+    'History',
+  ];
+
+  // Helper to format TimeOfDay to String
+  String _formatTime(TimeOfDay time) {
+    final now = DateTime.now();
+    final dt = DateTime(now.year, now.month, now.day, time.hour, time.minute);
+    return TimeOfDay.fromDateTime(dt).format(context);
+  }
+
+  // Function to pick time
+  Future<void> _selectTime(BuildContext context, bool isStart) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: isStart ? startTime : endTime,
+    );
+    if (picked != null) {
+      setState(() {
+        if (isStart) {
+          startTime = picked;
+        } else {
+          endTime = picked;
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +76,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'បង្កើតថ្នាក់រៀនថ្មី',
+          'Create New Class',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -35,23 +87,43 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 1. Class Information Section
-            _buildSectionHeader(Icons.school, 'ព័ត៌មានថ្នាក់រៀន'),
+            _buildSectionHeader(Icons.school, 'Class Information'),
             _buildFormCard([
-              _buildLabel('ឈ្មោះថ្នាក់'),
-              _buildTextField('ឧទាហរណ៍៖ ថ្នាក់ទី ១២អា'),
+              _buildLabel('Class Name'),
+              _buildDropdownSelection(
+                hint: 'Select Class Name',
+                value: selectedClassName,
+                items: classNames,
+                onChanged: (val) => setState(() => selectedClassName = val),
+              ),
               const SizedBox(height: 20),
               Row(
                 children: [
-                  Expanded(child: _buildLabel('កម្រិតថ្នាក់')),
+                  Expanded(child: _buildLabel('Grade Level')),
                   const SizedBox(width: 15),
-                  Expanded(child: _buildLabel('មុខវិជ្ជា')),
+                  Expanded(child: _buildLabel('Subject')),
                 ],
               ),
               Row(
                 children: [
-                  Expanded(child: _buildDropdownField('ថ្នាក់ទី ១២')),
+                  Expanded(
+                    child: _buildDropdownSelection(
+                      hint: 'Select Grade',
+                      value: selectedGradeLevel,
+                      items: gradeLevels,
+                      onChanged: (val) =>
+                          setState(() => selectedGradeLevel = val),
+                    ),
+                  ),
                   const SizedBox(width: 15),
-                  Expanded(child: _buildTextField('បញ្ចូលមុខវិជ្ជា')),
+                  Expanded(
+                    child: _buildDropdownSelection(
+                      hint: 'Select Subject',
+                      value: selectedSubject,
+                      items: subjects,
+                      onChanged: (val) => setState(() => selectedSubject = val),
+                    ),
+                  ),
                 ],
               ),
             ]),
@@ -59,9 +131,8 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
             const SizedBox(height: 25),
 
             // 2. Study Schedule Section
-            _buildSectionHeader(Icons.calendar_month, 'កាលវិភាគសិក្សា'),
+            _buildSectionHeader(Icons.calendar_month, 'Study Schedule'),
             _buildFormCard([
-              // Day Selector
               SizedBox(
                 height: 50,
                 child: ListView.separated(
@@ -72,15 +143,26 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                 ),
               ),
               const SizedBox(height: 25),
-              // Time Pickers
               Row(
                 children: [
-                  Expanded(child: _buildTimePicker('ចាប់ផ្ដើម', '០៨:០០ ព្រឹក')),
+                  Expanded(
+                    child: _buildTimePicker(
+                      'Start',
+                      _formatTime(startTime),
+                      () => _selectTime(context, true),
+                    ),
+                  ),
                   const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Icon(Icons.arrow_forward, color: Colors.black26),
                   ),
-                  Expanded(child: _buildTimePicker('បញ្ចប់', '១០:៣០ ព្រឹក')),
+                  Expanded(
+                    child: _buildTimePicker(
+                      'End',
+                      _formatTime(endTime),
+                      () => _selectTime(context, false),
+                    ),
+                  ),
                 ],
               ),
             ]),
@@ -88,42 +170,38 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
             const SizedBox(height: 25),
 
             // 3. Add Students Section
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _buildSectionHeader(Icons.person_add, 'បន្ថែមសិស្ស'),
-                TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    'ស្រេចចិត្ត',
-                    style: TextStyle(color: primaryTeal),
-                  ),
-                ),
-              ],
-            ),
+            _buildSectionHeader(Icons.person_add, 'Add Students'),
             Row(
               children: [
                 Expanded(
-                  child: _buildAddOption(Icons.qr_code_scanner, 'អញ្ជើញតាមកូដ'),
+                  child: _buildAddOption(
+                    Icons.qr_code_scanner,
+                    'Invite via Code',
+                    () => _showComingSoonSnackBar("Invite via Code"),
+                  ),
                 ),
                 const SizedBox(width: 15),
                 Expanded(
-                  child: _buildAddOption(Icons.group_add, 'ជ្រើសរើសពីបញ្ជី'),
+                  child: _buildAddOption(
+                    Icons.group_add,
+                    'Select from List',
+                    () => _showStudentListDialog(),
+                  ),
                 ),
               ],
             ),
 
             const SizedBox(height: 30),
 
-            // Create Button
+            // --- CREATE CLASS BUTTON ---
             SizedBox(
               width: double.infinity,
               height: 55,
               child: ElevatedButton.icon(
-                onPressed: () {},
+                onPressed: _handleCreateClass,
                 icon: const Icon(Icons.add_circle_outline, color: Colors.white),
                 label: const Text(
-                  'បង្កើតថ្នាក់',
+                  'Create Class',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 18,
@@ -141,10 +219,118 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
           ],
         ),
       ),
-      bottomNavigationBar: _buildBottomNav(),
     );
   }
-  // --- Helper Widgets ---
+
+  // --- LOGIC HANDLERS ---
+
+  void _handleCreateClass() {
+    if (selectedClassName == null ||
+        selectedGradeLevel == null ||
+        selectedSubject == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please fill in all class information!'),
+          backgroundColor: Colors.redAccent,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Success SnackBar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 10),
+            Text('$selectedClassName created successfully!'),
+          ],
+        ),
+        backgroundColor: primaryTeal,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+
+    // Optional: Return to previous screen
+    // Future.delayed(const Duration(seconds: 2), () => Navigator.pop(context));
+  }
+
+  void _showComingSoonSnackBar(String feature) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('$feature feature coming soon!')));
+  }
+
+  void _showStudentListDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Select Students"),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: 5,
+            itemBuilder: (context, index) => CheckboxListTile(
+              activeColor: primaryTeal,
+              title: Text("Student ${index + 1}"),
+              value: false,
+              onChanged: (val) {},
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: primaryTeal),
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Add", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- REUSABLE WIDGET HELPERS ---
+
+  Widget _buildDropdownSelection({
+    required String hint,
+    required String? value,
+    required List<String> items,
+    required Function(String?) onChanged,
+  }) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      hint: Text(
+        hint,
+        style: const TextStyle(color: Colors.black26, fontSize: 14),
+      ),
+      decoration: InputDecoration(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 15,
+        ),
+        filled: true,
+        fillColor: const Color(0xFFF8F9FA),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      items: items
+          .map((item) => DropdownMenuItem(value: item, child: Text(item)))
+          .toList(),
+      onChanged: onChanged,
+    );
+  }
+
   Widget _buildSectionHeader(IconData icon, String title) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12.0),
@@ -168,7 +354,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 10),
+          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10),
         ],
       ),
       child: Column(
@@ -185,37 +371,6 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
       style: const TextStyle(
         fontWeight: FontWeight.w600,
         color: Colors.black87,
-      ),
-    ),
-  );
-
-  Widget _buildTextField(String hint) => TextField(
-    decoration: InputDecoration(
-      hintText: hint,
-      hintStyle: const TextStyle(color: Colors.black26),
-      filled: true,
-      fillColor: const Color(0xFFF8F9FA),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(12),
-        borderSide: BorderSide.none,
-      ),
-    ),
-  );
-
-  Widget _buildDropdownField(String value) => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-    decoration: BoxDecoration(
-      color: const Color(0xFFF8F9FA),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: DropdownButtonHideUnderline(
-      child: DropdownButton<String>(
-        value: value,
-        isExpanded: true,
-        items: [
-          value,
-        ].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
-        onChanged: (_) {},
       ),
     ),
   );
@@ -245,66 +400,64 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     );
   }
 
-  Widget _buildTimePicker(String label, String time) => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-      const SizedBox(height: 8),
-      Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: const Color(0xFFF8F9FA),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            const Icon(Icons.access_time, size: 18, color: Colors.grey),
-            const SizedBox(width: 8),
-            Text(time, style: const TextStyle(fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ),
-    ],
-  );
-
-  Widget _buildAddOption(IconData icon, String label) => Container(
-    padding: const EdgeInsets.symmetric(vertical: 20),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(20),
-      border: Border.all(color: Colors.black12, style: BorderStyle.solid),
-    ),
-    child: Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: primaryTeal.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
+  Widget _buildTimePicker(String label, String time, VoidCallback onTap) =>
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          const SizedBox(height: 8),
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.access_time, size: 18, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Text(
+                    time,
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: Icon(icon, color: primaryTeal),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          label,
-          style: const TextStyle(fontSize: 13, color: Colors.black87),
-        ),
-      ],
-    ),
-  );
+        ],
+      );
 
-  Widget _buildBottomNav() => BottomNavigationBar(
-    type: BottomNavigationBarType.fixed,
-    currentIndex: 0,
-    selectedItemColor: primaryTeal,
-    items: const [
-      BottomNavigationBarItem(icon: Icon(Icons.home), label: 'ទំព័រដើម'),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.calendar_month),
-        label: 'កាលវិភាគ',
-      ),
-      BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'សារ'),
-      BottomNavigationBarItem(icon: Icon(Icons.person), label: 'ប្រវត្តិរូប'),
-    ],
-  );
+  Widget _buildAddOption(IconData icon, String label, VoidCallback onTap) =>
+      InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.black12),
+          ),
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: primaryTeal.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: primaryTeal),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                label,
+                style: const TextStyle(fontSize: 13, color: Colors.black87),
+              ),
+            ],
+          ),
+        ),
+      );
 }

@@ -17,10 +17,8 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
   // List of screens for the Navigation Bar
   late final List<Widget> _screens = [
     _buildScoreContent(), // Tab 0: Your Score Content
-    Center(
-      child: Text("បណ្ណាល័យ (Library)", style: AppTextStyle.sectionTitle20),
-    ),
-    Center(child: Text("សារ (Messages)", style: AppTextStyle.sectionTitle20)),
+    Center(child: Text("Library", style: AppTextStyle.sectionTitle20)),
+    Center(child: Text("Messages", style: AppTextStyle.sectionTitle20)),
     const StudentEditProfileScreen(), // Tab 3: Profile
   ];
 
@@ -90,7 +88,7 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
         ),
         onPressed: () => Navigator.pop(context),
       ),
-      title: Text("លទ្ធផលប្រចាំខែ", style: AppTextStyle.sectionTitle20),
+      title: Text("Monthly Results", style: AppTextStyle.sectionTitle20),
       centerTitle: true,
       actions: [
         IconButton(
@@ -102,7 +100,7 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
   }
 
   Widget _buildMonthSelector() {
-    final months = ["មករា", "កុម្ភៈ", "មីនា", "មេសា"];
+    final months = ["Jan", "Feb", "Mar", "Apr"];
     return SizedBox(
       height: 40,
       child: ListView.separated(
@@ -143,7 +141,7 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
       child: Column(
         children: [
           Text(
-            "មធ្យមភាគប្រចាំខែ",
+            "Monthly Average",
             style: AppTextStyle.body.copyWith(color: Colors.white70),
           ),
           const SizedBox(height: 5),
@@ -156,14 +154,14 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
             ),
           ),
           const SizedBox(height: 5),
-          _statBadge("ចំណាត់ថ្នាក់លេខ: ០២"),
+          _statBadge("Rank: 02"),
           const SizedBox(height: 25),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildStatDetail("ពិន្ទុសរុប", "472.5"),
+              _buildStatDetail("Total Score", "472.5"),
               Container(height: 30, width: 1, color: Colors.white24),
-              _buildStatDetail("និទ្ទេស", "A"),
+              _buildStatDetail("Grade", "A"),
             ],
           ),
         ],
@@ -221,30 +219,30 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
               const Icon(Icons.list_alt, size: 20, color: Color(0xFF007A7A)),
               const SizedBox(width: 8),
               Text(
-                "ពិន្ទុតាមមុខវិជ្ជា",
+                "Subject Scores",
                 style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
               ),
             ],
           ),
           const SizedBox(height: 20),
           _subjectTile(
-            "គណិតវិទ្យា",
+            "Mathematics",
             "98/100",
-            "មធ្យមភាគ: 95",
+            "Avg: 95",
             Colors.orange,
             Icons.functions,
           ),
           _subjectTile(
-            "រូបវិទ្យា",
+            "Physics",
             "92/100",
-            "មធ្យមភាគ: 88",
+            "Avg: 88",
             Colors.blue,
             Icons.science,
           ),
           _subjectTile(
-            "អក្សរសាស្ត្រខ្មែរ",
+            "Khmer Literature",
             "89/100",
-            "មធ្យមភាគ: 85",
+            "Avg: 85",
             Colors.purple,
             Icons.translate,
           ),
@@ -311,11 +309,11 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
       child: Column(
         children: [
           Text(
-            "ព្យាករណ៍ពិន្ទុរបស់អ្នក",
+            "Your Score Prediction",
             style: AppTextStyle.sectionTitle20.copyWith(fontSize: 18),
           ),
           Text(
-            "គណនាពិន្ទុដែលអ្នករំពឹងទុកសម្រាប់ខែបន្ទាប់",
+            "Estimate your expected score for next month",
             style: AppTextStyle.body.copyWith(fontSize: 11, color: Colors.grey),
           ),
           const SizedBox(height: 15),
@@ -330,7 +328,7 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
             ),
             icon: const Icon(Icons.calculate, color: Colors.white),
             label: Text(
-              "គណនាពិន្ទុសរុប",
+              "Calculate Total",
               style: AppTextStyle.body.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
@@ -356,22 +354,22 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "កម្មវិធីគណនា (Calculator)",
+                "Calculator",
                 style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
               ),
               const Icon(Icons.info_outline, size: 18, color: Colors.grey),
             ],
           ),
           const SizedBox(height: 20),
-          _calcField("វត្តមាន (Attendance)", "10", "10"),
-          _calcField("កិច្ចការផ្ទះ (Homework)", "25", "30"),
-          _calcField("ការប្រឡង (Exams)", "55", "60"),
+          _calcField("Attendance", "10", "10"),
+          _calcField("Homework", "25", "30"),
+          _calcField("Exams", "55", "60"),
           const Divider(height: 40),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "លទ្ធផលប៉ាន់ស្មាន:",
+                "Estimated Result:",
                 style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
               ),
               Text(
@@ -426,4 +424,3 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
     );
   }
 }
-

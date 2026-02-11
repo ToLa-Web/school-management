@@ -1,4 +1,3 @@
-
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
@@ -19,10 +18,8 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
   // Define the screens for each tab
   late final List<Widget> _screens = [
     _buildAttendanceHome(), // Tab 0: Your Attendance Content
-    Center(
-      child: Text("បណ្ណាល័យ (Library)", style: AppTextStyle.sectionTitle20),
-    ),
-    Center(child: Text("សារ (Messages)", style: AppTextStyle.sectionTitle20)),
+    Center(child: Text("Library", style: AppTextStyle.sectionTitle20)),
+    Center(child: Text("Messages", style: AppTextStyle.sectionTitle20)),
     const StudentEditProfileScreen(),
   ];
 
@@ -44,7 +41,7 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
                 onPressed: () => Navigator.pop(context),
               ),
               title: const Text(
-                'វត្តមានរបស់ខ្ញុំ',
+                'My Attendance',
                 style: TextStyle(
                   color: Colors.black,
                   fontWeight: FontWeight.bold,
@@ -111,7 +108,7 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'សង្ខេបប្រចាំឆ្នាំ',
+                'Annual Summary',
                 style: TextStyle(
                   color: Colors.teal,
                   fontWeight: FontWeight.w500,
@@ -119,7 +116,7 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
               ),
               SizedBox(height: 4),
               Text(
-                'សរុបការមក\nសិក្សា',
+                'Total\nAttendance',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
@@ -149,7 +146,7 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   Text(
-                    'ឡើង ២% ',
+                    'Up 2%',
                     style: TextStyle(fontSize: 10, color: Colors.grey),
                   ),
                 ],
@@ -168,11 +165,11 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             const Text(
-              'ប្រវត្តិវត្តមាន',
+              'Attendance History',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             Text(
-              'មើលទាំងអស់',
+              'View All',
               style: TextStyle(color: color, fontWeight: FontWeight.w500),
             ),
           ],
@@ -186,12 +183,12 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
           ),
           child: Column(
             children: [
-               Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Icon(Icons.chevron_left),
                   Text(
-                    'មេសា 2024',
+                    'Apr 2024',
                     style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   Icon(Icons.chevron_right),
@@ -228,14 +225,14 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
                 },
               ),
               const SizedBox(height: 15),
-               Row(
+              Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  _Legend(color: Colors.green, label: 'វត្តមាន'),
+                  _Legend(color: Colors.green, label: 'Present'),
                   SizedBox(width: 15),
-                  _Legend(color: Colors.red, label: 'អវត្តមាន'),
+                  _Legend(color: Colors.red, label: 'Absent'),
                   SizedBox(width: 15),
-                  _Legend(color: Colors.orange, label: 'យឺត'),
+                  _Legend(color: Colors.orange, label: 'Late'),
                 ],
               ),
             ],
@@ -250,21 +247,21 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
-          'លម្អិតវត្តមានតាមមុខវិជ្ជា',
+          'Attendance Details by Subject',
           style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 12),
         _SubjectItem(
-          title: 'ភាសាខ្មែរ (Khmer)',
-          status: 'វត្តមាន',
+          title: 'Khmer Language',
+          status: 'Present',
           statusColor: Colors.green,
           icon: Icons.book,
           color: color,
         ),
         const SizedBox(height: 10),
         _SubjectItem(
-          title: 'រូបវិទ្យា (Physics)',
-          status: 'អវត្តមាន',
+          title: 'Physics',
+          status: 'Absent',
           statusColor: Colors.red,
           icon: Icons.science,
           color: color,
@@ -273,6 +270,7 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
     );
   }
 }
+
 class _Legend extends StatelessWidget {
   final Color color;
   final String label;
@@ -313,5 +311,3 @@ class _SubjectItem extends StatelessWidget {
     return Container(); // Placeholder
   }
 }
-
-// Keep the _Legend and _SubjectItem classes outside at the bottom as you had them before

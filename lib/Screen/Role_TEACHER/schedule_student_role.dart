@@ -26,7 +26,7 @@ class TeacherScheduleScreen extends StatelessWidget {
           ),
         ),
         title: const Text(
-          'កាលវិភាគបង្រៀន',
+          'Teaching Schedule',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -50,11 +50,11 @@ class TeacherScheduleScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'ខែឧសភា ឆ្នាំ២០២៤',
+                  'May 2024',
                   style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  'សប្តាហ៍នេះ',
+                  'This Week',
                   style: TextStyle(
                     color: primaryTeal,
                     fontWeight: FontWeight.bold,
@@ -74,17 +74,17 @@ class TeacherScheduleScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
                 _buildScheduleItem(
-                  time: '០៨:០០ - ០៩:៣០',
-                  className: 'ថ្នាក់ទី១០ អា (Grade 10A)',
-                  subject: 'គណិតវិទ្យា',
+                  time: '08:00 - 09:30',
+                  className: 'Grade 10A',
+                  subject: 'Mathematics',
                   room: 'A-204',
                   isActive: true,
                   primaryColor: primaryTeal,
                 ),
                 _buildScheduleItem(
-                  time: '០៩:៤៥ - ១១:១៥',
-                  className: 'ថ្នាក់ទី១១ បេ (Grade 11B)',
-                  subject: 'គណិតវិទ្យាថ្នាក់ខ្ពស់',
+                  time: '09:45 - 11:15',
+                  className: 'Grade 11B',
+                  subject: 'Advanced Mathematics',
                   room: 'C-102',
                   isActive: false,
                   primaryColor: primaryTeal,
@@ -92,9 +92,9 @@ class TeacherScheduleScreen extends StatelessWidget {
                 // Lunch Break Indicator
                 _buildBreakDivider(),
                 _buildScheduleItem(
-                  time: '១៣:៣០ - ១៥:០០',
-                  className: 'ថ្នាក់ទី១២ សេ (Grade 12C)',
-                  subject: 'រូបវិទ្យា',
+                  time: '13:30 - 15:00',
+                  className: 'Grade 12C',
+                  subject: 'Physics',
                   room: 'B-301',
                   isActive: false,
                   isLast: true,
@@ -111,13 +111,13 @@ class TeacherScheduleScreen extends StatelessWidget {
 
   Widget _buildHorizontalCalendar(Color primaryColor) {
     final List<Map<String, String>> days = [
-      {'day': 'ចន្ទ', 'date': '១៣'},
-      {'day': 'អង្គារ', 'date': '១៤'},
-      {'day': 'ពុធ', 'date': '១៥'},
-      {'day': 'ព្រហ', 'date': '១៦'},
-      {'day': 'សុក្រ', 'date': '១៧'},
-      {'day': 'សៅរ៍', 'date': '១៨'},
-      {'day': 'អាទិត្យ', 'date': '១៩'},
+      {'day': 'Mon', 'date': '13'},
+      {'day': 'Tue', 'date': '14'},
+      {'day': 'Wed', 'date': '15'},
+      {'day': 'Thu', 'date': '16'},
+      {'day': 'Fri', 'date': '17'},
+      {'day': 'Sat', 'date': '18'},
+      {'day': 'Sun', 'date': '19'},
     ];
 
     return SizedBox(
@@ -238,7 +238,7 @@ class TeacherScheduleScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: const Text(
-                          'បច្ចុប្បន្ន',
+                          'Ongoing',
                           style: TextStyle(
                             color: Colors.blue,
                             fontSize: 10,
@@ -301,7 +301,7 @@ class TeacherScheduleScreen extends StatelessWidget {
                         child: Column(
                           children: [
                             const Text(
-                              'បន្ទប់',
+                              'Room',
                               style: TextStyle(
                                 fontSize: 10,
                                 color: Colors.grey,
@@ -337,7 +337,7 @@ class TeacherScheduleScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 10),
             child: Text(
-              'សម្រាកអាហារថ្ងៃត្រង់',
+              'Lunch Break',
               style: TextStyle(color: Colors.grey, fontSize: 12),
             ),
           ),
@@ -356,19 +356,19 @@ class TeacherScheduleScreen extends StatelessWidget {
       items: const [
         BottomNavigationBarItem(
           icon: Icon(Icons.grid_view_rounded),
-          label: 'ផ្ទាំងគ្រប់គ្រង',
+          label: 'Dashboard',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.chat_bubble_outline),
-          label: 'សារ',
+          label: 'Messages',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.menu_book_outlined),
-          label: 'បណ្ណាល័យ',
+          label: 'Library',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.settings_outlined),
-          label: 'ការកំណត់',
+          label: 'Settings',
         ),
       ],
     );

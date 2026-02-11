@@ -52,7 +52,7 @@ class AdminLoginPage extends StatelessWidget {
 
                     const SizedBox(height: 20),
                     const Text(
-                      "ចូលប្រើក្នុងនាមជាអភិបាល",
+                      "Login as Admin",
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 20,
@@ -60,7 +60,7 @@ class AdminLoginPage extends StatelessWidget {
                       ),
                     ),
                     const Text(
-                      "ប្រព័ន្ធគ្រប់គ្រងសាលារៀន",
+                      "System Managment School",
                       style: TextStyle(color: Colors.white70, fontSize: 14),
                     ),
 
@@ -84,19 +84,19 @@ class AdminLoginPage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            "លេខសម្គាល់អភិបាល / អ៊ីមែល",
-                            style: TextStyle(color: Colors.grey),
+                            "ID or Email",
+                            style: TextStyle(color: Colors.black),
                           ),
                           const SizedBox(height: 8),
                           _buildTextField(
                             Icons.badge_outlined,
-                            "បញ្ចូលលេខសម្គាល់",
+                            "Input your ID or Email",
                           ),
 
                           const SizedBox(height: 20),
                           const Text(
-                            "លេខសម្ងាត់",
-                            style: TextStyle(color: Colors.grey),
+                            "Password",
+                            style: TextStyle(color: Colors.black),
                           ),
                           const SizedBox(height: 8),
                           _buildTextField(
@@ -110,7 +110,7 @@ class AdminLoginPage extends StatelessWidget {
                             child: TextButton(
                               onPressed: () {},
                               child: const Text(
-                                "ភ្លេចលេខសម្ងាត់?",
+                                "Forgot Password?",
                                 style: TextStyle(color: Colors.blue),
                               ),
                             ),
@@ -141,7 +141,7 @@ class AdminLoginPage extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "ចូលប្រើ",
+                                    "Login",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 18,
@@ -157,72 +157,46 @@ class AdminLoginPage extends StatelessWidget {
                       ),
                     ),
 
-                    const SizedBox(height: 40),
-
-                    // 4. Tech Support Section
-                    Container(
-                      padding: const EdgeInsets.all(15),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[100],
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        children: [
-                          const CircleAvatar(
-                            backgroundColor: Color(0xFFFFF9C4),
-                            child: Icon(
-                              Icons.headset_mic,
-                              color: Colors.orange,
-                            ),
-                          ),
-                          const SizedBox(width: 15),
-                          const Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "ត្រូវការជំនួយបច្ចេកទេស?",
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                Text(
-                                  "ទំនាក់ទំនងគាំទ្រ ២៤/៧",
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {},
-                            child: const Text("ទាក់ទង"),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    // Footer Links
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    Column(
                       children: [
-                        Text(
-                          "គោលការណ៍ឯកជនភាព",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        // Facebook Button
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1877F3),
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            minimumSize: const Size(double.infinity, 48),
+                          ),
+                          icon: const Icon(Icons.facebook),
+                          label: const Text("Login with Google"),
+                          onPressed: () {
+                            // TODO: Implement Facebook login logic
+                          },
                         ),
-                        Text(
-                          "ជំនួយ",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                        Text(
-                          "អំពីកម្មវិធី",
-                          style: TextStyle(fontSize: 12, color: Colors.grey),
+
+                        const SizedBox(height: 16), // Spacer between buttons
+                        // Google Button
+                        ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF1877F3),
+                            foregroundColor: Colors.white,
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            minimumSize: const Size(double.infinity, 48),
+                          ),
+                          icon: const Icon(Icons.facebook),
+                          label: const Text("Login with Facebook"),
+                          onPressed: () {
+                            // TODO: Implement Facebook login logic
+                          },
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
                   ],
                 ),
               ),

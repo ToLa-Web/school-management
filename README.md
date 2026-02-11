@@ -10,3 +10,8 @@ A new Flutter project.
 -git push origin henglay
 -git switch
 -git pull origin
+
++All Role
+-full name
+-gmail
+-password

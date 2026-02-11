@@ -72,7 +72,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             const SizedBox(height: 24),
 
             const Text(
-              "ចូលប្រើជាគ្រូបង្រៀន",
+              "Login as Teacher",
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -81,21 +81,21 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             ),
             const SizedBox(height: 8),
             const Text(
-              "សូមបញ្ចូលព័ត៌មានរបស់អ្នកដើម្បីចូលប្រើប្រាស់",
+              "Please Input your information here ",
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.black, fontSize: 14),
+              style: TextStyle(color: Colors.black, fontSize: 16),
             ),
 
             const SizedBox(height: 40),
 
-            _buildLabel("លេខសម្គាល់បុគ្គលិក ឬ អ៊ីមែល"),
+            _buildLabel("ID or Email"),
             TextField(
               decoration: InputDecoration(
                 prefixIcon: const Icon(
                   Icons.badge_outlined,
                   color: Colors.grey,
                 ),
-                hintText: "បញ្ចូលលេខសម្គាល់បុគ្គលិក",
+                hintText: "Please Input your ID or Email",
                 filled: true,
                 fillColor: Colors.white,
                 border: OutlineInputBorder(
@@ -107,7 +107,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
 
             const SizedBox(height: 20),
 
-            _buildLabel("លេខសម្ងាត់"),
+            _buildLabel("Password"),
             TextField(
               obscureText: _isObscured,
               decoration: InputDecoration(
@@ -136,7 +136,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
               child: TextButton(
                 onPressed: () {},
                 child: const Text(
-                  "ភ្លេចលេខសម្ងាត់?",
+                  "Forgot Password?",
                   style: TextStyle(color: primaryTeal),
                 ),
               ),
@@ -162,7 +162,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "ចូលប្រើ",
+                      "Login",
                       style: TextStyle(fontSize: 18, color: Colors.white),
                     ),
                     SizedBox(width: 10),
@@ -173,7 +173,10 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             ),
 
             const SizedBox(height: 40),
-            const Text("មិនទាន់មានគណនី?", style: TextStyle(color: Colors.blue)),
+            const Text(
+              "Don't have account?",
+              style: TextStyle(color: Colors.blue),
+            ),
             const SizedBox(height: 12),
 
             OutlinedButton(
@@ -188,30 +191,10 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                 Navigator.pushNamed(context, '/RegisterScreen');
               },
               child: const Text(
-                "ចុះឈ្មោះគណនីថ្មី",
+                "Sign in",
                 style: TextStyle(color: primaryTeal),
               ),
             ),
-
-            const SizedBox(height: 40),
-            const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.help_outline, size: 16, color: Colors.grey),
-                SizedBox(width: 5),
-                Text(
-                  "ត្រូវការជំនួយក្នុងការចូលប្រើ?",
-                  style: TextStyle(fontSize: 12, color: Colors.grey),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-            const Text(
-              "Alan 1.11.0\n© 2026 EduPortal Systems Inc.",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 10, color: Colors.grey),
-            ),
-            const SizedBox(height: 20),
           ],
         ),
       ),

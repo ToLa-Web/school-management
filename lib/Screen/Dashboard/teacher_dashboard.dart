@@ -31,7 +31,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   final List<Widget> _screens = [
     const TeacherHomeContent(),
     const TeacherCourseScreen(),
-    const Center(child: Text("សារ (Messages)")),
+    const Center(child: Text("Messages")),
     const TeacherSettingsScreen(),
   ];
   @override
@@ -80,22 +80,19 @@ class TeacherHomeContent extends StatelessWidget {
             const SizedBox(height: 25),
             _buildOverviewCard(),
             const SizedBox(height: 30),
-            _buildSectionTitle("ឧបករណ៍គ្រប់គ្រង", actionText: "មើលទាំងអស់"),
+            _buildSectionTitle("Management Tools", actionText: "View All"),
             const SizedBox(height: 15),
             _buildTeacherGridMenu(context),
             const SizedBox(height: 30),
             _buildAnnouncementTile(),
             const SizedBox(height: 25),
-            _buildSectionTitle("សកម្មភាពរហ័ស", actionText: "គ្រប់គ្រង"),
+            _buildSectionTitle("Quick Actions", actionText: "Manage"),
             const SizedBox(height: 15),
             _buildQuickActions(),
             const SizedBox(height: 25),
             _buildWarningBanner(),
             const SizedBox(height: 30),
-            _buildSectionTitle(
-              "ថ្នាក់រៀនថ្ងៃនេះ",
-              actionText: "កាលវិភាគពេញលេញ",
-            ),
+            _buildSectionTitle("Today's Classes", actionText: "Full Schedule"),
             const SizedBox(height: 15),
             _buildTodaySchedule(),
             const SizedBox(height: 100),
@@ -125,7 +122,7 @@ class TeacherHomeContent extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "អត្តលេខគ្រូបង្រៀន",
+              "Teacher ID",
               style: TextStyle(
                 color: Color(0xFF007A7A),
                 fontSize: 12,
@@ -133,7 +130,7 @@ class TeacherHomeContent extends StatelessWidget {
               ),
             ),
             Text(
-              "លោក Alexander Smith",
+              "Mr. Alexander Smith",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
@@ -182,7 +179,7 @@ class TeacherHomeContent extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "ទិដ្ឋភាពទូទៅនៃការសិក្សា",
+                    "Overall Academic Overview",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,
@@ -190,21 +187,21 @@ class TeacherHomeContent extends StatelessWidget {
                     ),
                   ),
                   Text(
-                    "ឆមាសទី ២ • ឆ្នាំសិក្សា ២០២៣-២៤",
+                    "Semester 2 • Academic Year 2023-24",
                     style: TextStyle(color: Colors.white70, fontSize: 12),
                   ),
                 ],
               ),
-              _buildStatusBadge("សកម្ម"),
+              _buildStatusBadge("Active"),
             ],
           ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildStatItem("ថ្នាក់រៀន", "០៨"),
-              _buildStatItem("សិស្សសរុប", "២៤១"),
-              _buildStatItem("ម៉ោងបង្រៀន", "៣២ម៉"),
+              _buildStatItem("Classes", "08"),
+              _buildStatItem("Students", "241"),
+              _buildStatItem("Teaching Hours", "32h"),
             ],
           ),
         ],
@@ -264,61 +261,61 @@ class TeacherHomeContent extends StatelessWidget {
         _buildGridItem(
           context,
           Icons.school,
-          "គ្រប់គ្រងថ្នាក់",
+          "Manage Classes",
           Colors.blue,
           const TeacherManagementClassScreen(),
         ),
         _buildGridItem(
           context,
           Icons.person_2,
-          "គ្រប់គ្រងវត្តមាន",
+          "Manage Attendance",
           Colors.green,
           const AttendanceScreen(),
         ),
         _buildGridItem(
           context,
           Icons.class_,
-          "វគ្គសិក្សា",
+          "Courses",
           Colors.purple,
           const TeacherCourseScreen(),
         ),
         _buildGridItem(
           context,
           Icons.people_alt,
-          "បន្ថែមសិស្ស",
+          "Add Student",
           Colors.orange,
           const AddStudentScreen(),
         ),
         _buildGridItem(
           context,
           Icons.checklist,
-          "បញ្ចូលពិន្ទុ",
+          "Enter Scores",
           Colors.red,
           const ScoreInputScreen(),
         ),
         _buildGridItem(
           context,
           Icons.star,
-          "លទ្ធផលសកម្មភាព",
+          "Activity Results",
           Colors.indigo,
           const StudentResultScreen(),
         ),
         _buildGridItem(
           context,
           Icons.calendar_month,
-          "កាលវិភាគបង្រៀន",
+          "Teaching Schedule",
           Colors.cyan,
           const TeacherScheduleScreen(),
         ),
         const CategoryCard(
           icon: Icons.qr_code_2,
-          label: "កូដ QR",
+          label: "QR Code",
           color: Colors.deepOrange,
         ),
         _buildGridItem(
           context,
           Icons.person_add,
-          "ភ្ជាប់អាណាព្យាបាល",
+          "Link Parent",
           Colors.teal,
           const ParentManagementScreen(),
         ),
@@ -358,11 +355,11 @@ class TeacherHomeContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "ការប្រកាសថ្មី",
+                  "New Announcement",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                 ),
                 Text(
-                  "ផ្ញើសារទៅកាន់មាតាបិតាទាំងអស់",
+                  "Send message to all parents",
                   style: TextStyle(color: Colors.grey, fontSize: 12),
                 ),
               ],
@@ -389,13 +386,17 @@ class TeacherHomeContent extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildActionItem(Icons.check_circle_outline, "កត់វត្តមាន", Colors.teal),
+        _buildActionItem(
+          Icons.check_circle_outline,
+          "Mark Attendance",
+          Colors.teal,
+        ),
         _buildActionItem(
           Icons.description_outlined,
-          "ដាក់ពិន្ទុ",
+          "Enter Scores",
           Colors.blueGrey,
         ),
-        _buildActionItem(Icons.campaign_outlined, "ការបោះឆ្នោត", Colors.cyan),
+        _buildActionItem(Icons.campaign_outlined, "Polling", Colors.cyan),
       ],
     );
   }
@@ -448,11 +449,11 @@ class TeacherHomeContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "អវត្តមានដែលមិនទាន់បានកត់",
+                  "Unrecorded Absences",
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                 ),
                 Text(
-                  "ម៉ោងទី២៖ គីមីវិទ្យាកម្រិតខ្ពស់...",
+                  "Period 2: Advanced Chemistry...",
                   style: TextStyle(fontSize: 11, color: Colors.black54),
                 ),
               ],
@@ -461,7 +462,7 @@ class TeacherHomeContent extends StatelessWidget {
           TextButton(
             onPressed: () {},
             child: const Text(
-              "កែសម្រួល",
+              "Edit",
               style: TextStyle(
                 color: Color(0xFFD4A017),
                 fontWeight: FontWeight.bold,
@@ -477,16 +478,16 @@ class TeacherHomeContent extends StatelessWidget {
     return Column(
       children: [
         _buildScheduleTile(
-          "ថ្នាក់ទី ១០ - ជីវវិទ្យា",
-          "បន្ទប់ ៣០២ • ២៨ នាក់",
+          "Grade 10 - Biology",
+          "Room 302 • 28 students",
           "09:00",
           Colors.green,
           isDone: true,
         ),
         const SizedBox(height: 12),
         _buildScheduleTile(
-          "ថ្នាក់ទី ១២ - គីមីវិទ្យា",
-          "សិស្សសរុប ២២ នាក់",
+          "Grade 12 - Chemistry",
+          "22 students",
           "11:30",
           Colors.teal,
           isCurrent: true,
@@ -517,7 +518,7 @@ class TeacherHomeContent extends StatelessWidget {
           Column(
             children: [
               Text(
-                isCurrent ? "បច្ចុប្បន្ន" : "ម៉ោង",
+                isCurrent ? "Current" : "Time",
                 style: TextStyle(
                   fontSize: 10,
                   color: color,
@@ -647,7 +648,7 @@ class TeacherSettingsScreen extends StatelessWidget {
             _buildSettingsGroup([
               _settingsTile(
                 icon: Icons.person_outline,
-                title: "ព័ត៌មានគណនី",
+                title: "Account Info",
                 iconColor: Colors.blue,
                 onTap: () {
                   /* Navigate to Profile Info */
@@ -655,7 +656,7 @@ class TeacherSettingsScreen extends StatelessWidget {
               ),
               _settingsTile(
                 icon: Icons.notifications_none,
-                title: "ការកំណត់ការជូនដំណឹង",
+                title: "Notification Settings",
                 iconColor: Colors.orange,
                 onTap: () {
                   /* Navigate to Notifications */
@@ -663,16 +664,16 @@ class TeacherSettingsScreen extends StatelessWidget {
               ),
               _settingsTile(
                 icon: Icons.language,
-                title: "ភាសា",
+                title: "Language",
                 iconColor: Colors.indigo,
-                trailing: "ខ្មែរ/English",
+                trailing: "Khmer/English",
                 onTap: () {
                   /* Open Language Selector */
                 },
               ),
               _settingsTile(
                 icon: Icons.lock_outline,
-                title: "សុវត្ថិភាព និងលេខសម្ងាត់",
+                title: "Security & Password",
                 iconColor: Colors.green,
                 onTap: () {
                   /* Navigate to Security */
@@ -686,7 +687,7 @@ class TeacherSettingsScreen extends StatelessWidget {
             _buildSettingsGroup([
               _settingsTile(
                 icon: Icons.help_outline,
-                title: "ជំនួយ និងការគាំទ្រ",
+                title: "Help & Support",
                 iconColor: Colors.blueGrey,
                 onTap: () {
                   /* Navigate to Help */
@@ -694,7 +695,7 @@ class TeacherSettingsScreen extends StatelessWidget {
               ),
               _settingsTile(
                 icon: Icons.info_outline,
-                title: "អំពីកម្មវិធី",
+                title: "About the App",
                 iconColor: Colors.blueGrey,
                 onTap: () {
                   /* Navigate to About */
@@ -716,7 +717,7 @@ class TeacherSettingsScreen extends StatelessWidget {
   AppBar _buildAppBar() {
     return AppBar(
       title: const Text(
-        'ការកំណត់',
+        'Settings',
         style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
       ),
       backgroundColor: Colors.transparent,
@@ -753,11 +754,11 @@ class TeacherSettingsScreen extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         const Text(
-          "លោក Alexander Smith",
+          "Mr. Alexander Smith",
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         const Text(
-          "គ្រូបង្រៀនថ្នាក់ទី ១២A",
+          "Homeroom Teacher - Grade 12A",
           style: TextStyle(color: Colors.grey, fontSize: 14),
         ),
       ],
@@ -828,7 +829,7 @@ class TeacherSettingsScreen extends StatelessWidget {
           },
           icon: const Icon(Icons.logout, color: Colors.red),
           label: const Text(
-            "ចាកចេញ",
+            "Log Out",
             style: TextStyle(
               color: Colors.red,
               fontSize: 16,
@@ -871,25 +872,25 @@ class TeacherCourseScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 children: [
                   _buildCourseCard(
-                    "គណិតវិទ្យាថ្នាក់ទី១០",
-                    "មធ្យមសិក្សា",
-                    "៤២ នាក់",
+                    "Mathematics - Grade 10",
+                    "Secondary",
+                    "42 students",
                     0.75,
-                    "៧៥%",
+                    "75%",
                   ),
                   _buildCourseCard(
-                    "រូបវិទ្យាថ្នាក់ទី១២",
-                    "មធ្យមសិក្សា",
-                    "៣៨ នាក់",
+                    "Physics - Grade 12",
+                    "Secondary",
+                    "38 students",
                     0.45,
-                    "៤៥%",
+                    "45%",
                   ),
                   _buildCourseCard(
-                    "ភាសាខ្មែរថ្នាក់ទី៥",
-                    "បឋមសិក្សា",
-                    "៣០ នាក់",
+                    "Khmer Language - Grade 5",
+                    "Primary",
+                    "30 students",
                     0.90,
-                    "៩០%",
+                    "90%",
                   ),
                   const SizedBox(height: 80),
                 ],
@@ -909,7 +910,7 @@ class TeacherCourseScreen extends StatelessWidget {
         children: [
           Icon(Icons.arrow_back_ios_new, size: 20),
           Text(
-            "វគ្គសិក្សារបស់ខ្ញុំ",
+            "My Courses",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -927,7 +928,7 @@ class TeacherCourseScreen extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
       child: TextField(
         decoration: InputDecoration(
-          hintText: "ស្វែងរកវគ្គសិក្សា...",
+          hintText: "Search courses...",
           prefixIcon: const Icon(Icons.search),
           filled: true,
           fillColor: Colors.white,
@@ -997,16 +998,16 @@ class TeacherCourseScreen extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            "វឌ្ឍនភាព: $percent",
+            "Progress: $percent",
             style: const TextStyle(fontSize: 12, color: Colors.grey),
           ),
           const SizedBox(height: 15),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSmallAction(Icons.description, "ឯកសារ"),
-              _buildSmallAction(Icons.assignment, "កិច្ចការ"),
-              _buildSmallAction(Icons.person_search, "សិស្ស"),
+              _buildSmallAction(Icons.description, "Files"),
+              _buildSmallAction(Icons.assignment, "Assignments"),
+              _buildSmallAction(Icons.person_search, "Students"),
             ],
           ),
         ],

@@ -16,11 +16,11 @@ class ScoreInputScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'បញ្ចូលពិន្ទុប្រចាំខែ', // Monthly Score Entry
+          'Monthly Score Entry',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         actions: [
-          TextButton(onPressed: () {}, child: const Text('រក្សាទុក')), // Save
+          TextButton(onPressed: () {}, child: const Text('Save')), // Save
         ],
       ),
       body: Column(
@@ -31,25 +31,25 @@ class ScoreInputScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: const [
                 ScoreCard(
-                  name: 'សុខ ធានី',
+                  name: 'Sok Theany',
                   id: '9A001',
-                  gender: 'ស្រី',
-                  rank: '#០១',
+                  gender: 'Female',
+                  rank: '#01',
                   scores: {
-                    'ភាសាខ្មែរ': '95',
-                    'គណិតវិទ្យា': '88',
-                    'រូបវិទ្យា': '92',
-                    'អង់គ្លេស': '85',
-                    'ជីវវិទ្យា': '89',
-                    'ប្រវត្តិវិទ្យា': '90',
+                    'Khmer': '95',
+                    'Mathematics': '88',
+                    'Physics': '92',
+                    'English': '85',
+                    'Biology': '89',
+                    'History': '90',
                   },
                   total: '549.00',
                   average: '91.50',
                 ),
                 ScoreCard(
-                  name: 'ចាន់ បុប្ផា',
+                  name: 'Chan Bopha',
                   id: '9A002',
-                  gender: 'ស្រី',
+                  gender: 'Female',
                   rank: '-',
                   scores: {}, // Empty scores
                   total: '-',
@@ -72,9 +72,9 @@ class ScoreInputScreen extends StatelessWidget {
         children: [
           Row(
             children: [
-              Expanded(child: _buildDropdown('ថ្នាក់រៀន', 'ថ្នាក់ទី ១២ ក')),
+              Expanded(child: _buildDropdown('Class', 'Class 12 K')),
               const SizedBox(width: 16),
-              Expanded(child: _buildDropdown('ខែបញ្ចូលពិន្ទុ', 'តុលា ២០២៣')),
+              Expanded(child: _buildDropdown('Month', 'October 2023')),
             ],
           ),
           const SizedBox(height: 16),
@@ -84,7 +84,7 @@ class ScoreInputScreen extends StatelessWidget {
             child: ElevatedButton.icon(
               onPressed: () {},
               icon: const Icon(Icons.calculate_outlined),
-              label: const Text('គណនាស្វ័យប្រវត្តិ'), // Auto Calculate
+              label: const Text('Auto Calculate'), // Auto Calculate
               style: ElevatedButton.styleFrom(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -134,7 +134,7 @@ class ScoreInputScreen extends StatelessWidget {
         child: FloatingActionButton.extended(
           onPressed: () {},
           icon: const Icon(Icons.save),
-          label: const Text('រក្សាទុកទាំងអស់'), // Save All
+          label: const Text('Save All'), // Save All
         ),
       ),
     );
@@ -203,7 +203,7 @@ class ScoreCard extends StatelessWidget {
             Row(
               children: [
                 Text(
-                  'សរុប: $total',
+                  'Total: $total',
                   style: const TextStyle(
                     color: Colors.blue,
                     fontWeight: FontWeight.bold,
@@ -211,7 +211,7 @@ class ScoreCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 20),
                 Text(
-                  'មធ្យមភាគ: $average',
+                  'Average: $average',
                   style: const TextStyle(
                     color: Colors.blue,
                     fontWeight: FontWeight.bold,
@@ -230,12 +230,12 @@ class ScoreCard extends StatelessWidget {
 
   Widget _buildScoreGrid() {
     List<String> subjects = [
-      'ភាសាខ្មែរ',
-      'គណិតវិទ្យា',
-      'រូបវិទ្យា',
-      'អង់គ្លេស',
-      'ជីវវិទ្យា',
-      'ប្រវត្តិវិទ្យា',
+      'Khmer',
+      'Mathematics',
+      'Physics',
+      'English',
+      'Biology',
+      'History',
     ];
     return Table(
       border: TableBorder.all(color: Colors.grey.shade200),

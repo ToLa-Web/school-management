@@ -52,7 +52,6 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primaryColor: AppColors.primaryText, // Uses your custom colors
         textTheme: TextTheme(
-          
           displayLarge: AppTextStyle.title32,
           headlineMedium: AppTextStyle.screenTitle28,
           titleLarge: AppTextStyle.sectionTitle20,

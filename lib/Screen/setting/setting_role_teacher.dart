@@ -10,7 +10,7 @@ class SettingsScreenTeacher extends StatelessWidget {
       backgroundColor: Color(0xFFF8F9FB),
       appBar: AppBar(
         title: Text(
-          'ការកំណត់',
+          'Settings',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -44,33 +44,30 @@ class SettingsScreenTeacher extends StatelessWidget {
             ),
             SizedBox(height: 10),
             Text(
-              "លោក Alexander Smith",
+              "Alexander Smith",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            Text(
-              "គ្រូបង្រៀនថ្នាក់ទី ១២A",
-              style: TextStyle(color: Colors.grey),
-            ),
+            Text("Teacher of Class 12A", style: TextStyle(color: Colors.grey)),
 
             SizedBox(height: 30),
 
             // Settings Group 1
             _buildSettingsGroup([
-              _settingsTile(Icons.person_outline, "ព័ត៌មានគណនី", Colors.blue),
+              _settingsTile(Icons.person_outline, "Account Info", Colors.blue),
               _settingsTile(
                 Icons.notifications_none,
-                "ការកំណត់ការជូនដំណឹង",
+                "Notification Settings",
                 Colors.orange,
               ),
               _settingsTile(
                 Icons.language,
-                "ភាសា",
+                "Language",
                 Colors.indigo,
-                trailing: "ខ្មែរ/English",
+                trailing: "Khmer/English",
               ),
               _settingsTile(
                 Icons.lock_outline,
-                "សុវត្ថិភាព និងលេខសម្ងាត់",
+                "Security & Password",
                 Colors.green,
               ),
             ]),
@@ -81,14 +78,10 @@ class SettingsScreenTeacher extends StatelessWidget {
             _buildSettingsGroup([
               _settingsTile(
                 Icons.help_outline,
-                "ជំនួយ និងការគាំទ្រ",
+                "Help & Support",
                 Colors.blueGrey,
               ),
-              _settingsTile(
-                Icons.info_outline,
-                "អំពីកម្មវិធី",
-                Colors.blueGrey,
-              ),
+              _settingsTile(Icons.info_outline, "About App", Colors.blueGrey),
             ]),
 
             SizedBox(height: 30),
@@ -98,7 +91,7 @@ class SettingsScreenTeacher extends StatelessWidget {
               onPressed: () {},
               icon: Icon(Icons.logout, color: Colors.red),
               label: Text(
-                "ចាកចេញ",
+                "Log Out",
                 style: TextStyle(
                   color: Colors.red,
                   fontSize: 18,
