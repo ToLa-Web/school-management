@@ -9,7 +9,10 @@ class OAuthService {
   OAuthService._internal();
 
   final _apiService = ApiService();
-  final _googleSignIn = GoogleSignIn(scopes: ['email', 'profile']);
+  final _googleSignIn = GoogleSignIn(
+    scopes: ['email', 'profile'],
+    serverClientId: '794820976693-qnn42t12a4pba2ipm3cue6f7g82hod57.apps.googleusercontent.com',
+  );
 
   /// Sign in with Google, send idToken to backend
   Future<AuthResponseDto?> signInWithGoogle() async {

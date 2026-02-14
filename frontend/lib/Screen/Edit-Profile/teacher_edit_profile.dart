@@ -1,7 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:tamdansers/services/api_service.dart';
 
-class TeacherEditProfileScreen extends StatelessWidget {
+class TeacherEditProfileScreen extends StatefulWidget {
   const TeacherEditProfileScreen({super.key});
+
+  @override
+  State<TeacherEditProfileScreen> createState() =>
+      _TeacherEditProfileScreenState();
+}
+
+class _TeacherEditProfileScreenState extends State<TeacherEditProfileScreen> {
+  String _userName = '';
+  String _userEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final apiService = ApiService();
+    final name = await apiService.getUserName();
+    final email = await apiService.getUserEmail();
+    if (mounted) {
+      setState(() {
+        _userName = name ?? '';
+        _userEmail = email ?? '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +45,7 @@ class TeacherEditProfileScreen extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'កែសម្រួលប្រវត្តិរូបគ្រូបង្រៀន',
+          'Edit Teacher Profile',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -60,7 +88,7 @@ class TeacherEditProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    'ផ្លាស់ប្តូររូបភាព',
+                    'Change Photo',
                     style: TextStyle(
                       color: teacherPrimary,
                       fontWeight: FontWeight.w600,
@@ -74,34 +102,36 @@ class TeacherEditProfileScreen extends StatelessWidget {
             // Read-Only Teacher Info
             Row(
               children: [
-                Expanded(child: _buildField('អត្តលេខគ្រូ', 'TCH-2024-001')),
+                Expanded(child: _buildField('Teacher ID', 'TCH-2024-001')),
                 const SizedBox(width: 15),
-                Expanded(child: _buildField('ដេប៉ាតឺម៉ង់', 'វិទ្យាសាស្ត្រ')),
+                Expanded(child: _buildField('Department', 'Science')),
               ],
             ),
             const SizedBox(height: 15),
-            _buildField('ឈ្មោះពេញ', 'សេង វណ្ណា', icon: Icons.person_outline),
+            _buildField('Full Name', _userName, icon: Icons.person_outline),
             const SizedBox(height: 15),
             _buildField(
-              'មុខវិជ្ជាបង្រៀន',
-              'រូបវិទ្យា',
+              'Subject',
+              '',
               icon: Icons.book_outlined,
+              hintText: 'Enter your subject',
             ),
             const SizedBox(height: 15),
             _buildField(
-              'អ៊ីមែល',
-              'sok.vanna@school.edu.kh',
+              'Email',
+              _userEmail,
               icon: Icons.email_outlined,
             ),
             const SizedBox(height: 15),
             _buildField(
-              'លេខទូរស័ព្ទ',
-              '098 012 345 678',
+              'Phone Number',
+              '',
               icon: Icons.phone_outlined,
+              hintText: 'Enter your phone number',
             ),
             const SizedBox(height: 15),
             const Text(
-              'អាសយដ្ឋានបច្ចុប្បន្ន',
+              'Current Address',
               style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
@@ -114,8 +144,8 @@ class TeacherEditProfileScreen extends StatelessWidget {
                 border: Border.all(color: Colors.black12),
               ),
               child: const Text(
-                'ផ្ទះលេខ ១២៣, ផ្លូវ ៤៥៦, រាជធានីភ្នំពេញ',
-                style: TextStyle(fontSize: 14, height: 1.5),
+                'Enter your address',
+                style: TextStyle(fontSize: 14, height: 1.5, color: Colors.grey),
               ),
             ),
 
@@ -134,7 +164,7 @@ class TeacherEditProfileScreen extends StatelessWidget {
                   ),
                 ),
                 child: const Text(
-                  'រក្សាទុកការផ្លាស់ប្តូរ',
+                  'Save Changes',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
@@ -147,7 +177,7 @@ class TeacherEditProfileScreen extends StatelessWidget {
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: const Text(
-                  'បោះបង់',
+                  'Cancel',
                   style: TextStyle(color: Colors.grey, fontSize: 16),
                 ),
               ),
@@ -163,7 +193,12 @@ class TeacherEditProfileScreen extends StatelessWidget {
     String value, {
     IconData? icon,
     bool isLocked = false,
+    String? hintText,
   }) {
+    final displayText = value.isNotEmpty ? value : (hintText ?? '');
+    final textColor = value.isNotEmpty
+        ? (isLocked ? Colors.black38 : Colors.black87)
+        : Colors.grey;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -191,9 +226,9 @@ class TeacherEditProfileScreen extends StatelessWidget {
                 const SizedBox(width: 10),
               ],
               Text(
-                value,
+                displayText,
                 style: TextStyle(
-                  color: isLocked ? Colors.black38 : Colors.black87,
+                  color: textColor,
                 ),
               ),
             ],

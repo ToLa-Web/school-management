@@ -22,10 +22,6 @@ class _RegisterScreenState extends State<RegisterScreen>
       List.generate(3, (_) => TextEditingController());
   final List<TextEditingController> _emailControllers =
       List.generate(3, (_) => TextEditingController());
-  final List<TextEditingController> _phoneControllers =
-      List.generate(3, (_) => TextEditingController());
-  final List<TextEditingController> _idControllers =
-      List.generate(3, (_) => TextEditingController());
   final List<TextEditingController> _passwordControllers =
       List.generate(3, (_) => TextEditingController());
 
@@ -62,8 +58,6 @@ class _RegisterScreenState extends State<RegisterScreen>
     for (var list in [
       _fullNameControllers,
       _emailControllers,
-      _phoneControllers,
-      _idControllers,
       _passwordControllers,
     ]) {
       for (var c in list) {
@@ -482,15 +476,6 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 "example@gmail.com",
                                 _emailControllers[idx],
                                 keyboardType: TextInputType.emailAddress),
-                            const SizedBox(height: 14),
-                            _buildField("Phone Number",
-                                Icons.phone_outlined, "012 345 678",
-                                _phoneControllers[idx],
-                                keyboardType: TextInputType.phone),
-                            const SizedBox(height: 14),
-                            _buildField("ID Number",
-                                Icons.badge_outlined, "Enter your ID",
-                                _idControllers[idx]),
                             const SizedBox(height: 14),
                             _buildPasswordField(idx),
                           ],

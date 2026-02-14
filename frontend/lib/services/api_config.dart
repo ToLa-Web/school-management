@@ -4,7 +4,9 @@ class ApiConfig {
   // For local development with iOS simulator: http://localhost:5001
   // For physical device: http://<your-ip-address>:5001
   // For Windows/Chrome: Use 127.0.0.1 instead of localhost for IPv4
-  static const String baseUrl = 'http://127.0.0.1:5001';
+  // Use 127.0.0.1 for Chrome, 10.0.2.2 for Android emulator,
+  // or your LAN IP for physical device
+  static const String baseUrl = 'http://172.16.1.98:5001';
   
   static const String registerEndpoint = '/api/auth/register';
   static const String loginEndpoint = '/api/auth/authenticate';

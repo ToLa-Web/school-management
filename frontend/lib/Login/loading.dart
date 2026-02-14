@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamdansers/services/api_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -10,6 +11,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   late AnimationController _progressController;
+  final _apiService = ApiService();
 
   @override
   void initState() {
@@ -24,10 +26,34 @@ class _SplashScreenState extends State<SplashScreen>
       if (status == AnimationStatus.completed) {
         if (mounted) {
           // Navigates to the Role Selection screen defined in your routes
-          Navigator.pushReplacementNamed(context, '/RoleSelection');
+          _checkAuthAndNavigate();
         }
       }
     });
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    await _apiService.loadTokens();
+    if (!mounted) return;
+
+    if (_apiService.isAuthenticated()) {
+      final role = await _apiService.getUserRole();
+      if (!mounted) return;
+      String route;
+      switch (role) {
+        case 'teacher':
+          route = '/TeacherDashboard';
+        case 'student':
+          route = '/StudentDashboard';
+        case 'parent':
+          route = '/ParentDashboard';
+        default:
+          route = '/RoleSelection';
+      }
+      Navigator.pushNamedAndRemoveUntil(context, route, (route) => false);
+    } else {
+      Navigator.pushReplacementNamed(context, '/RoleSelection');
+    }
   }
 
   @override
