@@ -9,6 +9,7 @@ import 'package:tamdansers/Screen/Role_TEACHER/link_parent_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/management_class_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/result_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/schedule_student_role.dart';
+import 'package:tamdansers/services/api_service.dart';
 
 void main() => runApp(
   const MaterialApp(
@@ -65,8 +66,35 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
 }
 
 // --- 2. HOME SCREEN CONTENT (INDEX 0) ---
-class TeacherHomeContent extends StatelessWidget {
+class TeacherHomeContent extends StatefulWidget {
   const TeacherHomeContent({super.key});
+
+  @override
+  State<TeacherHomeContent> createState() => _TeacherHomeContentState();
+}
+
+class _TeacherHomeContentState extends State<TeacherHomeContent> {
+  String _userName = '';
+  String _userEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final apiService = ApiService();
+    final name = await apiService.getUserName();
+    final email = await apiService.getUserEmail();
+    if (mounted) {
+      setState(() {
+        _userName = name ?? 'Teacher';
+        _userEmail = email ?? '';
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -118,20 +146,20 @@ class TeacherHomeContent extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Column(
+        Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Teacher ID",
-              style: TextStyle(
+              _userEmail,
+              style: const TextStyle(
                 color: Color(0xFF007A7A),
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
-              "Mr. Alexander Smith",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              _userName,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -824,8 +852,15 @@ class TeacherSettingsScreen extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         child: TextButton.icon(
-          onPressed: () {
-            // Add your logout logic here
+          onPressed: () async {
+            await ApiService().logout();
+            if (context.mounted) {
+              Navigator.pushNamedAndRemoveUntil(
+                context,
+                '/RoleSelection',
+                (route) => false,
+              );
+            }
           },
           icon: const Icon(Icons.logout, color: Colors.red),
           label: const Text(

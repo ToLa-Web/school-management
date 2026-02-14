@@ -11,6 +11,8 @@ import 'package:tamdansers/Screen/Role_STUDENT/score_student_role.dart';
 // Ensure these paths match your actual project structure
 import 'package:tamdansers/contants/app_text_style.dart';
 
+import 'package:tamdansers/services/api_service.dart';
+
 void main() => runApp(const MaterialApp(home: StudentDashboard()));
 
 class StudentDashboard extends StatefulWidget {
@@ -62,8 +64,34 @@ class _StudentDashboardState extends State<StudentDashboard> {
 }
 
 // --- MAIN CONTENT WIDGET ---
-class StudentHomeContent extends StatelessWidget {
+class StudentHomeContent extends StatefulWidget {
   const StudentHomeContent({super.key});
+
+  @override
+  State<StudentHomeContent> createState() => _StudentHomeContentState();
+}
+
+class _StudentHomeContentState extends State<StudentHomeContent> {
+  String _userName = '';
+  String _userEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final apiService = ApiService();
+    final name = await apiService.getUserName();
+    final email = await apiService.getUserEmail();
+    if (mounted) {
+      setState(() {
+        _userName = name ?? 'Student';
+        _userEmail = email ?? '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,9 +154,9 @@ class StudentHomeContent extends StatelessWidget {
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("Alex Rivera", style: AppTextStyle.fontsize18),
+            Text(_userName, style: AppTextStyle.fontsize18),
             Text(
-              "Grade 11-1 • #29401",
+              _userEmail,
               style: AppTextStyle.body.copyWith(
                 color: Colors.grey,
                 fontSize: 12,

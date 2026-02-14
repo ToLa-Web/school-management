@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamdansers/services/api_service.dart';
 
 class StudentEditProfileScreen extends StatefulWidget {
   const StudentEditProfileScreen({super.key});
@@ -10,18 +11,28 @@ class StudentEditProfileScreen extends StatefulWidget {
 
 class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
   // Controllers to handle text input
-  final TextEditingController _nameController = TextEditingController(
-    text: 'សេង វិបុល',
-  );
-  final TextEditingController _addressController = TextEditingController(
-    text: 'ផ្ទះលេខ ១២៣, ភ្នំពេញ',
-  );
-  final TextEditingController _phoneController = TextEditingController(
-    text: '012 345 678',
-  );
-  final TextEditingController _emailController = TextEditingController(
-    text: 'vibol.seng@school.edu.kh',
-  );
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final apiService = ApiService();
+    final name = await apiService.getUserName();
+    final email = await apiService.getUserEmail();
+    if (mounted) {
+      setState(() {
+        _nameController.text = name ?? '';
+        _emailController.text = email ?? '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +50,7 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'កែសម្រួលព័ត៌មានរូប',
+          'Edit Profile',
           style: TextStyle(color: Colors.black87, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -69,7 +80,7 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
                     onPressed: () {},
                     icon: const Icon(Icons.edit, size: 16, color: Colors.cyan),
                     label: const Text(
-                      'ប្តូររូបភាព',
+                      'Change Photo',
                       style: TextStyle(color: Colors.cyan),
                     ),
                     style: TextButton.styleFrom(
@@ -85,33 +96,35 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
 
             const SizedBox(height: 30),
             const Text(
-              'ព័ត៌មានផ្ទាល់ខ្លួន',
+              'Personal Information',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 15),
 
             // Input Fields
-            _buildTextField('ឈ្មោះពេញ', _nameController),
-            _buildTextField('អាសយដ្ឋាន', _addressController),
-            _buildTextField('លេខទូរស័ព្ទ', _phoneController),
-            _buildTextField('អ៊ីមែល', _emailController),
+            _buildTextField('Full Name', _nameController),
+            _buildTextField('Address', _addressController,
+                hintText: 'Enter your address'),
+            _buildTextField('Phone Number', _phoneController,
+                hintText: 'Enter your phone number'),
+            _buildTextField('Email', _emailController),
 
             const SizedBox(height: 20),
             const Text(
-              'ព័ត៌មានការសិក្សា',
+              'Academic Information',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
             const SizedBox(height: 15),
 
-            // Read-only info (grayed out in your image)
+            // Read-only info (grayed out)
             _buildTextField(
-              'លេខសម្គាល់សិស្ស',
+              'Student ID',
               TextEditingController(text: 'SID-2023-9901'),
               enabled: false,
             ),
             _buildTextField(
-              'ថ្នាក់រៀន',
-              TextEditingController(text: 'ថ្នាក់ទី ១២A'),
+              'Class',
+              TextEditingController(text: 'Grade 12A'),
               enabled: false,
             ),
 
@@ -130,7 +143,7 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
                   ),
                 ),
                 child: const Text(
-                  'រក្សាទុកការផ្លាស់ប្តូរ',
+                  'Save Changes',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
@@ -148,8 +161,39 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
                   ),
                 ),
                 child: const Text(
-                  'បោះបង់',
+                  'Cancel',
                   style: TextStyle(color: Colors.black54),
+                ),
+              ),
+            ),
+            const SizedBox(height: 40),
+                        const SizedBox(height: 30),
+            // Log Out Button
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () async {
+                  await ApiService().logout();
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/RoleSelection', (route) => false);
+                  }
+                },
+                icon: const Icon(Icons.logout, color: Colors.red),
+                label: const Text(
+                  "Log Out",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.red.withValues(alpha: .08),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                 ),
               ),
             ),
@@ -164,6 +208,7 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
     String label,
     TextEditingController controller, {
     bool enabled = true,
+    String? hintText,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -179,6 +224,8 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
             controller: controller,
             enabled: enabled,
             decoration: InputDecoration(
+              hintText: hintText,
+              hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
               filled: !enabled,
               fillColor: enabled ? Colors.transparent : Colors.grey[50],
               contentPadding: const EdgeInsets.symmetric(

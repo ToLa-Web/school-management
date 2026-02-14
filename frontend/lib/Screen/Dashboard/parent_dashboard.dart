@@ -9,6 +9,8 @@ import 'package:tamdansers/Screen/Edit-Profile/parent_edit_profile.dart';
 
 import '../../Controller/controller_parent.dart/categorycard.dart';
 
+import 'package:tamdansers/services/api_service.dart';
+
 void main() => runApp(
   const MaterialApp(debugShowCheckedModeBanner: false, home: ParentDashboard()),
 );
@@ -64,8 +66,34 @@ class _ParentDashboardState extends State<ParentDashboard> {
 }
 
 // --- DASHBOARD CONTENT (Moved from original ParentDashboard) ---
-class ParentHomeContent extends StatelessWidget {
+class ParentHomeContent extends StatefulWidget {
   const ParentHomeContent({super.key});
+
+  @override
+  State<ParentHomeContent> createState() => _ParentHomeContentState();
+}
+
+class _ParentHomeContentState extends State<ParentHomeContent> {
+  String _userName = '';
+  String _userEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final apiService = ApiService();
+    final name = await apiService.getUserName();
+    final email = await apiService.getUserEmail();
+    if (mounted) {
+      setState(() {
+        _userName = name ?? 'Parent';
+        _userEmail = email ?? '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,7 +106,7 @@ class ParentHomeContent extends StatelessWidget {
             const SizedBox(height: 20),
             _buildParentHeader(),
             const SizedBox(height: 20),
-            _buildStudentProfileCard(context),
+            _buildStudentProfileCard(context, _userName, _userEmail),
             const SizedBox(height: 20),
             _buildAttendanceStatusCard(),
             const SizedBox(height: 25),
@@ -403,7 +431,7 @@ Widget _buildParentHeader() {
   );
 }
 
-Widget _buildStudentProfileCard(BuildContext context) {
+Widget _buildStudentProfileCard(BuildContext context, String userName, String userEmail) {
   return Container(
     padding: const EdgeInsets.all(15),
     decoration: BoxDecoration(
@@ -427,17 +455,17 @@ Widget _buildStudentProfileCard(BuildContext context) {
           ),
         ),
         const SizedBox(width: 15),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Alex Johnson",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                userName,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               Text(
-                "Grade 10-B • #8829",
-                style: TextStyle(color: Color(0xFF007A7A), fontSize: 12),
+                userEmail,
+                style: const TextStyle(color: Color(0xFF007A7A), fontSize: 12),
               ),
             ],
           ),

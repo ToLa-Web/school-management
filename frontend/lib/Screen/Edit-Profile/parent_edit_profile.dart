@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamdansers/services/api_service.dart';
 
 class ParentEditProfileScreen extends StatefulWidget {
   const ParentEditProfileScreen({super.key});
@@ -10,6 +11,26 @@ class ParentEditProfileScreen extends StatefulWidget {
 
 class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
   bool _receiveNotifications = true;
+  String _userName = '';
+  String _userEmail = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final apiService = ApiService();
+    final name = await apiService.getUserName();
+    final email = await apiService.getUserEmail();
+    if (mounted) {
+      setState(() {
+        _userName = name ?? '';
+        _userEmail = email ?? '';
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +44,7 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'កែសម្រួលប្រវត្តិរូប',
+          'Edit Profile',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -70,23 +91,25 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
 
             // Input Fields
             _buildInputField(
-              label: 'ឈ្មោះពេញ',
-              hint: 'Alex Johnson',
+              label: 'Full Name',
+              hint: 'Enter your name',
               icon: Icons.person_outline,
+              initialValue: _userName,
             ),
             _buildInputField(
-              label: 'លេខទូរស័ព្ទ',
-              hint: '012 345 678',
+              label: 'Phone Number',
+              hint: 'Enter your phone number',
               icon: Icons.phone_outlined,
             ),
             _buildInputField(
-              label: 'email',
-              hint: 'alex.j@example.com',
+              label: 'Email',
+              hint: 'Enter your email',
               icon: Icons.email_outlined,
+              initialValue: _userEmail,
             ),
             _buildInputField(
-              label: 'អាសយដ្ឋានបច្ចុប្បន្ន',
-              hint: 'ភ្នំពេញ, កម្ពុជា',
+              label: 'Current Address',
+              hint: 'Enter your address',
               icon: Icons.location_on_outlined,
             ),
 
@@ -99,7 +122,7 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
                     Icon(Icons.history, color: Color(0xFF00796B)),
                     SizedBox(width: 10),
                     Text(
-                      'ប្តូរទុកជាមានសមាត់', // Matching text from image
+                      'Receive Notifications', // Matching text from image
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF00796B),
@@ -134,7 +157,7 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
                   ),
                 ),
                 child: const Text(
-                  'រក្សាទុកការផ្លាស់ប្តូរ',
+                  'Save Changes',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ),
@@ -153,8 +176,38 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
                   ),
                 ),
                 child: const Text(
-                  'បោះបង់',
+                  'Cancel',
                   style: TextStyle(color: Colors.grey, fontSize: 16),
+                ),
+              ),
+            ),
+            const SizedBox(height: 30),
+            // Log Out Button
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                onPressed: () async {
+                  await ApiService().logout();
+                  if (context.mounted) {
+                    Navigator.pushNamedAndRemoveUntil(
+                        context, '/RoleSelection', (route) => false);
+                  }
+                },
+                icon: const Icon(Icons.logout, color: Colors.red),
+                label: const Text(
+                  "Log Out",
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                style: TextButton.styleFrom(
+                  backgroundColor: Colors.red.withValues(alpha: .08),
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
                 ),
               ),
             ),
@@ -169,6 +222,7 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
     required String label,
     required String hint,
     required IconData icon,
+    String? initialValue,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 20),
@@ -196,6 +250,7 @@ class _ParentEditProfileScreenState extends State<ParentEditProfileScreen> {
               ],
             ),
             child: TextFormField(
+              initialValue: initialValue,
               decoration: InputDecoration(
                 hintText: hint,
                 prefixIcon: Icon(icon, color: Colors.grey),

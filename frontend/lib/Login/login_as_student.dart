@@ -76,7 +76,17 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
       );
       if (!mounted) return;
       if (response != null) {
-        Navigator.pushReplacementNamed(context, '/StudentDashboard');
+        await _apiService.saveUserRole('student');
+        await _apiService.saveUserData(
+          username: response.username,
+          email: response.email,
+        );
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/StudentDashboard',
+          (route) => false,
+        );
       } else {
         setState(() => _errorMessage = 'Invalid email or password');
       }
@@ -98,7 +108,17 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
       final response = await _oauthService.signInWithGoogle();
       if (!mounted) return;
       if (response != null) {
-        Navigator.pushReplacementNamed(context, '/StudentDashboard');
+        await _apiService.saveUserRole('student');
+        await _apiService.saveUserData(
+          username: response.username,
+          email: response.email,
+        );
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/StudentDashboard',
+          (route) => false,
+        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -118,7 +138,17 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
       final response = await _oauthService.signInWithFacebook();
       if (!mounted) return;
       if (response != null) {
-        Navigator.pushReplacementNamed(context, '/StudentDashboard');
+        await _apiService.saveUserRole('student');
+        await _apiService.saveUserData(
+          username: response.username,
+          email: response.email,
+        );
+        if (!mounted) return;
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/StudentDashboard',
+          (route) => false,
+        );
       }
     } catch (e) {
       if (!mounted) return;

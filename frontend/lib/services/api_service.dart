@@ -147,6 +147,37 @@ class ApiService {
     return null;
   }
 
+  // Save the user's role so we know which dashboard to show on app relaunch.
+  Future<void> saveUserRole(String role) async {
+    await _secureStorage.write(key: 'user_role', value: role);
+  }
+
+  /// Get the saved user role (teacher, student, parent).
+  Future<String?> getUserRole() async {
+    return await _secureStorage.read(key: 'user_role');
+  }
+
+  /// Save user profile data (username, email) after login.
+  Future<void> saveUserData({
+    required String username,
+    required String email,
+  }) async {
+    await Future.wait([
+      _secureStorage.write(key: 'user_name', value: username),
+      _secureStorage.write(key: 'user_email', value: email),
+    ]);
+  }
+
+  /// Get the saved username.
+  Future<String?> getUserName() async {
+    return await _secureStorage.read(key: 'user_name');
+  }
+
+  /// Get the saved email.
+  Future<String?> getUserEmail() async {
+    return await _secureStorage.read(key: 'user_email');
+  }
+
   /// POST /api/auth/refresh
   Future<bool> _refreshAccessToken() async {
     if (_refreshToken == null) return false;
@@ -187,6 +218,9 @@ class ApiService {
       await Future.wait([
         _secureStorage.delete(key: 'access_token'),
         _secureStorage.delete(key: 'refresh_token'),
+        _secureStorage.delete(key: 'user_role'),
+        _secureStorage.delete(key: 'user_name'),
+        _secureStorage.delete(key: 'user_email'),
       ]);
     }
   }
