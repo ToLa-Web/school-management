@@ -1,9 +1,9 @@
 # Backend .gitignore
 
-# Environment variables - DO NOT COMMIT
-.env
-.env.local
-.env.*.local
+# Environment variables - INCLUDED FOR TEAM
+# .env
+# .env.local
+# .env.*.local
 
 # IDE and Editor
 .vscode/
