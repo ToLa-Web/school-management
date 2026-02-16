@@ -288,7 +288,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () {},
+                            onPressed: () => Navigator.pushNamed(context, '/ForgotPassword'),
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 4),
                             ),
