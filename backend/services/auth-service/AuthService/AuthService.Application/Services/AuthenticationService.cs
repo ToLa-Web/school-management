@@ -425,13 +425,18 @@ private async Task<AuthResponseDto?> AuthenticateExternalAsync(ExternalAuthIdent
     // 1) Find by external login link
     var user = await _userRepo.GetByExternalLoginAsync(identity.Provider, identity.ProviderUserId);
 
-    // 2) If not found, try link by email only for Google and only when Google asserts it's verified.
-    // (For Facebook, we'll avoid email-linking until debug_token verification is implemented.)
-    if (user == null
-        && identity.Provider == ExternalAuthProvider.Google
-        && identity.EmailVerified
-        && !string.IsNullOrWhiteSpace(identity.Email))
-        user = await _userRepo.GetByEmailAsync(identity.Email.Trim().ToUpperInvariant());
+    // 2) If not found, try link by email.
+    // Google: only when verified. Facebook: allow link by email but keep unverified.
+    if (user == null && !string.IsNullOrWhiteSpace(identity.Email))
+    {
+        var normalizedEmail = identity.Email.Trim().ToUpperInvariant();
+
+        if (identity.Provider == ExternalAuthProvider.Google && identity.EmailVerified)
+            user = await _userRepo.GetByEmailAsync(normalizedEmail);
+
+        if (identity.Provider == ExternalAuthProvider.Facebook)
+            user = await _userRepo.GetByEmailAsync(normalizedEmail);
+    }
 
     // 3) If still not found, create a new user (OAuth-only)
     if (user == null)
