@@ -5,7 +5,9 @@ class ApiConfig {
   // For Windows/Chrome: Use 127.0.0.1 instead of localhost for IPv4
   // Use 127.0.0.1 for Chrome, 10.0.2.2 for Android emulator,
   // or your LAN IP for physical device
-  static const String baseUrl = 'http://192.168.0.110:5001';
+  // Tube coffee 'http://172.16.1.112:5001'
+  
+  static const String baseUrl = 'http://172.16.1.112:5001';
   
   static const String registerEndpoint = '/api/auth/register';
   static const String loginEndpoint = '/api/auth/authenticate';
