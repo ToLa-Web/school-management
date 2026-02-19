@@ -5,6 +5,9 @@ class AppColors {
   static const Color white = Color(0xffFFFFFF);
 
   static const Color primaryMain = Color(0xff4285F4);
+  static const Color slate500 =  Color(0xFF64748B);
+  static const Color slate800 =  Color(0xFF1E293B);
+
   static const Color primary300 = Color(0xff0E63EF);
   static const Color primary400 = Color(0xff0B4DB9);
 

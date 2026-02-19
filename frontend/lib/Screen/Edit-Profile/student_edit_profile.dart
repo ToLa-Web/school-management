@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamdansers/Login/role.dart';
 import 'package:tamdansers/services/api_service.dart';
 
 class StudentEditProfileScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
 
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
@@ -24,13 +27,40 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
 
   Future<void> _loadUserData() async {
     final apiService = ApiService();
+
+    // Fetching the data you already have stored from sign-in
     final name = await apiService.getUserName();
     final email = await apiService.getUserEmail();
+
     if (mounted) {
       setState(() {
         _nameController.text = name ?? '';
         _emailController.text = email ?? '';
+        _isLoading = false; // Data is loaded
       });
+    }
+  }
+
+  // Method to handle updating profile logic
+  Future<void> _handleSave() async {
+    // Show a loading dialog or snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Updating profile...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Profile updated successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
     }
   }
 
@@ -55,152 +85,200 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-
-            // Profile Picture Section
-            Center(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Colors.cyan))
+          : SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CircleAvatar(
-                    radius: 50,
-                    backgroundColor: Color(
-                      0xFFFFE0B2,
-                    ), // Light peach background
-                    backgroundImage: NetworkImage(
-                      'https://img.freepik.com/free-vector/mans-face-flat-style_90220-2877.jpg?semt=ais_hybrid&w=740&q=80',
-                    ), // Replace with local image
-                  ),
-                  const SizedBox(height: 10),
-                  TextButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.edit, size: 16, color: Colors.cyan),
-                    label: const Text(
-                      'Change Photo',
-                      style: TextStyle(color: Colors.cyan),
+                  const SizedBox(height: 20),
+
+                  // Profile Picture Section
+                  Center(
+                    child: Column(
+                      children: [
+                        const CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Color(0xFFFFE0B2),
+                          backgroundImage: NetworkImage(
+                            'https://img.freepik.com/free-vector/mans-face-flat-style_90220-2877.jpg?semt=ais_hybrid&w=740&q=80',
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        TextButton.icon(
+                          onPressed: () {
+                            // Logic for image picker would go here
+                          },
+                          icon: const Icon(
+                            Icons.edit,
+                            size: 16,
+                            color: Colors.cyan,
+                          ),
+                          label: const Text(
+                            'Change Photo',
+                            style: TextStyle(
+                              color: Colors.cyan,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: TextButton.styleFrom(
+                            backgroundColor: Colors.cyan.withOpacity(0.1),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.cyan.withValues(alpha: 0.1),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                  ),
+
+                  const SizedBox(height: 30),
+                  const Text(
+                    'Personal Information',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  _buildTextField('Full Name', _nameController),
+                  _buildTextField('Email', _emailController),
+                  _buildTextField(
+                    'Address',
+                    _addressController,
+                    hintText: 'Enter your address',
+                  ),
+                  _buildTextField(
+                    'Phone Number',
+                    _phoneController,
+                    hintText: 'Enter your phone number',
+                  ),
+
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Academic Information',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Color(0xFF1E293B),
+                    ),
+                  ),
+                  const SizedBox(height: 15),
+
+                  _buildTextField(
+                    'Student ID',
+                    TextEditingController(text: 'SID-2023-9901'),
+                    enabled: false,
+                  ),
+                  _buildTextField(
+                    'Class',
+                    TextEditingController(text: 'Grade 12A'),
+                    enabled: false,
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Save Changes Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: ElevatedButton(
+                      onPressed: _handleSave,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.cyan,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ),
+
+                  const SizedBox(height: 12),
+
+                  // Cancel Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 55,
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.black12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                      child: const Text(
+                        'Cancel',
+                        style: TextStyle(
+                          color: Colors.black54,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Log Out Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton.icon(
+                      // onPressed: () async {
+                      //   await ApiService().logout();
+                      //   if (mounted) {
+                      //     Navigator.pushNamedAndRemoveUntil(
+                      //       context,
+                      //       '/RoleSelection',
+                      //       (route) => true,
+                      //     );
+                      //   }
+                      // },
+                      onPressed: () async {
+                        await ApiService().logout();
+                        if (mounted) {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RoleSelectionScreen(),
+                            ), // Use the Class name directly
+                            (route) => false,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.logout, color: Colors.red),
+                      label: const Text(
+                        "Log Out",
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.red.withOpacity(0.08),
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
-
-            const SizedBox(height: 30),
-            const Text(
-              'Personal Information',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 15),
-
-            // Input Fields
-            _buildTextField('Full Name', _nameController),
-            _buildTextField('Address', _addressController,
-                hintText: 'Enter your address'),
-            _buildTextField('Phone Number', _phoneController,
-                hintText: 'Enter your phone number'),
-            _buildTextField('Email', _emailController),
-
-            const SizedBox(height: 20),
-            const Text(
-              'Academic Information',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            const SizedBox(height: 15),
-
-            // Read-only info (grayed out)
-            _buildTextField(
-              'Student ID',
-              TextEditingController(text: 'SID-2023-9901'),
-              enabled: false,
-            ),
-            _buildTextField(
-              'Class',
-              TextEditingController(text: 'Grade 12A'),
-              enabled: false,
-            ),
-
-            const SizedBox(height: 40),
-
-            // Action Buttons
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                onPressed: () {},
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.cyan,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Save Changes',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: OutlinedButton(
-                onPressed: () {},
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Colors.black12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: const Text(
-                  'Cancel',
-                  style: TextStyle(color: Colors.black54),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-                        const SizedBox(height: 30),
-            // Log Out Button
-            SizedBox(
-              width: double.infinity,
-              child: TextButton.icon(
-                onPressed: () async {
-                  await ApiService().logout();
-                  if (context.mounted) {
-                    Navigator.pushNamedAndRemoveUntil(
-                        context, '/RoleSelection', (route) => false);
-                  }
-                },
-                icon: const Icon(Icons.logout, color: Colors.red),
-                label: const Text(
-                  "Log Out",
-                  style: TextStyle(
-                    color: Colors.red,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                style: TextButton.styleFrom(
-                  backgroundColor: Colors.red.withValues(alpha: .08),
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
     );
   }
 
@@ -211,15 +289,19 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
     String? hintText,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16.0),
+      padding: const EdgeInsets.only(bottom: 20.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             label,
-            style: const TextStyle(color: Colors.black54, fontSize: 14),
+            style: const TextStyle(
+              color: Colors.black54,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           TextFormField(
             controller: controller,
             enabled: enabled,
@@ -230,15 +312,19 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
               fillColor: enabled ? Colors.transparent : Colors.grey[50],
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
-                vertical: 12,
+                vertical: 16,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: Colors.black12),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(color: Colors.black12),
+              ),
+              disabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey.shade200),
               ),
             ),
           ),
