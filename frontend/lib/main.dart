@@ -21,10 +21,11 @@ import 'package:tamdansers/Screen/Edit-Profile/teacher_edit_profile.dart';
 import 'package:tamdansers/Screen/Role_Admin/admin_control_parent.dart';
 import 'package:tamdansers/Screen/Role_Admin/admin_control_report.dart';
 import 'package:tamdansers/Screen/Role_Admin/admin_control_student.dart';
-import 'package:tamdansers/Screen/Role_Admin/admin_control_teacher.dart'
-    hide AdminDashboard;
+import 'package:tamdansers/Screen/Role_Admin/admin_control_teacher.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/attendance_student_role.dart';
+import 'package:tamdansers/Screen/Role_STUDENT/course_student.role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/homework_student_role.dart';
+import 'package:tamdansers/Screen/Role_STUDENT/notification_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/permision_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/schedule_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/score_student_role.dart';
@@ -90,6 +91,8 @@ class MyApp extends StatelessWidget {
             const StudentPermissionScreen(),
         '/StudentHomeworkScreen': (context) => const StudentHomeworkScreen(),
         '/StudentScoreScreen': (context) => const StudentScoreScreen(),
+        '/ClassCourseStudentScreen': (context) => const ClassCourseStudentScreen(),
+        '/NotificationStudentScreen': (context) => const NotificationScreen(),
         //Role Teacher
         // '/CreateClassScreen': (context) => const CreateClassScreen(),
         '/AddStudentScreen': (context) => const AddStudentScreen(),
