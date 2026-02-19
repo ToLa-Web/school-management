@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tamdansers/Login/forgot_password.dart';
 import 'package:tamdansers/Login/loading.dart';
 import 'package:tamdansers/Login/login_as_admin.dart';
 import 'package:tamdansers/Login/login_as_parent.dart';
@@ -72,6 +73,8 @@ class MyApp extends StatelessWidget {
         '/AdminLoginScreen': (context) => const AdminLoginPage(),
         //Register Screen
         '/RegisterScreen': (context) => const RegisterScreen(),
+        //Forgot Password
+        '/ForgotPassword': (context) => const ForgotPasswordScreen(),
         //Dashboards
         '/StudentDashboard': (context) => const StudentDashboard(),
         '/TeacherDashboard': (context) => const TeacherDashboard(),

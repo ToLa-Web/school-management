@@ -4,6 +4,7 @@ using AuthService.Infrastructure.Data;
 using AuthService.Infrastructure.Repositories;
 using AuthService.Infrastructure.Services;
 using AuthService.Infrastructure.Settings;
+using AuthService.Infrastructure.Seed;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,17 +32,21 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<DataSeeder>();
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
 var app = builder.Build();
 
-// Auto-migrate database
+// Auto-migrate database and seed data
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
     db.Database.Migrate();
+
+    var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
+    await seeder.SeedDataAsync();
 }
 
 // Configure the HTTP request pipeline.
