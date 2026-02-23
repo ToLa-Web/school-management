@@ -1,41 +1,31 @@
 namespace AuthService.Application.Exceptions;
 
-/// <summary>
-/// Thrown when validation fails
-/// </summary>
+// Thrown when input data fails validation
 public class ValidationException : Exception
 {
     public ValidationException(string message) : base(message) { }
 }
 
-/// <summary>
-/// Thrown when a resource is not found
-/// </summary>
+// Thrown when a requested resource doesn't exist
 public class NotFoundException : Exception
 {
     public NotFoundException(string message) : base(message) { }
 }
 
-/// <summary>
-/// Thrown when trying to register with an email that already exists
-/// </summary>
+// Thrown when someone tries to register with an email that's already taken
 public class DuplicateEmailException : Exception
 {
     public DuplicateEmailException(string email) 
         : base($"Email '{email}' is already registered") { }
 }
 
-/// <summary>
-/// Thrown when configuration is invalid
-/// </summary>
+// Thrown when the app config is missing or invalid
 public class ConfigurationException : Exception
 {
     public ConfigurationException(string message) : base(message) { }
 }
 
-/// <summary>
-/// Thrown when an invalid operation is attempted
-/// </summary>
+// Thrown when an operation isn't allowed in the current state
 public class InvalidOperationException : Exception
 {
     public InvalidOperationException(string message) : base(message) { }

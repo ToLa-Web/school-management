@@ -1,4 +1,6 @@
+using SchoolService.Application.DTOs;
 using SchoolService.Application.DTOs.Teachers;
+using SchoolService.Application.Exceptions;
 using SchoolService.Application.Interfaces;
 using SchoolService.Domain.Entities;
 
@@ -21,10 +23,28 @@ public class TeacherService : ITeacherService
             .ToList();
     }
 
-    public async Task<TeacherResponseDto?> GetByIdAsync(Guid id)
+    public async Task<PagedResult<TeacherResponseDto>> GetAllAsync(int page, int pageSize)
+    {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var (items, total) = await _repository.GetPagedAsync(page, pageSize);
+        return new PagedResult<TeacherResponseDto>
+        {
+            Items = items.Select(MapToResponse).ToList(),
+            TotalCount = total,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<TeacherResponseDto> GetByIdAsync(Guid id)
     {
         var teacher = await _repository.GetByIdAsync(id);
-        return teacher == null ? null : MapToResponse(teacher);
+        if (teacher == null)
+            throw new NotFoundException("Teacher", id);
+
+        return MapToResponse(teacher);
     }
 
     public async Task<TeacherResponseDto> CreateAsync(TeacherCreateDto dto)
@@ -43,13 +63,11 @@ public class TeacherService : ITeacherService
         return MapToResponse(teacher);
     }
 
-    public async Task<TeacherResponseDto?> UpdateAsync(Guid id, TeacherUpdateDto dto)
+    public async Task<TeacherResponseDto> UpdateAsync(Guid id, TeacherUpdateDto dto)
     {
         var teacher = await _repository.GetByIdAsync(id);
         if (teacher == null)
-        {
-            return null;
-        }
+            throw new NotFoundException("Teacher", id);
 
         teacher.UpdateBasicInfo(
             dto.FirstName,
@@ -69,16 +87,13 @@ public class TeacherService : ITeacherService
         return MapToResponse(teacher);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
         var teacher = await _repository.GetByIdAsync(id);
         if (teacher == null)
-        {
-            return false;
-        }
+            throw new NotFoundException("Teacher", id);
 
         await _repository.DeleteAsync(teacher);
-        return true;
     }
 
     private static TeacherResponseDto MapToResponse(Teacher t) => new()

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolService.Application.DTOs;
 using SchoolService.Application.DTOs.Classrooms;
 using SchoolService.Application.Interfaces;
 
@@ -18,8 +19,15 @@ public class ClassroomsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<ClassroomResponseDto>>> GetAll()
+    public async Task<ActionResult> GetAll(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
     {
+        if (page.HasValue || pageSize.HasValue)
+        {
+            var paged = await _classroomService.GetAllAsync(page ?? 1, pageSize ?? 20);
+            return Ok(paged);
+        }
         var classrooms = await _classroomService.GetAllAsync();
         return Ok(classrooms);
     }
@@ -28,11 +36,6 @@ public class ClassroomsController : ControllerBase
     public async Task<ActionResult<ClassroomDetailResponseDto>> GetById(Guid id)
     {
         var classroom = await _classroomService.GetByIdAsync(id);
-        if (classroom == null)
-        {
-            return NotFound();
-        }
-
         return Ok(classroom);
     }
 
@@ -47,47 +50,27 @@ public class ClassroomsController : ControllerBase
     public async Task<ActionResult<ClassroomResponseDto>> Update(Guid id, [FromBody] ClassroomUpdateDto dto)
     {
         var updated = await _classroomService.UpdateAsync(id, dto);
-        if (updated == null)
-        {
-            return NotFound();
-        }
-
         return Ok(updated);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await _classroomService.DeleteAsync(id);
-        if (!deleted)
-        {
-            return NotFound();
-        }
-
+        await _classroomService.DeleteAsync(id);
         return NoContent();
     }
 
     [HttpPost("{id:guid}/enroll")]
     public async Task<IActionResult> EnrollStudent(Guid id, [FromBody] EnrollStudentDto dto)
     {
-        var result = await _classroomService.EnrollStudentAsync(id, dto.StudentId);
-        if (!result)
-        {
-            return BadRequest(new { message = "Enrollment failed. Classroom or student not found, or student already enrolled." });
-        }
-
+        await _classroomService.EnrollStudentAsync(id, dto.StudentId);
         return Ok(new { message = "Student enrolled successfully." });
     }
 
     [HttpDelete("{id:guid}/unenroll/{studentId:guid}")]
     public async Task<IActionResult> UnenrollStudent(Guid id, Guid studentId)
     {
-        var result = await _classroomService.UnenrollStudentAsync(id, studentId);
-        if (!result)
-        {
-            return NotFound(new { message = "Enrollment not found." });
-        }
-
+        await _classroomService.UnenrollStudentAsync(id, studentId);
         return NoContent();
     }
 }

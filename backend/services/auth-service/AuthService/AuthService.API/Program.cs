@@ -11,9 +11,6 @@ using AuthService.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -43,14 +40,12 @@ builder.Services.AddSwaggerGen(options =>
 });
 builder.Services.AddHttpClient();
 
-// CORS - allow Flutter frontend
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// Add DbContext
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("AuthDb")));
 
@@ -64,7 +59,6 @@ builder.Services.AddScoped<DataSeeder>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, SmtpEmailSender>();
 
-// Register Consul client factory
 builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp => new ConsulClient(cfg =>
 {
     var consulHost = builder.Configuration["consul:host"] ?? "localhost";
@@ -74,27 +68,22 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp => new ConsulClien
 
 var app = builder.Build();
 
-// ✅ Add Global Exception Middleware - MUST be early in the pipeline
 app.UseMiddleware<GlobalExceptionMiddleware>();
 
-// Auto-migrate database and seed data with retry
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AuthDbContext>();
 
-    // Retry loop: wait for Postgres to be reachable before calling Migrate
     var dbMaxAttempts = 10;
     var dbDelay = TimeSpan.FromSeconds(2);
     for (int attempt = 1; attempt <= dbMaxAttempts; attempt++)
     {
         try
         {
-            // Try opening a connection to verify the DB is reachable
             var connection = db.Database.GetDbConnection();
             await connection.OpenAsync();
             await connection.CloseAsync();
 
-            // If we reached here, DB is reachable — run migration and seeding
             db.Database.Migrate();
 
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
@@ -105,12 +94,9 @@ using (var scope = app.Services.CreateScope())
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Attempt {attempt} to connect/migrate DB failed: {ex.Message}");
+            Console.WriteLine($"Attempt {attempt} to connect to database failed: {ex.Message}");
             if (attempt == dbMaxAttempts)
-            {
-                Console.WriteLine("Max attempts reached while trying to connect/migrate DB — rethrowing exception.");
                 throw;
-            }
 
             await Task.Delay(dbDelay);
             dbDelay = TimeSpan.FromSeconds(dbDelay.TotalSeconds * 2);
@@ -118,24 +104,18 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
 
-// Health endpoint for compose/consul checks
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "auth-service" }));
 
 app.MapControllers();
 
-// Register with Consul on startup with retry/backoff
-// Run in background so startup doesn't block
 _ = Task.Run(async () =>
 {
     var consulClient = app.Services.GetRequiredService<IConsulClient>();
@@ -148,7 +128,7 @@ _ = Task.Run(async () =>
         Tags = new[] { "auth", "api" },
         Check = new AgentServiceCheck
         {
-            HTTP = $"http://auth-service:8080/health",
+            HTTP = "http://auth-service:8080/health",
             Interval = TimeSpan.FromSeconds(10),
             DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(1)
         }
@@ -161,29 +141,28 @@ _ = Task.Run(async () =>
         try
         {
             await consulClient.Agent.ServiceRegister(registration);
-            Console.WriteLine("✅ AuthService registered with Consul");
+            Console.WriteLine("AuthService registered with Consul.");
 
-            // Deregister on shutdown
             app.Lifetime.ApplicationStopping.Register(async () =>
             {
                 try
                 {
                     await consulClient.Agent.ServiceDeregister(registration.ID);
-                    Console.WriteLine("✅ AuthService deregistered from Consul");
+                    Console.WriteLine("AuthService deregistered from Consul.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠️  Failed to deregister from Consul: {ex.Message}");
+                    Console.WriteLine($"Failed to deregister from Consul: {ex.Message}");
                 }
             });
             break;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️  Attempt {attempt} to register with Consul failed: {ex.Message}");
+            Console.WriteLine($"Attempt {attempt} to register with Consul failed: {ex.Message}");
             if (attempt == maxAttempts)
             {
-                Console.WriteLine("⚠️  Failed to register with Consul after max attempts - continuing anyway");
+                Console.WriteLine("Could not register with Consul, continuing without it.");
                 break;
             }
             await Task.Delay(delay);
@@ -192,8 +171,3 @@ _ = Task.Run(async () =>
 });
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}

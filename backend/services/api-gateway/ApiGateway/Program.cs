@@ -1,13 +1,13 @@
+using System.Net;
+using System.Text.Json;
 using Yarp.ReverseProxy;
 using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// CORS - allow Flutter frontend during development
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -16,7 +16,6 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader());
 });
 
-// Register Consul client for later use
 builder.Services.AddSingleton<Consul.IConsulClient>(sp => new Consul.ConsulClient(cfg =>
 {
     var consulHost = builder.Configuration["consul:host"] ?? "consul";
@@ -24,38 +23,36 @@ builder.Services.AddSingleton<Consul.IConsulClient>(sp => new Consul.ConsulClien
     cfg.Address = new Uri($"http://{consulHost}:{consulPort}");
 }));
 
-// Start with empty YARP config - will be populated after Consul is reachable
-builder.Services.AddReverseProxy().LoadFromMemory(new List<Yarp.ReverseProxy.Configuration.RouteConfig>(), 
-                                                   new List<Yarp.ReverseProxy.Configuration.ClusterConfig>());
+builder.Services.AddReverseProxy().LoadFromMemory(
+    new List<Yarp.ReverseProxy.Configuration.RouteConfig>(),
+    new List<Yarp.ReverseProxy.Configuration.ClusterConfig>());
 
 var app = builder.Build();
 
-// Discover services from Consul in background (non-blocking)
+// Try to discover registered services from Consul in the background.
+// This runs non-blocking so the gateway starts even if Consul is slow.
 _ = Task.Run(async () =>
 {
     var consulHost = builder.Configuration["consul:host"] ?? "consul";
     var consulPort = int.TryParse(builder.Configuration["consul:port"], out var p) ? p : 8500;
-    
+
     var maxAttempts = 15;
     var delay = TimeSpan.FromSeconds(2);
-    
+
     for (int attempt = 1; attempt <= maxAttempts; attempt++)
     {
         try
         {
-            Console.WriteLine($"Attempt {attempt} to discover services from Consul...");
             var (routes, clusters) = ApiGateway.DiscoveryConfigFactory.BuildFromConsul(consulHost, consulPort);
-            Console.WriteLine($"✅ Discovered {clusters.Count} service clusters from Consul");
-            // Note: Dynamic YARP config update would be needed here for hot-reload
-            // For now, routes are loaded from config, discovery is for validation
+            Console.WriteLine($"Discovered {clusters.Count} service clusters from Consul.");
             break;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️  Attempt {attempt} to discover services failed: {ex.Message}");
+            Console.WriteLine($"Attempt {attempt} to discover services from Consul failed: {ex.Message}");
             if (attempt == maxAttempts)
             {
-                Console.WriteLine("⚠️  Failed to discover services from Consul - using static YARP config as fallback");
+                Console.WriteLine("Could not reach Consul, falling back to static YARP configuration.");
                 break;
             }
             await Task.Delay(delay);
@@ -71,10 +68,34 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("AllowAll");
 
-// Simple health endpoint for compose checks
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "api-gateway" }));
 
-// Map reverse proxy for /api/*
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Unhandled exception in API Gateway");
+
+        context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+        context.Response.ContentType = "application/json";
+
+        var payload = JsonSerializer.Serialize(new
+        {
+            message = "Gateway error: upstream service is unavailable.",
+            code = "BAD_GATEWAY",
+#if DEBUG
+            details = ex.Message
+#endif
+        });
+        await context.Response.WriteAsync(payload);
+    }
+});
+
 app.MapReverseProxy();
 
 app.Run();

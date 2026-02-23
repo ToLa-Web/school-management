@@ -17,6 +17,14 @@ public class TeacherRepository : ITeacherRepository
     public async Task<List<Teacher>> GetAllAsync()
         => await _context.Teachers.AsNoTracking().ToListAsync();
 
+    public async Task<(List<Teacher> Items, int TotalCount)> GetPagedAsync(int page, int pageSize)
+    {
+        var query = _context.Teachers.AsNoTracking().OrderBy(t => t.LastName).ThenBy(t => t.FirstName);
+        var total = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        return (items, total);
+    }
+
     public async Task<Teacher?> GetByIdAsync(Guid id)
         => await _context.Teachers.FindAsync(id);
 
