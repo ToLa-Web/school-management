@@ -37,6 +37,7 @@ Flutter App  ──►  API Gateway :5001
 | school-db      | 5434      | PostgreSQL for school data     |
 | consul         | 8500      | Service discovery              |
 | pgadmin        | 5050      | Database admin UI              |
+| admin-web      | 3000      | Next.js admin panel            |
 
 ---
 

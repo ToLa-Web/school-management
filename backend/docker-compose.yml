@@ -111,6 +111,19 @@ services:
     networks:
       - school_network
 
+  admin-web:
+    container_name: admin_web
+    build:
+      context: ../admin-web
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: "http://api-gateway:8080"
+    depends_on:
+      - api-gateway
+    networks:
+      - school_network
+
 volumes:
   auth_db_data:
   school_db_data:

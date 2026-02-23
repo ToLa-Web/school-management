@@ -95,6 +95,7 @@ Your phone and computer must be on the **same Wi-Fi network**.
 - Swagger UI: http://localhost:5001/swagger
 - Try logging in: `admin@school.com` / `Password123!`
 - Consul dashboard: http://localhost:8500 (all 3 services should appear green)
+- Admin web panel: http://localhost:3000 — log in with `admin@school.com` / `Password123!`
 
 ---
 
