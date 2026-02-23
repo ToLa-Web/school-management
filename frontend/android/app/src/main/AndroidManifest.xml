@@ -1,9 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<<<<<<< HEAD
     <uses-permission android:name="android.permission.INTERNET"/>
+=======
+>>>>>>> 3d0595073d4bb1ad3f4ecc41bd7f5cb726c20ae0
     <application
         android:label="tamdansers"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+<<<<<<< HEAD
 
         <!-- Facebook SDK -->
         <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
@@ -22,6 +26,8 @@
                 <data android:scheme="fbYOUR_FACEBOOK_APP_ID" />
             </intent-filter>
         </activity>
+=======
+>>>>>>> 3d0595073d4bb1ad3f4ecc41bd7f5cb726c20ae0
         <activity
             android:name=".MainActivity"
             android:exported="true"
