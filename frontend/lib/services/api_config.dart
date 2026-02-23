@@ -7,7 +7,7 @@ class ApiConfig {
   // or your LAN IP for physical device
   // Tube coffee 'http://172.16.1.112:5001'
   
-  static const String baseUrl = 'http://172.16.1.112:5001';
+  static const String baseUrl = 'http://192.168.0.110:5001';
   
   static const String registerEndpoint = '/api/auth/register';
   static const String loginEndpoint = '/api/auth/authenticate';

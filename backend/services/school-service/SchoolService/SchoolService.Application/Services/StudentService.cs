@@ -1,0 +1,94 @@
+using SchoolService.Application.DTOs.Students;
+using SchoolService.Application.Interfaces;
+using SchoolService.Domain.Entities;
+
+namespace SchoolService.Application.Services;
+
+public class StudentService : IStudentService
+{
+    private readonly IStudentRepository _repository;
+
+    public StudentService(IStudentRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<IReadOnlyList<StudentResponseDto>> GetAllAsync()
+    {
+        var students = await _repository.GetAllAsync();
+        return students
+            .Select(MapToResponse)
+            .ToList();
+    }
+
+    public async Task<StudentResponseDto?> GetByIdAsync(Guid id)
+    {
+        var student = await _repository.GetByIdAsync(id);
+        return student == null ? null : MapToResponse(student);
+    }
+
+    public async Task<StudentResponseDto> CreateAsync(StudentCreateDto dto)
+    {
+        var student = new Student(dto.FirstName, dto.LastName);
+        student.UpdateBasicInfo(
+            dto.FirstName,
+            dto.LastName,
+            dto.Gender,
+            dto.DateOfBirth,
+            dto.Phone,
+            dto.Address);
+
+        await _repository.AddAsync(student);
+        return MapToResponse(student);
+    }
+
+    public async Task<StudentResponseDto?> UpdateAsync(Guid id, StudentUpdateDto dto)
+    {
+        var student = await _repository.GetByIdAsync(id);
+        if (student == null)
+        {
+            return null;
+        }
+
+        student.UpdateBasicInfo(
+            dto.FirstName,
+            dto.LastName,
+            dto.Gender,
+            dto.DateOfBirth,
+            dto.Phone,
+            dto.Address);
+
+        if (dto.IsActive)
+            student.Activate();
+        else
+            student.Deactivate();
+
+        await _repository.UpdateAsync(student);
+        return MapToResponse(student);
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var student = await _repository.GetByIdAsync(id);
+        if (student == null)
+        {
+            return false;
+        }
+
+        await _repository.DeleteAsync(student);
+        return true;
+    }
+
+    private static StudentResponseDto MapToResponse(Student s) => new()
+    {
+        Id = s.Id,
+        FirstName = s.FirstName,
+        LastName = s.LastName,
+        Gender = s.Gender,
+        DateOfBirth = s.DateOfBirth,
+        Phone = s.Phone,
+        Address = s.Address,
+        IsActive = s.IsActive,
+        CreatedAt = s.CreatedAt
+    };
+}

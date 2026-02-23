@@ -1,12 +1,13 @@
 ﻿using AuthService.Application.DTOs.Auth.Response;
 using AuthService.Application.DTOs.User;
 using AuthService.Application.Interfaces;
+using AuthService.Application.Exceptions;
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Text;
- using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace AuthService.Application.Services;
 
@@ -37,13 +38,13 @@ public class AuthenticationService : IAuthenticationService
         _emailVerificationPepper =
             configuration["EmailVerification:Pepper"]
             ?? configuration["Jwt:Secret"]
-            ?? throw new InvalidOperationException("EmailVerification:Pepper (or Jwt:Secret) is not configured");
+            ?? throw new ConfigurationException("EmailVerification:Pepper (or Jwt:Secret) is not configured");
 
         _passwordResetPepper =
             configuration["PasswordReset:Pepper"]
             ?? configuration["EmailVerification:Pepper"]
             ?? configuration["Jwt:Secret"]
-            ?? throw new InvalidOperationException("PasswordReset:Pepper (or EmailVerification:Pepper / Jwt:Secret) is not configured");
+            ?? throw new ConfigurationException("PasswordReset:Pepper (or EmailVerification:Pepper / Jwt:Secret) is not configured");
     }
 
     public async Task RequestEmailVerificationCodeAsync(string email)
@@ -173,7 +174,7 @@ public class AuthenticationService : IAuthenticationService
 
         // Check email
         if (await _userRepo.EmailExistsAsync(email.ToUpperInvariant()))
-            throw new Exception("Email already registered");
+            throw new DuplicateEmailException(email);
 
         // Create user domain entity
         var user = new User(email, username, UserRole.Student);
@@ -212,6 +213,10 @@ public class AuthenticationService : IAuthenticationService
 
         // Check if user is active
         if (!user.IsActive)
+            return null;
+
+        //  Check if email is verified before allowing login
+        if (!user.IsEmailVerified)
             return null;
 
         // Generate tokens

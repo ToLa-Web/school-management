@@ -1,0 +1,97 @@
+using SchoolService.Application.DTOs.Teachers;
+using SchoolService.Application.Interfaces;
+using SchoolService.Domain.Entities;
+
+namespace SchoolService.Application.Services;
+
+public class TeacherService : ITeacherService
+{
+    private readonly ITeacherRepository _repository;
+
+    public TeacherService(ITeacherRepository repository)
+    {
+        _repository = repository;
+    }
+
+    public async Task<IReadOnlyList<TeacherResponseDto>> GetAllAsync()
+    {
+        var teachers = await _repository.GetAllAsync();
+        return teachers
+            .Select(MapToResponse)
+            .ToList();
+    }
+
+    public async Task<TeacherResponseDto?> GetByIdAsync(Guid id)
+    {
+        var teacher = await _repository.GetByIdAsync(id);
+        return teacher == null ? null : MapToResponse(teacher);
+    }
+
+    public async Task<TeacherResponseDto> CreateAsync(TeacherCreateDto dto)
+    {
+        var teacher = new Teacher(dto.FirstName, dto.LastName);
+        teacher.UpdateBasicInfo(
+            dto.FirstName,
+            dto.LastName,
+            dto.Gender,
+            dto.DateOfBirth,
+            dto.Phone,
+            dto.Email,
+            dto.Specialization);
+
+        await _repository.AddAsync(teacher);
+        return MapToResponse(teacher);
+    }
+
+    public async Task<TeacherResponseDto?> UpdateAsync(Guid id, TeacherUpdateDto dto)
+    {
+        var teacher = await _repository.GetByIdAsync(id);
+        if (teacher == null)
+        {
+            return null;
+        }
+
+        teacher.UpdateBasicInfo(
+            dto.FirstName,
+            dto.LastName,
+            dto.Gender,
+            dto.DateOfBirth,
+            dto.Phone,
+            dto.Email,
+            dto.Specialization);
+
+        if (dto.IsActive)
+            teacher.Activate();
+        else
+            teacher.Deactivate();
+
+        await _repository.UpdateAsync(teacher);
+        return MapToResponse(teacher);
+    }
+
+    public async Task<bool> DeleteAsync(Guid id)
+    {
+        var teacher = await _repository.GetByIdAsync(id);
+        if (teacher == null)
+        {
+            return false;
+        }
+
+        await _repository.DeleteAsync(teacher);
+        return true;
+    }
+
+    private static TeacherResponseDto MapToResponse(Teacher t) => new()
+    {
+        Id = t.Id,
+        FirstName = t.FirstName,
+        LastName = t.LastName,
+        Gender = t.Gender,
+        DateOfBirth = t.DateOfBirth,
+        Phone = t.Phone,
+        Email = t.Email,
+        Specialization = t.Specialization,
+        IsActive = t.IsActive,
+        CreatedAt = t.CreatedAt
+    };
+}
