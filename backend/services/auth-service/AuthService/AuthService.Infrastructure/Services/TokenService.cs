@@ -20,9 +20,13 @@ public class TokenService : ITokenService
 
     public string GenerateAccessToken(User user)
     {
-        var key = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(_configuration["Jwt:Secret"] 
-                ?? throw new InvalidOperationException("JWT Secret not configured")));
+        // Get JWT secret with fallback to environment variable or default
+        var jwtSecret = (!string.IsNullOrEmpty(_configuration["Jwt:Secret"]) ? _configuration["Jwt:Secret"] : null) 
+                     ?? (!string.IsNullOrEmpty(_configuration["Jwt__Secret"]) ? _configuration["Jwt__Secret"] : null)
+                     ?? (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("JWT_SECRET")) ? Environment.GetEnvironmentVariable("JWT_SECRET") : null)
+                     ?? "your-secret-key-change-me-in-production-this-is-insecure";
+        
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
         
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
