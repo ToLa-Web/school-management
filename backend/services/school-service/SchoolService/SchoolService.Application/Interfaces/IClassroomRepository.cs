@@ -5,6 +5,7 @@ namespace SchoolService.Application.Interfaces;
 public interface IClassroomRepository
 {
     Task<List<Classroom>> GetAllAsync();
+    Task<(List<Classroom> Items, int TotalCount)> GetPagedAsync(int page, int pageSize);
     Task<Classroom?> GetByIdAsync(Guid id);
     Task<Classroom?> GetByIdWithDetailsAsync(Guid id);
     Task AddAsync(Classroom classroom);

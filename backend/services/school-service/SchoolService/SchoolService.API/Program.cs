@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SchoolService.Application.Interfaces;
@@ -7,13 +8,35 @@ using SchoolService.Infrastructure.Data;
 using SchoolService.Infrastructure.Repositories;
 using SchoolService.Infrastructure.Seed;
 using SchoolService.API.Services;
+using SchoolService.API.Middleware;
+using System.Net;
 using System.Text;
+using System.Text.Json;
 using Consul;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Shape validation errors to match the standard error response format
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value?.Errors.Count > 0)
+                .SelectMany(e => e.Value!.Errors.Select(er => er.ErrorMessage))
+                .ToList();
+
+            var response = new
+            {
+                message = "Validation failed.",
+                code = "VALIDATION_ERROR",
+                details = string.Join(" ", errors)
+            };
+
+            return new BadRequestObjectResult(response);
+        };
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -41,7 +64,6 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
-// CORS - allow Flutter / gateway during development
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -50,7 +72,6 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader());
 });
 
-// Register Consul client factory
 builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp => new ConsulClient(cfg =>
 {
     var consulHost = builder.Configuration["consul:host"] ?? "localhost";
@@ -58,14 +79,15 @@ builder.Services.AddSingleton<IConsulClient, ConsulClient>(sp => new ConsulClien
     cfg.Address = new Uri($"http://{consulHost}:{consulPort}");
 }));
 
-// DbContext - Postgres
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<IServiceDiscoveryClient, ServiceDiscoveryClient>();
+
 builder.Services.AddDbContext<SchoolDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("SchoolDb")));
 
-// 🆕 ADD THIS: Register AuthServiceClient for service-to-service communication
-builder.Services.AddHttpClient<IAuthServiceClient, AuthServiceClient>();
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IAuthServiceClient, AuthServiceClient>();
 
-// Application / infrastructure services
 builder.Services.AddScoped<IStudentRepository, StudentRepository>();
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<ITeacherRepository, TeacherRepository>();
@@ -74,7 +96,6 @@ builder.Services.AddScoped<IClassroomRepository, ClassroomRepository>();
 builder.Services.AddScoped<IClassroomService, ClassroomService>();
 builder.Services.AddScoped<DataSeeder>();
 
-// JWT authentication (validate tokens issued by AuthService)
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtSecret = (!string.IsNullOrEmpty(jwtSection["Secret"]) ? jwtSection["Secret"] : null) 
              ?? (!string.IsNullOrEmpty(builder.Configuration["Jwt__Secret"]) ? builder.Configuration["Jwt__Secret"] : null)
@@ -105,40 +126,33 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Ensure database exists + seed (simple dev experience)
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
 
-    // Retry loop: wait for Postgres to be reachable before calling EnsureCreated
     var dbMaxAttempts = 10;
     var dbDelay = TimeSpan.FromSeconds(2);
     for (int attempt = 1; attempt <= dbMaxAttempts; attempt++)
     {
         try
         {
-            // Try opening a connection to verify the DB is reachable
             var connection = db.Database.GetDbConnection();
             await connection.OpenAsync();
             await connection.CloseAsync();
 
-            // If we reached here, DB is reachable — ensure database and run seeder
             db.Database.EnsureCreated();
 
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
             await seeder.SeedDataAsync();
 
-            Console.WriteLine("Database is ready and seeded.");
+            Console.WriteLine("Database is ready.");
             break;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Attempt {attempt} to connect/initialize DB failed: {ex.Message}");
+            Console.WriteLine($"Attempt {attempt} to connect to database failed: {ex.Message}");
             if (attempt == dbMaxAttempts)
-            {
-                Console.WriteLine("Max attempts reached while trying to connect to DB — rethrowing exception.");
                 throw;
-            }
 
             await Task.Delay(dbDelay);
             dbDelay = TimeSpan.FromSeconds(dbDelay.TotalSeconds * 2);
@@ -146,18 +160,16 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configure the HTTP request pipeline.
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
-// app.UseHttpsRedirection();
-
 app.UseCors("AllowAll");
 
-// Health endpoint for compose/consul checks - MUST be before authentication
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "school-service" }))
    .AllowAnonymous();
 
@@ -166,8 +178,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// Register with Consul on startup
-// Run in background so startup doesn't block
 _ = Task.Run(async () =>
 {
     var consulClient = app.Services.GetRequiredService<IConsulClient>();
@@ -180,7 +190,7 @@ _ = Task.Run(async () =>
         Tags = new[] { "school", "api" },
         Check = new AgentServiceCheck
         {
-            HTTP = $"http://school-service:8080/health",
+            HTTP = "http://school-service:8080/health",
             Interval = TimeSpan.FromSeconds(10),
             DeregisterCriticalServiceAfter = TimeSpan.FromMinutes(1)
         }
@@ -193,38 +203,34 @@ _ = Task.Run(async () =>
         try
         {
             await consulClient.Agent.ServiceRegister(registration);
-            Console.WriteLine("✅ SchoolService registered with Consul");
+            Console.WriteLine("SchoolService registered with Consul.");
 
-            // Deregister on shutdown
             app.Lifetime.ApplicationStopping.Register(async () =>
             {
                 try
                 {
                     await consulClient.Agent.ServiceDeregister(registration.ID);
-                    Console.WriteLine("✅ SchoolService deregistered from Consul");
+                    Console.WriteLine("SchoolService deregistered from Consul.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"⚠️  Failed to deregister from Consul: {ex.Message}");
+                    Console.WriteLine($"Failed to deregister from Consul: {ex.Message}");
                 }
             });
             break;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"⚠️  Attempt {attempt} to register with Consul failed: {ex.Message}");
+            Console.WriteLine($"Attempt {attempt} to register with Consul failed: {ex.Message}");
             if (attempt == maxAttempts)
             {
-                Console.WriteLine("⚠️  Failed to register with Consul after max attempts - continuing anyway");
+                Console.WriteLine("Could not register with Consul, continuing without it.");
                 break;
             }
             await Task.Delay(delay);
         }
     }
 });
-
-// Use Steeltoe discovery middleware
-// app.UseDiscoveryClient();
 
 app.Run();
 

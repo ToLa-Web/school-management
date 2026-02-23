@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolService.Application.DTOs;
 using SchoolService.Application.DTOs.Teachers;
 using SchoolService.Application.Interfaces;
 
@@ -18,8 +19,15 @@ public class TeachersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<TeacherResponseDto>>> GetAll()
+    public async Task<ActionResult> GetAll(
+        [FromQuery] int? page,
+        [FromQuery] int? pageSize)
     {
+        if (page.HasValue || pageSize.HasValue)
+        {
+            var paged = await _teacherService.GetAllAsync(page ?? 1, pageSize ?? 20);
+            return Ok(paged);
+        }
         var teachers = await _teacherService.GetAllAsync();
         return Ok(teachers);
     }
@@ -28,11 +36,6 @@ public class TeachersController : ControllerBase
     public async Task<ActionResult<TeacherResponseDto>> GetById(Guid id)
     {
         var teacher = await _teacherService.GetByIdAsync(id);
-        if (teacher == null)
-        {
-            return NotFound();
-        }
-
         return Ok(teacher);
     }
 
@@ -47,23 +50,13 @@ public class TeachersController : ControllerBase
     public async Task<ActionResult<TeacherResponseDto>> Update(Guid id, [FromBody] TeacherUpdateDto dto)
     {
         var updated = await _teacherService.UpdateAsync(id, dto);
-        if (updated == null)
-        {
-            return NotFound();
-        }
-
         return Ok(updated);
     }
 
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var deleted = await _teacherService.DeleteAsync(id);
-        if (!deleted)
-        {
-            return NotFound();
-        }
-
+        await _teacherService.DeleteAsync(id);
         return NoContent();
     }
 }

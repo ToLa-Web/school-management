@@ -1,19 +1,36 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace SchoolService.Application.DTOs.Classrooms;
 
 public class ClassroomCreateDto
 {
+    [Required(ErrorMessage = "Classroom Name is required.")]
+    [StringLength(150, ErrorMessage = "Name cannot exceed 150 characters.")]
     public string Name { get; set; } = null!;
+
+    [StringLength(50)]
     public string? Grade { get; set; }
+
+    [StringLength(20)]
     public string? AcademicYear { get; set; }
+
     public Guid? TeacherId { get; set; }
 }
 
 public class ClassroomUpdateDto
 {
+    [Required(ErrorMessage = "Classroom Name is required.")]
+    [StringLength(150, ErrorMessage = "Name cannot exceed 150 characters.")]
     public string Name { get; set; } = null!;
+
+    [StringLength(50)]
     public string? Grade { get; set; }
+
+    [StringLength(20)]
     public string? AcademicYear { get; set; }
+
     public Guid? TeacherId { get; set; }
+
     public bool IsActive { get; set; } = true;
 }
 

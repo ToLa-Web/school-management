@@ -1,4 +1,6 @@
+using SchoolService.Application.DTOs;
 using SchoolService.Application.DTOs.Classrooms;
+using SchoolService.Application.Exceptions;
 using SchoolService.Application.Interfaces;
 using SchoolService.Domain.Entities;
 
@@ -25,10 +27,28 @@ public class ClassroomService : IClassroomService
             .ToList();
     }
 
-    public async Task<ClassroomDetailResponseDto?> GetByIdAsync(Guid id)
+    public async Task<PagedResult<ClassroomResponseDto>> GetAllAsync(int page, int pageSize)
+    {
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var (items, total) = await _classroomRepository.GetPagedAsync(page, pageSize);
+        return new PagedResult<ClassroomResponseDto>
+        {
+            Items = items.Select(MapToResponse).ToList(),
+            TotalCount = total,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
+
+    public async Task<ClassroomDetailResponseDto> GetByIdAsync(Guid id)
     {
         var classroom = await _classroomRepository.GetByIdWithDetailsAsync(id);
-        return classroom == null ? null : MapToDetailResponse(classroom);
+        if (classroom == null)
+            throw new NotFoundException("Classroom", id);
+
+        return MapToDetailResponse(classroom);
     }
 
     public async Task<ClassroomResponseDto> CreateAsync(ClassroomCreateDto dto)
@@ -41,13 +61,11 @@ public class ClassroomService : IClassroomService
         return MapToResponse(classroom);
     }
 
-    public async Task<ClassroomResponseDto?> UpdateAsync(Guid id, ClassroomUpdateDto dto)
+    public async Task<ClassroomResponseDto> UpdateAsync(Guid id, ClassroomUpdateDto dto)
     {
         var classroom = await _classroomRepository.GetByIdAsync(id);
         if (classroom == null)
-        {
-            return null;
-        }
+            throw new NotFoundException("Classroom", id);
 
         classroom.UpdateInfo(dto.Name, dto.Grade, dto.AcademicYear);
         classroom.AssignTeacher(dto.TeacherId);
@@ -61,41 +79,40 @@ public class ClassroomService : IClassroomService
         return MapToResponse(classroom);
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task DeleteAsync(Guid id)
     {
         var classroom = await _classroomRepository.GetByIdAsync(id);
         if (classroom == null)
-        {
-            return false;
-        }
+            throw new NotFoundException("Classroom", id);
 
         await _classroomRepository.DeleteAsync(classroom);
-        return true;
     }
 
-    public async Task<bool> EnrollStudentAsync(Guid classroomId, Guid studentId)
+    public async Task EnrollStudentAsync(Guid classroomId, Guid studentId)
     {
         var classroom = await _classroomRepository.GetByIdAsync(classroomId);
-        if (classroom == null) return false;
+        if (classroom == null)
+            throw new NotFoundException("Classroom", classroomId);
 
         var student = await _studentRepository.GetByIdAsync(studentId);
-        if (student == null) return false;
+        if (student == null)
+            throw new NotFoundException("Student", studentId);
 
         var existing = await _classroomRepository.GetEnrollmentAsync(classroomId, studentId);
-        if (existing != null) return false; // already enrolled
+        if (existing != null)
+            throw new DuplicateException($"Student '{studentId}' is already enrolled in classroom '{classroomId}'.");
 
         var enrollment = new StudentClassroom(studentId, classroomId);
         await _classroomRepository.AddEnrollmentAsync(enrollment);
-        return true;
     }
 
-    public async Task<bool> UnenrollStudentAsync(Guid classroomId, Guid studentId)
+    public async Task UnenrollStudentAsync(Guid classroomId, Guid studentId)
     {
         var enrollment = await _classroomRepository.GetEnrollmentAsync(classroomId, studentId);
-        if (enrollment == null) return false;
+        if (enrollment == null)
+            throw new NotFoundException($"No enrollment found for student '{studentId}' in classroom '{classroomId}'.");
 
         await _classroomRepository.RemoveEnrollmentAsync(enrollment);
-        return true;
     }
 
     private static ClassroomResponseDto MapToResponse(Classroom c) => new()

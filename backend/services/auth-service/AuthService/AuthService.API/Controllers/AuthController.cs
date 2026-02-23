@@ -159,9 +159,7 @@ public async Task<IActionResult> OAuthFacebook([FromBody] FacebookAuthRequestDto
     return result == null ? Unauthorized() : Ok(result);
 }
 
-/// <summary>
-/// Validates JWT token - for use by other microservices
-/// </summary>
+// Validates a JWT token - mainly called by other services like school-service
 [HttpPost("validate")]
 [AllowAnonymous]
 public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
@@ -171,18 +169,47 @@ public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
 
     try
     {
-        var handler = new JwtSecurityTokenHandler();
-        var token = handler.ReadJwtToken(request.Token);
+        // Split the JWT and decode the payload manually
+        var parts = request.Token.Split('.');
+        if (parts.Length != 3)
+            return Ok(new { valid = false, error = "Invalid token format" });
         
-        // Check if token is not expired
-        if (token.ValidTo < DateTime.UtcNow)
-            return Ok(new { valid = false, error = "Token has expired" });
+        // Decode payload (add padding if necessary)
+        var payload = parts[1];
+        var padding = 4 - payload.Length % 4;
+        if (padding < 4)
+            payload += new string('=', padding);
+        
+        var jsonBytes = Convert.FromBase64String(payload);
+        var json = System.Text.Encoding.UTF8.GetString(jsonBytes);
+        
+        // Parse the JSON to get exp
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        
+        if (!root.TryGetProperty("exp", out var expElement))
+            return Ok(new { valid = false, error = "Token has no expiration claim", json = json });
+        
+        var expEpoch = expElement.GetInt64();
+        var expirationUtc = DateTimeOffset.FromUnixTimeSeconds(expEpoch).UtcDateTime;
+        var nowUtc = DateTime.UtcNow;
+        
+        if (expirationUtc < nowUtc)
+            return Ok(new { 
+                valid = false, 
+                error = "Token has expired",
+                expiration = expirationUtc.ToString("o"),
+                now = nowUtc.ToString("o")
+            });
 
-        // If we got here, token is structurally valid and not expired
+        // Get sub and email
+        var userId = root.TryGetProperty("sub", out var subEl) ? subEl.GetString() : null;
+        var email = root.TryGetProperty("email", out var emailEl) ? emailEl.GetString() : null;
+
         return Ok(new { 
             valid = true, 
-            userId = token.Subject,
-            email = token.Claims.FirstOrDefault(c => c.Type == "email")?.Value
+            userId,
+            email
         });
     }
     catch (Exception ex)
@@ -191,10 +218,7 @@ public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
     }
 }
 
-/// <summary>
-/// Get user info by ID - for use by other microservices
-/// Can be called anonymously or with token
-/// </summary>
+// Returns user info for a given ID - other microservices call this to look up users
 [HttpGet("user/{userId}")]
 [AllowAnonymous]
 public async Task<IActionResult> GetUser(string userId)

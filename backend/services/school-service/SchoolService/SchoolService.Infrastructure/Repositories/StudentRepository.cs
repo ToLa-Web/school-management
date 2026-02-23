@@ -17,6 +17,14 @@ public class StudentRepository : IStudentRepository
     public async Task<List<Student>> GetAllAsync()
         => await _context.Students.AsNoTracking().ToListAsync();
 
+    public async Task<(List<Student> Items, int TotalCount)> GetPagedAsync(int page, int pageSize)
+    {
+        var query = _context.Students.AsNoTracking().OrderBy(s => s.LastName).ThenBy(s => s.FirstName);
+        var total = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        return (items, total);
+    }
+
     public async Task<Student?> GetByIdAsync(Guid id)
         => await _context.Students.FindAsync(id);
 

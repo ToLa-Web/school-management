@@ -21,6 +21,18 @@ public class ClassroomRepository : IClassroomRepository
             .Include(c => c.StudentClassrooms)
             .ToListAsync();
 
+    public async Task<(List<Classroom> Items, int TotalCount)> GetPagedAsync(int page, int pageSize)
+    {
+        var query = _context.Classrooms
+            .AsNoTracking()
+            .Include(c => c.Teacher)
+            .Include(c => c.StudentClassrooms)
+            .OrderBy(c => c.Name);
+        var total = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        return (items, total);
+    }
+
     public async Task<Classroom?> GetByIdAsync(Guid id)
         => await _context.Classrooms.FindAsync(id);
 
