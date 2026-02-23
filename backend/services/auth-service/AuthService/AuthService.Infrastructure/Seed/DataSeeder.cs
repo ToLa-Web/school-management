@@ -1,4 +1,4 @@
-﻿using AuthService.Application.Interfaces;
+using AuthService.Application.Interfaces;
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
 using AuthService.Infrastructure.Data;
