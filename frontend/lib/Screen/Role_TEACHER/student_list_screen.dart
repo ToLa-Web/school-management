@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/api_models.dart';
 
-/// Lists all students with search, edit (dialog) and delete capabilities.
+// screen that lists all students — lets the teacher search, edit, or delete them
 class StudentListScreen extends StatefulWidget {
   const StudentListScreen({super.key});
 

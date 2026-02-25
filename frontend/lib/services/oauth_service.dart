@@ -67,7 +67,7 @@ class OAuthService {
   // FIX: Access the singleton instance
   final _googleSignIn = GoogleSignIn.instance;
 
-  /// Updated initialization for v7+
+  // set up the Google Sign-In plugin (required once before calling signIn)
   Future<void> initializeGoogle() async {
     // Note: 'scopes' is no longer a parameter here.
     await _googleSignIn.initialize(
@@ -76,7 +76,7 @@ class OAuthService {
     );
   }
 
-  /// Sign in with Google, send idToken to backend
+  // open the Google sign-in dialog, get the ID token, send it to our backend
   Future<AuthResponseDto?> signInWithGoogle() async {
     try {
       // Ensure plugin is initialized
@@ -100,7 +100,7 @@ class OAuthService {
     }
   }
 
-  /// Sign in with Facebook, send accessToken to backend
+  // open the Facebook login dialog, get the access token, send it to our backend
   Future<AuthResponseDto?> signInWithFacebook() async {
     try {
       final result = await FacebookAuth.instance.login(

@@ -1,6 +1,4 @@
-// ================================================
-// REQUEST DTOs - Match backend exactly
-// ================================================
+// what we send TO the server
 
 /// POST /api/auth/register
 class UserCreateDto {
@@ -138,9 +136,7 @@ class FacebookAuthRequestDto {
   };
 }
 
-// ================================================
-// RESPONSE DTOs - Match backend exactly
-// ================================================
+// what we get BACK from the server
 
 /// Registration response: backend returns UserResponseDto (no tokens)
 /// {id, email, username, role (int), userRole (string), isEmailVerified}
@@ -183,7 +179,7 @@ class AuthResponseDto {
   final String userRole;
   final bool isActive;
   final bool isEmailVerified;
-  final String token;         // Access token (backend field name is "token")
+  final String token; // the short-lived access token (backend calls it "token")
   final String refreshToken;
   final String? lastLoginAt;
 
@@ -216,9 +212,7 @@ class AuthResponseDto {
   }
 }
 
-// ================================================
-// SCHOOL-SERVICE DTOs - Match backend exactly
-// ================================================
+// school data — classrooms, students, teachers, grades, etc.
 
 /// Student response from GET /api/school/students
 class StudentDto {
@@ -443,7 +437,7 @@ class ClassroomStudentDto {
   }
 }
 
-/// Generic paged result wrapper
+// wrapper for paginated responses — holds items + total count + page info
 class PagedResult<T> {
   final List<T> items;
   final int totalCount;
@@ -482,9 +476,7 @@ class PagedResult<T> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Subject
-// ─────────────────────────────────────────────────────────────────────────────
+// subjects / courses taught in school
 
 class SubjectDto {
   final String id;
@@ -517,9 +509,7 @@ class SubjectDto {
   Map<String, dynamic> toJson() => {'subjectName': subjectName};
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Grade / Score
-// ─────────────────────────────────────────────────────────────────────────────
+// student scores / grades
 
 class GradeDto {
   final String id;
@@ -563,9 +553,7 @@ class GradeDto {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Attendance
-// ─────────────────────────────────────────────────────────────────────────────
+// attendance records — who showed up, who was absent, who was late
 
 class AttendanceDto {
   final String id;
@@ -573,10 +561,8 @@ class AttendanceDto {
   final String studentName;
   final String? classroomId;
   final String? classroomName;
-  /// ISO date string e.g. "2026-02-24"
-  final String date;
-  /// "Present" | "Absent" | "Late"
-  final String status;
+  final String date; // date as "YYYY-MM-DD" e.g. "2026-02-24"
+  final String status; // "Present", "Absent", or "Late"
   final String createdAt;
 
   AttendanceDto({
@@ -606,8 +592,7 @@ class AttendanceDto {
 
 class AttendanceMarkRequest {
   final String studentId;
-  /// 1=Present, 2=Absent, 3=Late
-  final int status;
+  final int status; // 1 = Present, 2 = Absent, 3 = Late
 
   AttendanceMarkRequest({required this.studentId, required this.status});
 
@@ -616,7 +601,7 @@ class AttendanceMarkRequest {
 
 class BulkMarkAttendanceRequest {
   final String classroomId;
-  final String date; // "YYYY-MM-DD"
+  final String date; // format: "YYYY-MM-DD"
   final List<AttendanceMarkRequest> records;
 
   BulkMarkAttendanceRequest({
@@ -632,9 +617,7 @@ class BulkMarkAttendanceRequest {
   };
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Schedule
-// ─────────────────────────────────────────────────────────────────────────────
+// class schedule — which subject, when, and where
 
 class ScheduleDto {
   final String id;

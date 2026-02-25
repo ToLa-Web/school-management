@@ -72,9 +72,7 @@ class ApiService {
     );
   }
 
-  // ================================================
-  // Token Management
-  // ================================================
+  // save & load tokens so the user stays logged in between sessions
 
   Future<void> loadTokens() async {
     try {
@@ -96,9 +94,7 @@ class ApiService {
 
   bool isAuthenticated() => _accessToken != null && _accessToken!.isNotEmpty;
 
-  // ================================================
-  // Auth Endpoints
-  // ================================================
+  // login, register, logout, email verification, and password reset
 
   /// POST /api/auth/register
   /// Backend returns UserResponseDto (no tokens).
@@ -136,7 +132,7 @@ class ApiService {
         final authResponse = AuthResponseDto.fromJson(
           response.data as Map<String, dynamic>,
         );
-        // Backend uses "token" field for access token
+        // "token" is what the backend calls the access token — a bit confusing but that's how it is
         await _saveTokens(authResponse.token, authResponse.refreshToken);
         return authResponse;
       }
@@ -150,7 +146,7 @@ class ApiService {
     return null;
   }
 
-  // Save the user's role so we know which dashboard to show on app relaunch.
+  // remember the user's role so we know which dashboard to show at startup
   Future<void> saveUserRole(String role) async {
     await _secureStorage.write(key: 'user_role', value: role);
   }
@@ -160,7 +156,7 @@ class ApiService {
     return await _secureStorage.read(key: 'user_role');
   }
 
-  /// Save user profile data (username, email) after login.
+  // save the user's name and email locally after login
   Future<void> saveUserData({
     required String username,
     required String email,
@@ -171,12 +167,12 @@ class ApiService {
     ]);
   }
 
-  /// Get the saved username.
+  // read back the saved username from storage
   Future<String?> getUserName() async {
     return await _secureStorage.read(key: 'user_name');
   }
 
-  /// Get the saved email.
+  // read back the saved email from storage
   Future<String?> getUserEmail() async {
     return await _secureStorage.read(key: 'user_email');
   }
@@ -186,7 +182,7 @@ class ApiService {
     await _secureStorage.write(key: 'entity_id', value: entityId);
   }
 
-  /// Get the saved school-service entity ID (student or teacher).
+  // get that saved student/teacher ID back
   Future<String?> getEntityId() async {
     return await _secureStorage.read(key: 'entity_id');
   }
@@ -299,7 +295,7 @@ class ApiService {
     return false;
   }
 
-  /// POST /api/auth/oauth/google
+  // sign in with Google — sends the Google ID token to the backend
   Future<AuthResponseDto?> authenticateWithGoogle(String idToken) async {
     try {
       final response = await _dio.post(
@@ -320,7 +316,7 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/auth/oauth/facebook
+  // sign in with Facebook — sends the Facebook access token to the backend
   Future<AuthResponseDto?> authenticateWithFacebook(String accessToken) async {
     try {
       final response = await _dio.post(
@@ -341,9 +337,7 @@ class ApiService {
     return null;
   }
 
-  // ================================================
-  // School-Service Endpoints
-  // ================================================
+  // all the classroom and school data calls (students, teachers, attendance, etc.)
 
   /// GET /api/school/Students — returns list or paged result
   Future<List<StudentDto>> getStudents({int? page, int? pageSize}) async {
@@ -575,9 +569,7 @@ class ApiService {
     }
   }
 
-  // ────────────────────────────────────────────────────────────
-  // Subjects
-  // ────────────────────────────────────────────────────────────
+  // subjects (the courses taught in school)
 
   /// GET /api/school/Subjects
   Future<List<SubjectDto>> getSubjects() async {
@@ -638,11 +630,9 @@ class ApiService {
     return false;
   }
 
-  // ────────────────────────────────────────────────────────────
-  // Grades
-  // ────────────────────────────────────────────────────────────
+  // student scores and report cards
 
-  /// GET /api/school/Grades?studentId=&subjectId=&semester=
+  // get all grade records — can filter by student, subject, or semester
   Future<List<GradeDto>> getGrades({String? studentId, String? subjectId, String? semester}) async {
     try {
       final params = <String, dynamic>{};
@@ -662,7 +652,7 @@ class ApiService {
     return [];
   }
 
-  /// POST /api/school/Grades
+  // save a new grade/score for a student
   Future<GradeDto?> createGrade(GradeDto grade) async {
     try {
       final response = await _dio.post(
@@ -679,7 +669,7 @@ class ApiService {
     return null;
   }
 
-  /// PUT /api/school/Grades/{id}
+  // update an existing grade (e.g. teacher corrects an entry)
   Future<bool> updateGrade(String id, double score, String semester) async {
     try {
       final response = await _dio.put(
@@ -693,7 +683,7 @@ class ApiService {
     return false;
   }
 
-  /// DELETE /api/school/Grades/{id}
+  // delete a grade entry
   Future<bool> deleteGrade(String id) async {
     try {
       final response = await _dio.delete('${ApiConfig.gradesEndpoint}/$id');
@@ -704,9 +694,7 @@ class ApiService {
     return false;
   }
 
-  // ────────────────────────────────────────────────────────────
-  // Attendance
-  // ────────────────────────────────────────────────────────────
+  // who came to class, who didn't, and who was late
 
   /// GET /api/school/Attendance?classroomId=&date=YYYY-MM-DD
   Future<List<AttendanceDto>> getClassroomAttendance(String classroomId, String date) async {
@@ -754,10 +742,8 @@ class ApiService {
       rethrow;
     }
   }
-
-  // ────────────────────────────────────────────────────────────
-  // Schedules
-  // ────────────────────────────────────────────────────────────
+  //Schedules
+ 
 
   /// GET /api/school/Schedules?classroomId=
   Future<List<ScheduleDto>> getClassroomSchedule(String classroomId) async {

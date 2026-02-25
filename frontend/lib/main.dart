@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tamdansers/Login/forgot_password.dart';
 import 'package:tamdansers/Login/loading.dart';
-import 'package:tamdansers/Login/login_as_student.dart';
+ import 'package:tamdansers/Login/login_as_student.dart';
 import 'package:tamdansers/Login/login_as_teacher.dart';
 import 'package:tamdansers/Login/register.dart';
 import 'package:tamdansers/Login/role.dart';
