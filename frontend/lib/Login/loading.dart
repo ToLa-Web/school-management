@@ -1,155 +1,6 @@
-// import 'package:flutter/material.dart';
-
-// class SplashScreen extends StatefulWidget {
-//   const SplashScreen({super.key});
-
-//   @override
-//   State<SplashScreen> createState() => _SplashScreenState();
-// }
-
-// // Add SingleTickerProviderStateMixin to handle the progress bar animation
-// class _SplashScreenState extends State<SplashScreen>
-//     with SingleTickerProviderStateMixin {
-//   late AnimationController _progressController;
-
-//   @override
-//   void initState() {
-//     super.initState();
-
-//     // 1. Initialize the animation controller for a 20-second duration
-//     _progressController = AnimationController(
-//       vsync: this,
-//       duration: const Duration(seconds: 20),
-//     )..forward(); // Start the animation immediately
-
-//     // 2. Setup the navigation delay
-//     Future.delayed(const Duration(seconds: 10), () {
-//       if (mounted) {
-//         // Navigate using the route name defined in main.dart
-//         Navigator.pushReplacementNamed(context, 'RoleSelection');
-//       }
-//     });
-//   }
-
-//   @override
-//   void dispose() {
-//     _progressController.dispose(); // Clean up controller to avoid memory leaks
-//     super.dispose();
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: const Color(0xFFF7F9FA),
-//       body: Stack(
-//         children: [
-//           // Background Decorative Icons
-//           Opacity(
-//             opacity: 0.1,
-//             child: Center(
-//               child: Wrap(
-//                 spacing: 100,
-//                 runSpacing: 150,
-//                 alignment: WrapAlignment.center,
-//                 children: const [
-//                   Icon(Icons.menu_book, size: 80),
-//                   Icon(Icons.school, size: 80),
-//                   Icon(Icons.history_edu, size: 80),
-//                   Icon(Icons.architecture, size: 80),
-//                 ],
-//               ),
-//             ),
-//           ),
-
-//           // Main Content
-//           Center(
-//             child: Column(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: [
-//                 Container(
-//                   padding: const EdgeInsets.all(25),
-//                   decoration: BoxDecoration(
-//                     color: Colors.white,
-//                     borderRadius: BorderRadius.circular(24),
-//                     boxShadow: [
-//                       BoxShadow(
-//                         color: Colors.black.withOpacity(0.05),
-//                         blurRadius: 20,
-//                         spreadRadius: 5,
-//                       ),
-//                     ],
-//                   ),
-//                   child: const Icon(
-//                     Icons.school,
-//                     size: 60,
-//                     color: Color(0xFF0D47A1),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 40),
-//                 const SizedBox(
-//                   height: 30,
-//                   width: 30,
-//                   child: CircularProgressIndicator(
-//                     strokeWidth: 3,
-//                     valueColor: AlwaysStoppedAnimation<Color>(
-//                       Color(0xFF0D47A1),
-//                     ),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 100),
-//                 const Text(
-//                   "សូមស្វាគមន៍មកកាន់ប្រព័ន្ធគ្រប់\nគ្រងសាលារៀន",
-//                   textAlign: TextAlign.center,
-//                   style: TextStyle(
-//                     fontSize: 18,
-//                     fontWeight: FontWeight.bold,
-//                     color: Color(0xFF263238),
-//                   ),
-//                 ),
-//                 const SizedBox(height: 8),
-//                 const Text(
-//                   "កំពុងដំណើរការ...",
-//                   style: TextStyle(fontSize: 14, color: Colors.grey),
-//                 ),
-//               ],
-//             ),
-//           ),
-
-//           // Animated Bottom Progress Bar
-//           Positioned(
-//             bottom: 50,
-//             left: 40,
-//             right: 40,
-//             child: ClipRRect(
-//               borderRadius: BorderRadius.circular(10),
-//               child: AnimatedBuilder(
-//                 animation: _progressController,
-//                 builder: (context, child) {
-//                   return LinearProgressIndicator(
-//                     value:
-//                         _progressController.value, // Animates from 0.0 to 1.0
-//                     backgroundColor: const Color(0xFFE0E0E0),
-//                     valueColor: const AlwaysStoppedAnimation<Color>(
-//                       Color(0xFF0D47A1),
-//                     ),
-//                     minHeight: 6,
-//                   );
-//                 },
-//               ),
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-
-
-
-
-
 
 import 'package:flutter/material.dart';
+import 'package:tamdansers/services/api_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -160,132 +11,232 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-  late AnimationController _progressController;
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+
+  final _apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
 
-    // 1. Initialize the animation controller for a 20-second duration
-    _progressController = AnimationController(
+    _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 1),
-    )..forward();
-    _progressController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        if (mounted) {
-          // Navigates to the Role Selection screen defined in your routes
-          Navigator.pushReplacementNamed(context, '/RoleSelection');
-        }
+      duration: const Duration(seconds: 3),
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.85,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+
+    _controller.forward();
+
+    // Start authentication check after short delay (feels more natural)
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        _checkAuthAndNavigate();
       }
     });
   }
 
+  Future<void> _checkAuthAndNavigate() async {
+    await _apiService.loadTokens();
+    if (!mounted) return;
+
+    if (_apiService.isAuthenticated()) {
+      final role = await _apiService.getUserRole();
+      if (!mounted) return;
+
+      String route;
+      switch (role) {
+        case 'teacher':
+          route = '/TeacherDashboard';
+          break;
+        case 'student':
+          route = '/StudentDashboard';
+          break;
+        default:
+          route = '/RoleSelection';
+      }
+      Navigator.pushNamedAndRemoveUntil(context, route, (route) => false);
+    } else {
+      Navigator.pushReplacementNamed(context, '/RoleSelection');
+    }
+  }
+
   @override
   void dispose() {
-    _progressController.dispose(); // Clean up memory
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F9FA), // Match the light background
+      backgroundColor: const Color(0xFFf8fafc),
       body: Stack(
         children: [
-          // Decorative background icons
-          Opacity(
-            opacity: 0.1,
-            child: Center(
-              child: Wrap(
-                spacing: 100,
-                runSpacing: 150,
-                alignment: WrapAlignment.center,
-                children: const [
-                  Icon(Icons.menu_book, size: 80),
-                  Icon(Icons.school, size: 80),
-                  Icon(Icons.history_edu, size: 80),
-                  Icon(Icons.architecture, size: 80),
+          // === Modern subtle background gradient + floating shapes ===
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFFe0f2fe),
+                  Color(0xFFf0f9ff),
+                  Color(0xFFe0f7fa),
                 ],
               ),
             ),
           ),
 
-          // Main Content in the center
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // School Logo Box
-                Container(
-                  padding: const EdgeInsets.all(25),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black,
-                        blurRadius: 20,
-                        spreadRadius: 5,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.school,
-                    size: 60,
-                    color: Color(0xFF0D47A1), // Dark Blue color
-                  ),
+          // Decorative subtle floating education icons
+          Positioned(
+            top: -60,
+            right: -60,
+            child: Opacity(
+              opacity: 0.07,
+              child: Icon(
+                Icons.school_rounded,
+                size: 220,
+                color: Colors.blue[900],
+              ),
+            ),
+          ),
+          Positioned(
+            bottom: -80,
+            left: -40,
+            child: Opacity(
+              opacity: 0.06,
+              child: Transform.rotate(
+                angle: 0.4,
+                child: Icon(
+                  Icons.menu_book_rounded,
+                  size: 180,
+                  color: Colors.teal[700],
                 ),
-                const SizedBox(height: 40),
-                const SizedBox(
-                  height: 30,
-                  width: 30,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      Color(0xFF0D47A1),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 100),
-                const Text(
-                  "សូមស្វាគមន៍មកកាន់ប្រព័ន្ធគ្រប់\nគ្រងសាលារៀន",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF263238),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  "កំពុងដំណើរការ...",
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                ),
-              ],
+              ),
             ),
           ),
 
-          // Animated Bottom Progress Bar
-          Positioned(
-            bottom: 50,
-            left: 40,
-            right: 40,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: AnimatedBuilder(
-                animation: _progressController,
-                builder: (context, child) {
-                  return LinearProgressIndicator(
-                    value: _progressController
-                        .value, // Slowly fills from 0 to 1 over 20s
-                    backgroundColor: const Color(0xFFE0E0E0),
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      Color(0xFF0D47A1),
+          // === Main centered content ===
+          Center(
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: ScaleTransition(
+                scale: _scaleAnimation,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Logo / Brand mark with modern glass effect
+                    Container(
+                      width: 110,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0288D1), Color(0xFF0277BD)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.blue.withValues(alpha: 0.35),
+                            blurRadius: 24,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.school_rounded,
+                        size: 60,
+                        color: Colors.white,
+                      ),
                     ),
-                    minHeight: 6,
-                  );
-                },
+
+                    const SizedBox(height: 48),
+
+                    // App name / Welcome message
+                    const Text(
+                      "Tam Dansers",
+                      style: TextStyle(
+                        fontSize: 36,
+                        fontWeight: FontWeight.w800,
+                        color: Color(0xFF0D47A1),
+                        letterSpacing: 1.2,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    const Text(
+                      "School Management System",
+                      style: TextStyle(
+                        fontSize: 17,
+                        color: Colors.blueGrey,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+
+                    const SizedBox(height: 60),
+
+                    // Modern loading indicator
+                    SizedBox(
+                      width: 56,
+                      height: 56,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 5,
+                        valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF0288D1),
+                        ),
+                        backgroundColor: Colors.blue.withValues(alpha: 0.15),
+                      ),
+                    ),
+
+                    const SizedBox(height: 40),
+
+                    // Translated & polished welcome text
+                    const Text(
+                      "Welcome to the School Management System",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF263238),
+                        height: 1.4,
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    Text(
+                      "Preparing your experience...",
+                      style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Optional: Very subtle bottom wave / accent
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Opacity(
+              opacity: 0.4,
+              child: CustomPaint(
+                size: const Size(double.infinity, 120),
+                painter: _WavePainter(),
               ),
             ),
           ),
@@ -293,4 +244,40 @@ class _SplashScreenState extends State<SplashScreen>
       ),
     );
   }
+}
+
+// Simple wave painter for modern bottom accent
+class _WavePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFF0288D1)
+      ..style = PaintingStyle.fill;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.6);
+
+    path.quadraticBezierTo(
+      size.width * 0.25,
+      size.height * 0.3,
+      size.width * 0.5,
+      size.height * 0.55,
+    );
+
+    path.quadraticBezierTo(
+      size.width * 0.75,
+      size.height * 0.8,
+      size.width,
+      size.height * 0.45,
+    );
+
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

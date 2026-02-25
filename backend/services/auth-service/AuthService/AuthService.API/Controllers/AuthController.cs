@@ -1,7 +1,9 @@
 ﻿using AuthService.Application.DTOs.Auth.Request;
 using AuthService.Application.DTOs.User;
 using AuthService.Application.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace AuthService.API.Controllers;
 
@@ -10,24 +12,71 @@ namespace AuthService.API.Controllers;
 public class AuthController : ControllerBase
 {
     private readonly IAuthenticationService _authService;
+    private readonly IUserRepository _userRepository;
     
-    public AuthController(IAuthenticationService authService)
+    public AuthController(IAuthenticationService authService, IUserRepository userRepository)
     {
         _authService = authService;
+        _userRepository = userRepository;
     }
     
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] UserCreateDto dto)
     {
-        var result = await _authService.RegisterAsync(dto);
-        return Ok(result);
+        try
+        { 
+            var result = await _authService.RegisterAsync(dto);
+            return Ok(new 
+            { 
+                success = true,
+                message = "Registration successful. Please verify your email to complete the process.",
+                user = result,
+                nextStep = "POST /api/auth/verify-email",
+                verificationFlow = new
+                {
+                    step1 = "POST /api/auth/request-email-verification-code (to get code sent to email)",
+                    step2 = "POST /api/auth/verify-email (with email and code to mark as verified)",
+                    step3 = "POST /api/auth/authenticate (to login after verification)"
+                }
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new 
+            { 
+                success = false,
+                error = ex.Message,
+                code = "REGISTRATION_FAILED"
+            });
+        }
     }
 
     [HttpPost("authenticate")]
     public async Task<IActionResult> Authenticate([FromBody] LoginRequestDto dto)
     {
         var result = await _authService.AuthenticateAsync(dto.Email, dto.Password);
-        return Ok(result);
+        if (result != null)
+            return Ok(result);
+
+        // Authentication failed - check if it's due to unverified email
+        var user = await _userRepository.GetByEmailAsync(dto.Email.Trim().ToUpperInvariant());
+        if (user != null && !user.IsEmailVerified)
+        {
+            return Unauthorized(new 
+            { 
+                error = "Email not verified",
+                message = "Please verify your email before logging in",
+                code = "EMAIL_NOT_VERIFIED",
+                //nextStep = "POST /api/auth/request-email-verification-code"
+            });
+        }
+
+        // Generic error for wrong password or user not found
+        return Unauthorized(new 
+        { 
+            error = "Invalid email or password",
+            code = "INVALID_CREDENTIALS"
+        });
     }
 
     [HttpPost("refresh")]
@@ -48,14 +97,38 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> RequestEmailVerificationCode([FromBody] RequestEmailVerificationCodeRequestDto dto)
     {
         await _authService.RequestEmailVerificationCodeAsync(dto.Email);
-        return Ok();
+        return Ok(new 
+        { 
+            success = true,
+            message = "Verification code sent to your email",
+            email = dto.Email,
+            nextStep = "POST /api/auth/verify-email",
+            instructions = "Check your inbox for the verification code and submit it along with your email"
+        });
     }
 
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailRequestDto dto)
     {
         var verified = await _authService.VerifyEmailAsync(dto.Email, dto.Code);
-        return Ok(verified);
+        if (!verified)
+        {
+            return BadRequest(new 
+            { 
+                error = "Email verification failed",
+                message = "Invalid verification code or email",
+                code = "VERIFICATION_FAILED"
+            });
+        }
+        
+        return Ok(new 
+        { 
+            success = true,
+            message = "Email verified successfully",
+            email = dto.Email,
+            nextStep = "POST /api/auth/authenticate",
+            instructions = "You can now login with your email and password"
+        });
     }
 
     [HttpPost("request-password-reset")]
@@ -85,4 +158,101 @@ public async Task<IActionResult> OAuthFacebook([FromBody] FacebookAuthRequestDto
     var result = await _authService.AuthenticateFacebookAsync(dto.AccessToken);
     return result == null ? Unauthorized() : Ok(result);
 }
+
+// Validates a JWT token - mainly called by other services like school-service
+[HttpPost("validate")]
+[AllowAnonymous]
+public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
+{
+    if (string.IsNullOrEmpty(request?.Token))
+        return BadRequest(new { valid = false, error = "Token is required" });
+
+    try
+    {
+        // Split the JWT and decode the payload manually
+        var parts = request.Token.Split('.');
+        if (parts.Length != 3)
+            return Ok(new { valid = false, error = "Invalid token format" });
+        
+        // Decode payload (add padding if necessary)
+        var payload = parts[1];
+        var padding = 4 - payload.Length % 4;
+        if (padding < 4)
+            payload += new string('=', padding);
+        
+        var jsonBytes = Convert.FromBase64String(payload);
+        var json = System.Text.Encoding.UTF8.GetString(jsonBytes);
+        
+        // Parse the JSON to get exp
+        using var doc = System.Text.Json.JsonDocument.Parse(json);
+        var root = doc.RootElement;
+        
+        if (!root.TryGetProperty("exp", out var expElement))
+            return Ok(new { valid = false, error = "Token has no expiration claim", json = json });
+        
+        var expEpoch = expElement.GetInt64();
+        var expirationUtc = DateTimeOffset.FromUnixTimeSeconds(expEpoch).UtcDateTime;
+        var nowUtc = DateTime.UtcNow;
+        
+        if (expirationUtc < nowUtc)
+            return Ok(new { 
+                valid = false, 
+                error = "Token has expired",
+                expiration = expirationUtc.ToString("o"),
+                now = nowUtc.ToString("o")
+            });
+
+        // Get sub and email
+        var userId = root.TryGetProperty("sub", out var subEl) ? subEl.GetString() : null;
+        var email = root.TryGetProperty("email", out var emailEl) ? emailEl.GetString() : null;
+
+        return Ok(new { 
+            valid = true, 
+            userId,
+            email
+        });
+    }
+    catch (Exception ex)
+    {
+        return Ok(new { valid = false, error = ex.Message });
+    }
+}
+
+// Returns user info for a given ID - other microservices call this to look up users
+[HttpGet("user/{userId}")]
+[AllowAnonymous]
+public async Task<IActionResult> GetUser(string userId)
+{
+    if (string.IsNullOrEmpty(userId))
+        return BadRequest(new { error = "UserId is required" });
+
+    try
+    {
+        var user = await _userRepository.GetByIdAsync(Guid.Parse(userId));
+        
+        if (user == null)
+            return NotFound(new { error = "User not found" });
+
+        return Ok(new
+        {
+            userId = user.Id,
+            username = user.Username,
+            email = user.Email,
+            fullName = user.Username,
+            role = user.Role,
+            isActive = user.IsActive,
+            isEmailVerified = user.IsEmailVerified,
+            createdAt = user.CreatedAt
+        });
+    }
+    catch (Exception ex)
+    {
+        return BadRequest(new { error = ex.Message });
+    }
+}
+}
+
+public class ValidateTokenRequest
+{
+    public string? Token { get; set; }
 }

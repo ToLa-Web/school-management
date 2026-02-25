@@ -1,12 +1,13 @@
 ﻿using AuthService.Application.DTOs.Auth.Response;
 using AuthService.Application.DTOs.User;
 using AuthService.Application.Interfaces;
+using AuthService.Application.Exceptions;
 using AuthService.Domain.Entities;
 using AuthService.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using System.Security.Cryptography;
 using System.Text;
- using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace AuthService.Application.Services;
 
@@ -37,13 +38,13 @@ public class AuthenticationService : IAuthenticationService
         _emailVerificationPepper =
             configuration["EmailVerification:Pepper"]
             ?? configuration["Jwt:Secret"]
-            ?? throw new InvalidOperationException("EmailVerification:Pepper (or Jwt:Secret) is not configured");
+            ?? throw new ConfigurationException("EmailVerification:Pepper (or Jwt:Secret) is not configured");
 
         _passwordResetPepper =
             configuration["PasswordReset:Pepper"]
             ?? configuration["EmailVerification:Pepper"]
             ?? configuration["Jwt:Secret"]
-            ?? throw new InvalidOperationException("PasswordReset:Pepper (or EmailVerification:Pepper / Jwt:Secret) is not configured");
+            ?? throw new ConfigurationException("PasswordReset:Pepper (or EmailVerification:Pepper / Jwt:Secret) is not configured");
     }
 
     public async Task RequestEmailVerificationCodeAsync(string email)
@@ -173,7 +174,7 @@ public class AuthenticationService : IAuthenticationService
 
         // Check email
         if (await _userRepo.EmailExistsAsync(email.ToUpperInvariant()))
-            throw new Exception("Email already registered");
+            throw new DuplicateEmailException(email);
 
         // Create user domain entity
         var user = new User(email, username, UserRole.Student);
@@ -212,6 +213,10 @@ public class AuthenticationService : IAuthenticationService
 
         // Check if user is active
         if (!user.IsActive)
+            return null;
+
+        //  Check if email is verified before allowing login
+        if (!user.IsEmailVerified)
             return null;
 
         // Generate tokens
@@ -425,13 +430,18 @@ private async Task<AuthResponseDto?> AuthenticateExternalAsync(ExternalAuthIdent
     // 1) Find by external login link
     var user = await _userRepo.GetByExternalLoginAsync(identity.Provider, identity.ProviderUserId);
 
-    // 2) If not found, try link by email only for Google and only when Google asserts it's verified.
-    // (For Facebook, we'll avoid email-linking until debug_token verification is implemented.)
-    if (user == null
-        && identity.Provider == ExternalAuthProvider.Google
-        && identity.EmailVerified
-        && !string.IsNullOrWhiteSpace(identity.Email))
-        user = await _userRepo.GetByEmailAsync(identity.Email.Trim().ToUpperInvariant());
+    // 2) If not found, try link by email.
+    // Google: only when verified. Facebook: allow link by email but keep unverified.
+    if (user == null && !string.IsNullOrWhiteSpace(identity.Email))
+    {
+        var normalizedEmail = identity.Email.Trim().ToUpperInvariant();
+
+        if (identity.Provider == ExternalAuthProvider.Google && identity.EmailVerified)
+            user = await _userRepo.GetByEmailAsync(normalizedEmail);
+
+        if (identity.Provider == ExternalAuthProvider.Facebook)
+            user = await _userRepo.GetByEmailAsync(normalizedEmail);
+    }
 
     // 3) If still not found, create a new user (OAuth-only)
     if (user == null)

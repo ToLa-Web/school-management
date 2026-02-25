@@ -1,0 +1,123 @@
+// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+// import 'package:google_sign_in/google_sign_in.dart';
+// import 'package:tamdansers/services/api_models.dart';
+// import 'package:tamdansers/services/api_service.dart';
+
+// class OAuthService {
+//   static final OAuthService _instance = OAuthService._internal();
+//   factory OAuthService() => _instance;
+//   OAuthService._internal();
+
+//   final _apiService = ApiService();
+//   final _googleSignIn = GoogleSignIn(
+//     scopes: ['email', 'profile'],
+//     serverClientId:
+//         '794820976693-qnn42t12a4pba2ipm3cue6f7g82hod57.apps.googleusercontent.com',
+//   );
+
+//   /// Sign in with Google, send idToken to backend
+//   Future<AuthResponseDto?> signInWithGoogle() async {
+//     try {
+//       final account = await _googleSignIn.signIn();
+//       if (account == null) return null; // User cancelled
+
+//       final auth = await account.authentication;
+//       final idToken = auth.idToken;
+//       if (idToken == null) throw Exception('Failed to get Google ID token');
+
+//       return await _apiService.authenticateWithGoogle(idToken);
+//     } catch (e) {
+//       rethrow;
+//     }
+//   }
+
+//   /// Sign in with Facebook, send accessToken to backend
+//   Future<AuthResponseDto?> signInWithFacebook() async {
+//     try {
+//       final result = await FacebookAuth.instance.login(
+//         permissions: ['email', 'public_profile'],
+//       );
+
+//       if (result.status == LoginStatus.cancelled) return null;
+//       if (result.status != LoginStatus.success) {
+//         throw Exception(result.message ?? 'Facebook login failed');
+//       }
+
+//       final accessToken = result.accessToken?.tokenString;
+//       if (accessToken == null) throw Exception('Failed to get Facebook token');
+
+//       return await _apiService.authenticateWithFacebook(accessToken);
+//     } catch (e) {
+//       rethrow;
+//     }
+//   }
+// }
+import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:tamdansers/services/api_models.dart';
+import 'package:tamdansers/services/api_service.dart';
+
+class OAuthService {
+  static final OAuthService _instance = OAuthService._internal();
+  factory OAuthService() => _instance;
+  OAuthService._internal();
+
+  final _apiService = ApiService();
+
+  // FIX: Access the singleton instance
+  final _googleSignIn = GoogleSignIn.instance;
+
+  /// Updated initialization for v7+
+  Future<void> initializeGoogle() async {
+    // Note: 'scopes' is no longer a parameter here.
+    await _googleSignIn.initialize(
+      serverClientId:
+          '794820976693-qnn42t12a4pba2ipm3cue6f7g82hod57.apps.googleusercontent.com',
+    );
+  }
+
+  /// Sign in with Google, send idToken to backend
+  Future<AuthResponseDto?> signInWithGoogle() async {
+    try {
+      // Ensure plugin is initialized
+      await initializeGoogle();
+
+      // FIX: Use 'authenticate' and pass scopes into 'scopeHint'
+      final account = await _googleSignIn.authenticate(
+        scopeHint: ['email', 'profile'],
+      );
+
+      // In v7+, 'authentication' is a synchronous getter
+      final auth = account.authentication;
+      final idToken = auth.idToken;
+
+      if (idToken == null) throw Exception('Failed to get Google ID token');
+
+      return await _apiService.authenticateWithGoogle(idToken);
+    } catch (e) {
+      // Users cancelling will throw a GoogleSignInException
+      rethrow;
+    }
+  }
+
+  /// Sign in with Facebook, send accessToken to backend
+  Future<AuthResponseDto?> signInWithFacebook() async {
+    try {
+      final result = await FacebookAuth.instance.login(
+        permissions: ['email', 'public_profile'],
+      );
+
+      if (result.status == LoginStatus.cancelled) return null;
+      if (result.status != LoginStatus.success) {
+        throw Exception(result.message ?? 'Facebook login failed');
+      }
+
+      final accessToken = result.accessToken?.tokenString;
+      if (accessToken == null) throw Exception('Failed to get Facebook token');
+
+      return await _apiService.authenticateWithFacebook(accessToken);
+    } catch (e) {
+      rethrow;
+    }
+  }
+}
