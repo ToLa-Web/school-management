@@ -5,16 +5,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:tamdansers/services/api_service.dart';
-import 'package:tamdansers/services/api_models.dart';
-
-void main() {
-  runApp(
-    const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: AttendanceDashboard(),
-    ),
-  );
-}
 
 class AttendanceDashboard extends StatefulWidget {
   const AttendanceDashboard({super.key});
@@ -24,88 +14,29 @@ class AttendanceDashboard extends StatefulWidget {
 }
 
 class _AttendanceDashboardState extends State<AttendanceDashboard> {
-  final Color primaryColor = const Color(0xFF0D3B66);
-  final Color scaffoldBg = const Color(0xFFF3F6F8);
+  static const Color primaryColor = Color(0xFF0D3B66);
+  static const Color scaffoldBg = Color(0xFFF3F6F8);
 
   // State for Calendar
   DateTime _focusedDay = DateTime(2024, 4, 1);
   DateTime? _selectedDay;
   final ScrollController _scrollController = ScrollController();
+  final ApiService _api = ApiService();
 
   // Selected period for line chart
   String _selectedPeriod = "Week";
 
-  final List<Map<String, dynamic>> subjectsData = [
-    {
-      "name": "Khmer",
-      "progress": 0.98,
-      "color": const Color(0xFF50E3C2),
-      "absent": 1,
-      "present": 45,
-      "late": 2,
-      "permission": 1,
-      "total": 49,
-    },
-    {
-      "name": "Math",
-      "progress": 0.85,
-      "color": const Color(0xFFFFB75E),
-      "absent": 4,
-      "present": 40,
-      "late": 3,
-      "permission": 0,
-      "total": 47,
-    },
-    {
-      "name": "Physics",
-      "progress": 0.92,
-      "color": const Color(0xFF4A90E2),
-      "absent": 2,
-      "present": 42,
-      "late": 1,
-      "permission": 2,
-      "total": 47,
-    },
-    {
-      "name": "Chemistry",
-      "progress": 0.78,
-      "color": const Color(0xFFB86DFF),
-      "absent": 6,
-      "present": 38,
-      "late": 4,
-      "permission": 1,
-      "total": 49,
-    },
-    {
-      "name": "Biology",
-      "progress": 0.95,
-      "color": const Color(0xFFF95738),
-      "absent": 1,
-      "present": 44,
-      "late": 0,
-      "permission": 3,
-      "total": 48,
-    },
-    {
-      "name": "History",
-      "progress": 0.95,
-      "color": const Color(0xFF4A4A4A),
-      "absent": 1,
-      "present": 40,
-      "late": 1,
-      "permission": 2,
-      "total": 44,
-    },
-    {
-      "name": "English",
-      "progress": 0.88,
-      "color": const Color(0xFFFF6B6B),
-      "absent": 3,
-      "present": 39,
-      "late": 2,
-      "permission": 1,
-      "total": 45,
-    },
+  // Populated dynamically from attendance API (grouped by classroom)
+  List<Map<String, dynamic>> subjectsData = [];
+
+  static const List<Color> _classroomColors = [
+    Color(0xFF50E3C2),
+    Color(0xFFFFB75E),
+    Color(0xFF4A90E2),
+    Color(0xFFB86DFF),
+    Color(0xFFF95738),
+    Color(0xFF4A4A4A),
+    Color(0xFFFF6B6B),
   ];
 
   // Weekly attendance data for line chart
@@ -139,7 +70,6 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
   int _totalPresent = 0;
   int _totalAbsent = 0;
   int _totalLate = 0;
-  bool _attendanceLoading = false;
 
   @override
   void initState() {
@@ -147,17 +77,23 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
     _loadAttendance();
   }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadAttendance() async {
-    setState(() => _attendanceLoading = true);
     try {
-      final entityId = await ApiService().getEntityId();
+      final entityId = await _api.getEntityId();
       if (entityId == null || entityId.isEmpty) {
-        setState(() => _attendanceLoading = false);
         return;
       }
-      final records = await ApiService().getStudentAttendanceHistory(entityId);
+      final records = await _api.getStudentAttendanceHistory(entityId);
       final Map<DateTime, String> newRecords = {};
       int present = 0, absent = 0, late = 0;
+      // Group by classroom name for the subject-breakdown chart
+      final Map<String, Map<String, int>> classBreakdown = {};
       for (final r in records) {
         try {
           final parts = r.date.split('T').first.split('-');
@@ -168,11 +104,51 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
               int.parse(parts[2]),
             );
             newRecords[dt] = r.status;
-            if (r.status == 'Present') present++;
-            else if (r.status == 'Absent') absent++;
-            else if (r.status == 'Late') late++;
+            if (r.status == 'Present') {
+              present++;
+            } else if (r.status == 'Absent') {
+              absent++;
+            } else if (r.status == 'Late') {
+              late++;
+            }
           }
         } catch (_) {}
+        // Classroom-level breakdown
+        final cName = (r.classroomName?.isNotEmpty == true) ? r.classroomName! : 'Class';
+        classBreakdown.putIfAbsent(
+          cName, () => {'present': 0, 'absent': 0, 'late': 0, 'permission': 0});
+        final bucket = classBreakdown[cName]!;
+        if (r.status == 'Present') {
+          bucket['present'] = bucket['present']! + 1;
+        } else if (r.status == 'Absent') {
+          bucket['absent'] = bucket['absent']! + 1;
+        } else if (r.status == 'Late') {
+          bucket['late'] = bucket['late']! + 1;
+        } else if (r.status == 'Permission') {
+          bucket['permission'] = bucket['permission']! + 1;
+        }
+      }
+      // Build subjectsData from classroom breakdown (fall back to static list if API empty)
+      final List<Map<String, dynamic>> newSubjects = [];
+      int colorIdx = 0;
+      for (final entry in classBreakdown.entries) {
+        final counts = entry.value;
+        final p  = counts['present']!;
+        final a  = counts['absent']!;
+        final l  = counts['late']!;
+        final pe = counts['permission']!;
+        final total = p + a + l + pe;
+        newSubjects.add({
+          'name':       entry.key,
+          'progress':   total > 0 ? p / total : 0.0,
+          'color':      _classroomColors[colorIdx % _classroomColors.length],
+          'present':    p,
+          'absent':     a,
+          'late':       l,
+          'permission': pe,
+          'total':      total,
+        });
+        colorIdx++;
       }
       if (mounted) {
         setState(() {
@@ -182,12 +158,10 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
           _totalPresent = present;
           _totalAbsent = absent;
           _totalLate = late;
-          _attendanceLoading = false;
+          if (newSubjects.isNotEmpty) subjectsData = newSubjects;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _attendanceLoading = false);
-    }
+    } catch (_) {}
   }
 
   @override
@@ -449,9 +423,10 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
           const SizedBox(height: 16),
 
           // Line chart
-          SizedBox(
-            height: 200,
-            child: LineChart(
+          RepaintBoundary(
+            child: SizedBox(
+              height: 200,
+              child: LineChart(
               LineChartData(
                 gridData: FlGridData(
                   show: true,
@@ -656,6 +631,7 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
                 ),
               ),
             ),
+          ),
           ),
 
           const SizedBox(height: 16),
@@ -1723,7 +1699,8 @@ class AttendanceDetailPage extends StatelessWidget {
                   ),
                 ],
               ),
-              child: LineChart(
+              child: RepaintBoundary(
+                child: LineChart(
                 LineChartData(
                   gridData: FlGridData(
                     show: true,
@@ -1921,6 +1898,7 @@ class AttendanceDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
+            ),
             ),
             const SizedBox(height: 24),
             Text(

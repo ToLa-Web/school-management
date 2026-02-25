@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tamdansers/services/api_service.dart';
 
 class ClassCourseStudentScreen extends StatefulWidget {
   const ClassCourseStudentScreen({super.key});
@@ -11,81 +12,71 @@ class ClassCourseStudentScreen extends StatefulWidget {
 }
 
 class _ClassCourseStudentScreenState extends State<ClassCourseStudentScreen> {
-  final List<Map<String, dynamic>> _allCourses = [
-    {
-      'title': 'Mathematics',
-      'lessons': '12 Lessons',
-      'progress': 0.82,
-      'percent': '82%',
-      'color': const Color(0xFF4A90E2),
-      'icon': Icons.calculate_rounded,
-    },
-    {
-      'title': 'Physics',
-      'lessons': '15 Lessons',
-      'progress': 0.68,
-      'percent': '68%',
-      'color': const Color(0xFFFFB75E),
-      'icon': Icons.bolt_rounded,
-    },
-    {
-      'title': 'Chemistry',
-      'lessons': '14 Lessons',
-      'progress': 0.72,
-      'percent': '72%',
-      'color': const Color(0xFF50E3C2),
-      'icon': Icons.science_rounded,
-    },
-    {
-      'title': 'Art History',
-      'lessons': '10 Lessons',
-      'progress': 0.45,
-      'percent': '45%',
-      'color': const Color(0xFFB86DFF),
-      'icon': Icons.palette_rounded,
-    },
-    {
-      'title': 'Biology',
-      'lessons': '16 Lessons',
-      'progress': 0.90,
-      'percent': '90%',
-      'color': const Color(0xFFF95738),
-      'icon': Icons.biotech_rounded,
-    },
-    {
-      'title': 'History',
-      'lessons': '12 Lessons',
-      'progress': 0.55,
-      'percent': '55%',
-      'color': const Color(0xFF4A4A4A),
-      'icon': Icons.museum_rounded,
-    },
-    {
-      'title': 'Computer Science',
-      'lessons': '20 Lessons',
-      'progress': 0.35,
-      'percent': '35%',
-      'color': const Color(0xFF0D3B66),
-      'icon': Icons.computer_rounded,
-    },
+  List<Map<String, dynamic>> _allCourses = [];
+  List<Map<String, dynamic>> _foundCourses = [];
+  bool _isLoading = true;
+
+  // Color and icon palette for subjects
+  static const List<Color> _palette = [
+    Color(0xFF4A90E2), Color(0xFFFFB75E), Color(0xFF50E3C2),
+    Color(0xFFB86DFF), Color(0xFFF95738), Color(0xFF4A4A4A),
+    Color(0xFFFF6B6B), Color(0xFF0D3B66),
   ];
 
-  List<Map<String, dynamic>> _foundCourses = [];
+  static IconData _iconForSubject(String name) {
+    final n = name.toLowerCase();
+    if (n.contains('math')) return Icons.calculate_rounded;
+    if (n.contains('phys')) return Icons.bolt_rounded;
+    if (n.contains('chem')) return Icons.science_rounded;
+    if (n.contains('bio'))  return Icons.biotech_rounded;
+    if (n.contains('hist')) return Icons.museum_rounded;
+    if (n.contains('eng'))  return Icons.translate_rounded;
+    if (n.contains('comp') || n.contains('it')) return Icons.computer_rounded;
+    if (n.contains('art'))  return Icons.palette_rounded;
+    if (n.contains('khmer') || n.contains('kh')) return Icons.menu_book_rounded;
+    return Icons.book_rounded;
+  }
 
   @override
   void initState() {
-    _foundCourses = _allCourses;
     super.initState();
+    _loadSubjects();
+  }
+
+  Future<void> _loadSubjects() async {
+    try {
+      final subjects = await ApiService().getSubjects();
+      final courses = subjects.asMap().entries.map((e) {
+        final sub = e.value;
+        final idx = e.key;
+        final teacher = sub.teacherNames.isNotEmpty ? sub.teacherNames.first : '';
+        return {
+          'title':    sub.subjectName,
+          'lessons':  teacher.isNotEmpty ? 'by $teacher' : 'No teacher assigned',
+          'progress': 0.0,
+          'percent':  '—',
+          'color':    _palette[idx % _palette.length],
+          'icon':     _iconForSubject(sub.subjectName),
+        };
+      }).toList();
+      if (mounted) {
+        setState(() {
+          _allCourses   = courses;
+          _foundCourses = courses;
+          _isLoading    = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   void _runFilter(String enteredKeyword) {
     setState(() {
       _foundCourses = _allCourses
-          .where(
-            (course) => course["title"].toLowerCase().contains(
-              enteredKeyword.toLowerCase(),
-            ),
-          )
+          .where((c) => (c['title'] as String)
+              .toLowerCase()
+              .contains(enteredKeyword.toLowerCase()))
           .toList();
     });
   }
@@ -134,7 +125,30 @@ class _ClassCourseStudentScreenState extends State<ClassCourseStudentScreen> {
           ),
           SliverPadding(
             padding: const EdgeInsets.all(24),
-            sliver: SliverList(
+            sliver: _isLoading
+                ? SliverToBoxAdapter(
+                    child: Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(48.0),
+                        child: CircularProgressIndicator(
+                          color: const Color(0xFF0D3B66),
+                        ),
+                      ),
+                    ),
+                  )
+                : _foundCourses.isEmpty
+                    ? SliverToBoxAdapter(
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(48.0),
+                            child: Text(
+                              'No subjects found.',
+                              style: GoogleFonts.inter(color: Colors.grey),
+                            ),
+                          ),
+                        ),
+                      )
+                    : SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) =>
                     _buildModernCourseCard(_foundCourses[index]),

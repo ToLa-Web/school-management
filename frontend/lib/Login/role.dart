@@ -16,7 +16,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
 
-  final List<Map<String, dynamic>> _roles = [
+  static final List<Map<String, dynamic>> _roles = [
     {
       'title': 'Student',
       'subtitle': 'Access courses & grades',
@@ -32,14 +32,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       'color': const Color(0xFF50E3C2),
       'gradient': [const Color(0xFF50E3C2), const Color(0xFF7EECD4)],
       'route': '/login-teacher',
-    },
-    {
-      'title': 'Parent',
-      'subtitle': "Monitor child's progress",
-      'icon': Icons.family_restroom_rounded,
-      'color': const Color(0xFFFFB75E),
-      'gradient': [const Color(0xFFFFB75E), const Color(0xFFFFCF8A)],
-      'route': '/ParentLoginScreen',
     },
   ];
 
