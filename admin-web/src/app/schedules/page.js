@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getClassroomSchedule, getClassrooms } from '@/lib/api';
-import { CalendarDays, Search, AlertCircle, Clock, BookOpen, User, School } from 'lucide-react';
+import { getClassroomSchedule, getClassrooms, getSubjects, getTeachers, createSchedule, deleteSchedule } from '@/lib/api';
+import { CalendarDays, Search, AlertCircle, Clock, BookOpen, User, School, Plus, X, Trash2 } from 'lucide-react';
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const DAY_COLORS = {
@@ -20,16 +20,29 @@ export default function SchedulesPage() {
 
   const [schedules, setSchedules] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [teachers, setTeachers] = useState([]);
   const [classroomId, setClassroomId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [scheduleForm, setScheduleForm] = useState({
+    classroomId: '', subjectId: '', teacherId: '', dayOfWeek: 'Monday', time: '08:00'
+  });
 
   useEffect(() => {
-    async function loadClassrooms() {
-      const data = await getClassrooms(1, 100);
-      setClassrooms(data?.items ?? data ?? []);
+    async function loadData() {
+      const [c, s, t] = await Promise.all([
+        getClassrooms(1, 100),
+        getSubjects(),
+        getTeachers(1, 200),
+      ]);
+      setClassrooms(c?.items ?? c ?? []);
+      setSubjects(Array.isArray(s) ? s : s?.items ?? []);
+      setTeachers(t?.items ?? t ?? []);
     }
-    loadClassrooms();
+    loadData();
   }, []);
 
   async function handleSearch(e) {
@@ -46,6 +59,37 @@ export default function SchedulesPage() {
     setLoading(false);
   }
 
+  async function handleCreateSchedule(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const res = await createSchedule(scheduleForm);
+      if (res?.ok) {
+        setShowForm(false);
+        setScheduleForm({ classroomId: '', subjectId: '', teacherId: '', dayOfWeek: 'Monday', time: '08:00' });
+        // Reload current schedule if viewing same classroom
+        if (classroomId) handleSearch();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message ?? data?.error ?? 'Failed to create schedule entry.');
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDeleteSchedule(id) {
+    if (!confirm('Delete this schedule entry?')) return;
+    setError('');
+    const res = await deleteSchedule(id);
+    if (res?.ok) {
+      setSchedules((prev) => prev.filter((s) => s.id !== id));
+    } else {
+      setError('Failed to delete schedule entry.');
+    }
+  }
+
   // Group by day of week
   const byDay = DAYS.reduce((acc, day) => {
     acc[day] = schedules.filter((s) => s.dayOfWeek === day);
@@ -54,18 +98,91 @@ export default function SchedulesPage() {
 
   const hasSchedules = schedules.length > 0;
 
+  const selectCls = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent bg-slate-50';
+
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
-          <CalendarDays className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center">
+            <CalendarDays className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Schedules</h1>
+            <p className="text-sm text-slate-500">View and manage weekly class schedules</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Schedules</h1>
-          <p className="text-sm text-slate-500">View weekly class schedules</p>
-        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-rose-500/20 hover:shadow-rose-500/30 transition-all flex items-center gap-2"
+        >
+          {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {showForm ? 'Cancel' : 'Add Schedule'}
+        </button>
       </div>
+
+      {/* Create Schedule Form */}
+      {showForm && (
+        <form onSubmit={handleCreateSchedule} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
+          <h3 className="font-semibold text-slate-900 mb-4">New Schedule Entry</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Classroom *</label>
+              <select required value={scheduleForm.classroomId}
+                onChange={(e) => setScheduleForm(f => ({ ...f, classroomId: e.target.value }))} className={selectCls}>
+                <option value="">Select classroom...</option>
+                {classrooms.map((c) => (
+                  <option key={c.id} value={c.id}>{c.className ?? c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Subject *</label>
+              <select required value={scheduleForm.subjectId}
+                onChange={(e) => setScheduleForm(f => ({ ...f, subjectId: e.target.value }))} className={selectCls}>
+                <option value="">Select subject...</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>{s.subjectName ?? s.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Teacher *</label>
+              <select required value={scheduleForm.teacherId}
+                onChange={(e) => setScheduleForm(f => ({ ...f, teacherId: e.target.value }))} className={selectCls}>
+                <option value="">Select teacher...</option>
+                {teachers.map((t) => (
+                  <option key={t.id} value={t.id}>{t.firstName} {t.lastName}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Day of Week *</label>
+              <select required value={scheduleForm.dayOfWeek}
+                onChange={(e) => setScheduleForm(f => ({ ...f, dayOfWeek: e.target.value }))} className={selectCls}>
+                {DAYS.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Time *</label>
+              <input type="time" required value={scheduleForm.time}
+                onChange={(e) => setScheduleForm(f => ({ ...f, time: e.target.value }))} className={selectCls} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <button type="submit" disabled={saving}
+              className="bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-rose-500/20 transition-all flex items-center gap-2">
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              {saving ? 'Saving...' : 'Create Entry'}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Classroom filter */}
       <form
@@ -79,11 +196,11 @@ export default function SchedulesPage() {
               value={classroomId}
               onChange={(e) => setClassroomId(e.target.value)}
               required
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent bg-slate-50"
+              className={selectCls}
             >
               <option value="">— Select a classroom —</option>
               {classrooms.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>{c.className ?? c.name}</option>
               ))}
             </select>
           </div>
@@ -103,6 +220,7 @@ export default function SchedulesPage() {
         <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-xl p-4 mb-4">
           <AlertCircle className="w-5 h-5 shrink-0" />
           {error}
+          <button onClick={() => setError('')} className="ml-auto text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -148,6 +266,13 @@ export default function SchedulesPage() {
                         <School className="w-4 h-4 text-emerald-500" />
                         <span className="text-slate-500">{s.classroomName ?? s.classroomId ?? '—'}</span>
                       </div>
+                      <button
+                        onClick={() => handleDeleteSchedule(s.id)}
+                        className="text-slate-300 hover:text-red-500 transition-colors ml-2"
+                        title="Delete entry"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   ))}
                 </div>

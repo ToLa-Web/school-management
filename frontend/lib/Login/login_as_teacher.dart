@@ -96,6 +96,11 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
             orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
           );
           await _apiService.saveEntityId(match.id);
+          // Update display name with actual teacher name instead of auth username
+          await _apiService.saveUserData(
+            username: match.fullName,
+            email: response.email,
+          );
         } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
@@ -142,6 +147,10 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
             orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
           );
           await _apiService.saveEntityId(match.id);
+          await _apiService.saveUserData(
+            username: match.fullName,
+            email: response.email,
+          );
         } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
@@ -186,6 +195,10 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
             orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
           );
           await _apiService.saveEntityId(match.id);
+          await _apiService.saveUserData(
+            username: match.fullName,
+            email: response.email,
+          );
         } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(

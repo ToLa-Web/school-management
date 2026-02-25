@@ -1,24 +1,27 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getGrades, getClassrooms, getSubjects } from '@/lib/api';
-import { BarChart3, Search, AlertCircle, Award, TrendingUp, TrendingDown } from 'lucide-react';
+import { getGrades, createGrade, deleteGrade, getStudents, getSubjects } from '@/lib/api';
+import { BarChart3, Search, AlertCircle, Award, TrendingUp, TrendingDown, Plus, Trash2, X } from 'lucide-react';
 
 export default function GradesPage() {
   useAuth();
 
   const [grades, setGrades] = useState([]);
-  const [classrooms, setClassrooms] = useState([]);
+  const [students, setStudents] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [subjectId, setSubjectId] = useState('');
   const [semester, setSemester] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [gradeForm, setGradeForm] = useState({ studentId: '', subjectId: '', semester: '1', score: '' });
 
   useEffect(() => {
     async function loadFilters() {
-      const [c, s] = await Promise.all([getClassrooms(1, 100), getSubjects()]);
-      setClassrooms(c?.items ?? c ?? []);
+      const [stu, s] = await Promise.all([getStudents(1, 200), getSubjects()]);
+      setStudents(stu?.items ?? stu ?? []);
       setSubjects(Array.isArray(s) ? s : s?.items ?? []);
     }
     loadFilters();
@@ -40,6 +43,40 @@ export default function GradesPage() {
     setLoading(false);
   }
 
+  async function handleCreateGrade(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const res = await createGrade({
+        studentId: gradeForm.studentId,
+        subjectId: gradeForm.subjectId,
+        semester: parseInt(gradeForm.semester),
+        score: parseFloat(gradeForm.score),
+      });
+      if (res?.ok) {
+        setShowForm(false);
+        setGradeForm({ studentId: '', subjectId: '', semester: '1', score: '' });
+        handleSearch();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message ?? data?.error ?? 'Failed to create grade.');
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id) {
+    if (!confirm('Delete this grade record? This cannot be undone.')) return;
+    const res = await deleteGrade(id);
+    if (res?.ok) {
+      setGrades((prev) => prev.filter((g) => g.id !== id));
+    } else {
+      setError('Failed to delete grade.');
+    }
+  }
+
   function gradeLabel(score) {
     if (score === undefined || score === null) return '—';
     if (score >= 90) return 'A';
@@ -57,18 +94,81 @@ export default function GradesPage() {
     return 'bg-red-100 text-red-700';
   }
 
+  const selectCls = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-slate-50';
+
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-          <BarChart3 className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+            <BarChart3 className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Grades</h1>
+            <p className="text-sm text-slate-500">View and manage student grades</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Grades</h1>
-          <p className="text-sm text-slate-500">View and analyze student grades</p>
-        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-violet-500/20 hover:shadow-violet-500/30 transition-all flex items-center gap-2"
+        >
+          {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {showForm ? 'Cancel' : 'Add Grade'}
+        </button>
       </div>
+
+      {/* Add Grade Form */}
+      {showForm && (
+        <form onSubmit={handleCreateGrade} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
+          <h3 className="font-semibold text-slate-900 mb-4">Record New Grade</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Student *</label>
+              <select required value={gradeForm.studentId} onChange={(e) => setGradeForm(f => ({ ...f, studentId: e.target.value }))} className={selectCls}>
+                <option value="">Select student...</option>
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Subject *</label>
+              <select required value={gradeForm.subjectId} onChange={(e) => setGradeForm(f => ({ ...f, subjectId: e.target.value }))} className={selectCls}>
+                <option value="">Select subject...</option>
+                {subjects.map((s) => (
+                  <option key={s.id} value={s.id}>{s.subjectName}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Semester *</label>
+              <select required value={gradeForm.semester} onChange={(e) => setGradeForm(f => ({ ...f, semester: e.target.value }))} className={selectCls}>
+                <option value="1">Semester 1</option>
+                <option value="2">Semester 2</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Score *</label>
+              <input type="number" required min="0" max="100" step="0.1" value={gradeForm.score}
+                onChange={(e) => setGradeForm(f => ({ ...f, score: e.target.value }))}
+                placeholder="0-100"
+                className={selectCls} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <button type="submit" disabled={saving}
+              className="bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-violet-500/20 transition-all flex items-center gap-2">
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              {saving ? 'Saving...' : 'Record Grade'}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Filters */}
       <form
@@ -78,11 +178,7 @@ export default function GradesPage() {
         <div className="flex flex-wrap gap-4 items-end">
           <div className="flex-1 min-w-[180px]">
             <label className="block text-xs font-semibold text-slate-600 mb-1.5">Subject</label>
-            <select
-              value={subjectId}
-              onChange={(e) => setSubjectId(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-slate-50"
-            >
+            <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className={selectCls}>
               <option value="">All Subjects</option>
               {subjects.map((s) => (
                 <option key={s.id} value={s.id}>{s.subjectName}</option>
@@ -92,11 +188,7 @@ export default function GradesPage() {
 
           <div className="flex-1 min-w-[160px]">
             <label className="block text-xs font-semibold text-slate-600 mb-1.5">Semester</label>
-            <select
-              value={semester}
-              onChange={(e) => setSemester(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-slate-50"
-            >
+            <select value={semester} onChange={(e) => setSemester(e.target.value)} className={selectCls}>
               <option value="">All Semesters</option>
               <option value="1">Semester 1</option>
               <option value="2">Semester 2</option>
@@ -117,6 +209,7 @@ export default function GradesPage() {
         <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-xl p-4 mb-4">
           <AlertCircle className="w-5 h-5 shrink-0" />
           {error}
+          <button onClick={() => setError('')} className="ml-auto text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
         </div>
       )}
 
@@ -141,6 +234,7 @@ export default function GradesPage() {
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Score</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Grade</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Recorded</th>
+                <th className="px-5 py-4 w-16"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
@@ -176,6 +270,15 @@ export default function GradesPage() {
                   </td>
                   <td className="px-5 py-4 text-slate-500">
                     {g.createdAt ? new Date(g.createdAt).toLocaleDateString() : '—'}
+                  </td>
+                  <td className="px-5 py-4">
+                    <button
+                      onClick={() => handleDelete(g.id)}
+                      className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </td>
                 </tr>
               ))}

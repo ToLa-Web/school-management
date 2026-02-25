@@ -1,25 +1,32 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
-import { getAttendance, getClassrooms } from '@/lib/api';
-import { ClipboardCheck, Search, AlertCircle, CheckCircle, XCircle, Clock, Calendar } from 'lucide-react';
+import { getAttendance, createAttendance, getClassrooms, getStudents } from '@/lib/api';
+import { ClipboardCheck, Search, AlertCircle, CheckCircle, XCircle, Clock, Calendar, Plus, X } from 'lucide-react';
 
 export default function AttendancePage() {
   useAuth();
 
   const [records, setRecords] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
+  const [students, setStudents] = useState([]);
   const [classroomId, setClassroomId] = useState('');
   const [date, setDate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showForm, setShowForm] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [attendanceForm, setAttendanceForm] = useState({
+    studentId: '', classroomId: '', date: new Date().toISOString().slice(0, 10), status: 'Present', notes: ''
+  });
 
   useEffect(() => {
-    async function loadClassrooms() {
-      const data = await getClassrooms(1, 100);
-      setClassrooms(data?.items ?? data ?? []);
+    async function loadData() {
+      const [c, s] = await Promise.all([getClassrooms(1, 100), getStudents(1, 200)]);
+      setClassrooms(c?.items ?? c ?? []);
+      setStudents(s?.items ?? s ?? []);
     }
-    loadClassrooms();
+    loadData();
   }, []);
 
   async function handleSearch(e) {
@@ -33,6 +40,27 @@ export default function AttendancePage() {
       setError('Failed to load attendance records.');
     }
     setLoading(false);
+  }
+
+  async function handleCreateAttendance(e) {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try {
+      const res = await createAttendance(attendanceForm);
+      if (res?.ok) {
+        setShowForm(false);
+        setAttendanceForm({
+          studentId: '', classroomId: '', date: new Date().toISOString().slice(0, 10), status: 'Present', notes: ''
+        });
+        handleSearch();
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setError(data?.message ?? data?.error ?? 'Failed to record attendance.');
+      }
+    } finally {
+      setSaving(false);
+    }
   }
 
   function statusIcon(status) {
@@ -52,18 +80,89 @@ export default function AttendancePage() {
     return map[status?.toLowerCase()] ?? 'bg-slate-100 text-slate-600';
   }
 
+  const selectCls = 'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-slate-50';
+
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-          <ClipboardCheck className="w-5 h-5 text-white" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+            <ClipboardCheck className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Attendance</h1>
+            <p className="text-sm text-slate-500">Track student attendance records</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Attendance</h1>
-          <p className="text-sm text-slate-500">Track student attendance records</p>
-        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/30 transition-all flex items-center gap-2"
+        >
+          {showForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+          {showForm ? 'Cancel' : 'Record Attendance'}
+        </button>
       </div>
+
+      {/* Add Attendance Form */}
+      {showForm && (
+        <form onSubmit={handleCreateAttendance} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 mb-6">
+          <h3 className="font-semibold text-slate-900 mb-4">Record Attendance</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Student *</label>
+              <select required value={attendanceForm.studentId}
+                onChange={(e) => setAttendanceForm(f => ({ ...f, studentId: e.target.value }))} className={selectCls}>
+                <option value="">Select student...</option>
+                {students.map((s) => (
+                  <option key={s.id} value={s.id}>{s.firstName} {s.lastName}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Classroom *</label>
+              <select required value={attendanceForm.classroomId}
+                onChange={(e) => setAttendanceForm(f => ({ ...f, classroomId: e.target.value }))} className={selectCls}>
+                <option value="">Select classroom...</option>
+                {classrooms.map((c) => (
+                  <option key={c.id} value={c.id}>{c.className ?? c.name}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Date *</label>
+              <input type="date" required value={attendanceForm.date}
+                onChange={(e) => setAttendanceForm(f => ({ ...f, date: e.target.value }))} className={selectCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Status *</label>
+              <select required value={attendanceForm.status}
+                onChange={(e) => setAttendanceForm(f => ({ ...f, status: e.target.value }))} className={selectCls}>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Late">Late</option>
+              </select>
+            </div>
+            <div className="sm:col-span-2">
+              <label className="block text-xs font-semibold text-slate-600 mb-1.5">Notes</label>
+              <input type="text" value={attendanceForm.notes}
+                onChange={(e) => setAttendanceForm(f => ({ ...f, notes: e.target.value }))}
+                placeholder="Optional notes..." className={selectCls} />
+            </div>
+          </div>
+          <div className="mt-4">
+            <button type="submit" disabled={saving}
+              className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 transition-all flex items-center gap-2">
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              {saving ? 'Saving...' : 'Record'}
+            </button>
+          </div>
+        </form>
+      )}
 
       {/* Filters */}
       <form
@@ -76,11 +175,11 @@ export default function AttendancePage() {
             <select
               value={classroomId}
               onChange={(e) => setClassroomId(e.target.value)}
-              className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent bg-slate-50"
+              className={selectCls}
             >
               <option value="">All Classrooms</option>
               {classrooms.map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id}>{c.className ?? c.name}</option>
               ))}
             </select>
           </div>
@@ -112,6 +211,7 @@ export default function AttendancePage() {
         <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-xl p-4 mb-4">
           <AlertCircle className="w-5 h-5 shrink-0" />
           {error}
+          <button onClick={() => setError('')} className="ml-auto text-red-400 hover:text-red-600"><X className="w-4 h-4" /></button>
         </div>
       )}
 
