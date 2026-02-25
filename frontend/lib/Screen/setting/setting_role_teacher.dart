@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 
-void main() => runApp(MaterialApp(home: SettingsScreenTeacher()));
-
 class SettingsScreenTeacher extends StatelessWidget {
   const SettingsScreenTeacher({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8F9FB),
+      backgroundColor: const Color(0xFFF8F9FB),
       appBar: AppBar(
-        title: Text(
-          'ការកំណត់',
+        title: const Text(
+          'Settings',
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.transparent,
@@ -19,16 +17,18 @@ class SettingsScreenTeacher extends StatelessWidget {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Profile Section
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             Center(
               child: Stack(
                 children: [
                   CircleAvatar(
                     radius: 50,
-                    backgroundImage: NetworkImage(
-                      'https://via.placeholder.com/150',
-                    ), // Replace with actual image
+                    backgroundColor: Colors.grey.shade200,
+                    child: Icon(
+                      Icons.person_rounded,
+                      size: 52,
+                      color: Colors.grey.shade400,
+                    ),
                   ),
                   Positioned(
                     bottom: 0,
@@ -36,69 +36,59 @@ class SettingsScreenTeacher extends StatelessWidget {
                     child: CircleAvatar(
                       radius: 15,
                       backgroundColor: Colors.teal,
-                      child: Icon(Icons.edit, size: 15, color: Colors.white),
+                      child: const Icon(Icons.edit, size: 15, color: Colors.white),
                     ),
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 10),
-            Text(
-              "លោក Alexander Smith",
+            const SizedBox(height: 10),
+            const Text(
+              "Alexander Smith",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            Text(
-              "គ្រូបង្រៀនថ្នាក់ទី ១២A",
-              style: TextStyle(color: Colors.grey),
-            ),
+            const Text("Teacher of Class 12A", style: TextStyle(color: Colors.grey)),
 
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-            // Settings Group 1
             _buildSettingsGroup([
-              _settingsTile(Icons.person_outline, "ព័ត៌មានគណនី", Colors.blue),
+              _settingsTile(Icons.person_outline, "Account Info", Colors.blue),
               _settingsTile(
                 Icons.notifications_none,
-                "ការកំណត់ការជូនដំណឹង",
+                "Notification Settings",
                 Colors.orange,
               ),
               _settingsTile(
                 Icons.language,
-                "ភាសា",
+                "Language",
                 Colors.indigo,
-                trailing: "ខ្មែរ/English",
+                trailing: "Khmer/English",
               ),
               _settingsTile(
                 Icons.lock_outline,
-                "សុវត្ថិភាព និងលេខសម្ងាត់",
+                "Security & Password",
                 Colors.green,
               ),
             ]),
 
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
 
-            // Settings Group 2
             _buildSettingsGroup([
               _settingsTile(
                 Icons.help_outline,
-                "ជំនួយ និងការគាំទ្រ",
+                "Help & Support",
                 Colors.blueGrey,
               ),
-              _settingsTile(
-                Icons.info_outline,
-                "អំពីកម្មវិធី",
-                Colors.blueGrey,
-              ),
+              _settingsTile(Icons.info_outline, "About App", Colors.blueGrey),
             ]),
 
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
 
-            // Logout Button
             TextButton.icon(
               onPressed: () {},
-              icon: Icon(Icons.logout, color: Colors.red),
-              label: Text(
-                "ចាកចេញ",
+              icon: const Icon(Icons.logout, color: Colors.red),
+              label: const Text(
+                "Log Out",
                 style: TextStyle(
                   color: Colors.red,
                   fontSize: 18,
@@ -107,13 +97,13 @@ class SettingsScreenTeacher extends StatelessWidget {
               ),
               style: TextButton.styleFrom(
                 backgroundColor: Colors.red.withValues(alpha: .05),
-                padding: EdgeInsets.symmetric(horizontal: 100, vertical: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 100, vertical: 15),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
             ),
-            SizedBox(height: 40),
+            const SizedBox(height: 40),
           ],
         ),
       ),
@@ -122,11 +112,11 @@ class SettingsScreenTeacher extends StatelessWidget {
 
   Widget _buildSettingsGroup(List<Widget> tiles) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
-        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+        boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5)],
       ),
       child: Column(children: tiles),
     );
@@ -140,20 +130,20 @@ class SettingsScreenTeacher extends StatelessWidget {
   }) {
     return ListTile(
       leading: Container(
-        padding: EdgeInsets.all(8),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: iconColor.withValues(alpha: .1),
           borderRadius: BorderRadius.circular(10),
         ),
         child: Icon(icon, color: iconColor),
       ),
-      title: Text(title, style: TextStyle(fontSize: 16)),
+      title: Text(title, style: const TextStyle(fontSize: 16)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (trailing != null)
-            Text(trailing, style: TextStyle(color: Colors.grey)),
-          Icon(Icons.chevron_right, color: Colors.grey),
+            Text(trailing, style: const TextStyle(color: Colors.grey)),
+          const Icon(Icons.chevron_right, color: Colors.grey),
         ],
       ),
       onTap: () {},

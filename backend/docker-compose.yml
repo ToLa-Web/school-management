@@ -1,18 +1,55 @@
-﻿version: "3.9"
+version: "3.9"
 
 services:
+  consul:
+    container_name: consul_server
+    image: consul:1.15.4
+    ports: 
+      - "8500:8500"
+      - "8600:8600/udp"
+    environment:
+      CONSUL_BIND_INTERFACE: eth0
+    command: agent -server -ui -bootstrap-expect=1 -client=0.0.0.0
+    volumes:
+      - consul_data:/consul/data
+    networks:
+      - school_network
+
+  api-gateway:
+    container_name: api_gateway
+    build:
+      context: ./services/api-gateway/ApiGateway
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+    depends_on:
+      - auth-service
+      - school-service
+      - consul
+    networks:
+      - school_network
+
   auth-service:
     container_name: auth_service
     build:
       context: ./services/auth-service/AuthService
     ports:
-      - "5001:8080"
+      - "5002:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__AuthDb: Host=auth-db;Port=5432;Database=auth_db;Username=auth_user;Password=auth_pass
       EmailSettings__AppPassword: ${EMAILSETTINGS_APP_PASSWORD}
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: AuthService
+      Jwt__Audience: AuthServiceClients
     depends_on:
       - auth-db
+      - consul
+    networks:
+      - school_network
 
   auth-db:
     container_name: auth_db
@@ -25,6 +62,76 @@ services:
       - "5433:5432"
     volumes:
       - auth_db_data:/var/lib/postgresql/data
+    networks:
+      - school_network
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4:latest
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@school.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    volumes:
+      - ./pgadmin-servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      - auth-db
+      - school-db
+    networks:
+      - school_network
+
+  school-service:
+    container_name: school_service
+    build:
+      context: ./services/school-service/SchoolService
+    ports:
+      - "5003:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__SchoolDb: Host=school-db;Port=5432;Database=school_db;Username=school_user;Password=school_pass
+      Jwt__Secret: ${JWT_SECRET}
+      Jwt__Issuer: AuthService
+      Jwt__Audience: AuthServiceClients
+    depends_on:
+      - school-db
+      - consul
+    networks:
+      - school_network
+
+  school-db:
+    container_name: school_db
+    image: postgres:16
+    environment:
+      POSTGRES_DB: school_db
+      POSTGRES_USER: school_user
+      POSTGRES_PASSWORD: school_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - school_db_data:/var/lib/postgresql/data
+    networks:
+      - school_network
+
+  admin-web:
+    container_name: admin_web
+    build:
+      context: ../admin-web
+    ports:
+      - "3000:3000"
+    environment:
+      API_URL: "http://api-gateway:8080"
+    depends_on:
+      - api-gateway
+    networks:
+      - school_network
 
 volumes:
   auth_db_data:
+  school_db_data:
+  consul_data:
+
+networks:
+  school_network:
+    driver: bridge

@@ -1,70 +1,3 @@
-// import 'package:flutter/material.dart';
-
-// class LoginScreen extends StatelessWidget {
-//   final int initialTab; 
-//   const LoginScreen({super.key, this.initialTab = 1});
-//   @override
-//   Widget build(BuildContext context) {
-//     return DefaultTabController(
-//       length: 3,
-//       initialIndex: initialTab, // This is the magic part that sets the tab!
-//       child: Scaffold(
-//         backgroundColor: Colors.white,
-//         body: SingleChildScrollView(
-//           child: Column(
-//             children: [
-//               const SizedBox(height: 60),
-//               // Logo from your image
-//               Container(
-//                 padding: const EdgeInsets.all(20),
-//                 decoration: BoxDecoration(
-//                   color: const Color(0xFFE3F2FD),
-//                   borderRadius: BorderRadius.circular(20),
-//                 ),
-//                 child: const Icon(
-//                   Icons.school,
-//                   size: 60,
-//                   color: Color(0xFF0D47A1),
-//                 ),
-//               ),
-//               const SizedBox(height: 24),
-//               const Text(
-//                 "សូមស្វាគមន៍មកវិញ",
-//                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//               ),
-//               const SizedBox(height: 30),
-
-//               // TabBar from your image
-//               Container(
-//                 margin: const EdgeInsets.symmetric(horizontal: 24),
-//                 padding: const EdgeInsets.all(4),
-//                 decoration: BoxDecoration(
-//                   color: const Color(0xFFF5F7F9),
-//                   borderRadius: BorderRadius.circular(12),
-//                 ),
-//                 child: TabBar(
-//                   indicator: BoxDecoration(
-//                     color: const Color(0xFF0D47A1),
-//                     borderRadius: BorderRadius.circular(8),
-//                   ),
-//                   labelColor: Colors.white,
-//                   unselectedLabelColor: Colors.grey,
-//                   tabs: const [
-//                     Tab(text: "គ្រូបង្រៀន"),
-//                     Tab(text: "សិស្ស"),
-//                     Tab(text: "មាតាបិតា"),
-//                   ],
-//                 ),
-//               ),
-
-//               // ... Add your TextFields and Login Button here ...
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
 import 'package:flutter/material.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -96,7 +29,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             const Text(
-              "សូមស្វាគមន៍មកវិញ",
+              "Welcome Back",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
@@ -117,9 +50,9 @@ class LoginScreen extends StatelessWidget {
                 labelColor: Colors.white,
                 unselectedLabelColor: Colors.grey,
                 tabs: const [
-                  Tab(text: "គ្រូបង្រៀន"),
-                  Tab(text: "សិស្ស"),
-                  Tab(text: "មាតាបិតា"),
+                  Tab(text: "Teacher"),
+                  Tab(text: "Student"),
+                  Tab(text: "Parent"),
                 ],
               ),
             ),
@@ -130,17 +63,17 @@ class LoginScreen extends StatelessWidget {
                 children: [
                   _buildLoginForm(
                     context,
-                    "គ្រូបង្រៀន",
+                    "Teacher",
                     Icons.badge_outlined,
                   ), // Teacher
                   _buildLoginForm(
                     context,
-                    "សិស្ស",
+                    "Student",
                     Icons.school_outlined,
                   ), // Student
                   _buildLoginForm(
                     context,
-                    "មាតាបិតា",
+                    "Parent",
                     Icons.family_restroom,
                   ), // Parent
                 ],
@@ -163,7 +96,7 @@ class LoginScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "ចូលប្រើជា $roleName",
+            "Login as $roleName",
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.blueGrey,
@@ -173,10 +106,8 @@ class LoginScreen extends StatelessWidget {
 
           // Identity Field
           _buildTextField(
-            label: roleName == "គ្រូបង្រៀន"
-                ? "លេខសម្គាល់គ្រូ"
-                : "លេខសម្គាល់សិស្ស",
-            hint: "បញ្ចូលលេខសម្គាល់របស់អ្នក",
+            label: roleName == "Teacher" ? "Teacher ID" : "Student ID",
+            hint: "Enter your ID",
             icon: Icons.person_outline,
           ),
 
@@ -184,7 +115,7 @@ class LoginScreen extends StatelessWidget {
 
           // Password Field
           _buildTextField(
-            label: "លេខសម្ងាត់",
+            label: "Password",
             hint: "••••••••",
             icon: Icons.lock_outline,
             isPassword: true,
@@ -195,7 +126,7 @@ class LoginScreen extends StatelessWidget {
             child: TextButton(
               onPressed: () {},
               child: const Text(
-                "ភ្លេចលេខសម្ងាត់?",
+                "Forgot Password?",
                 style: TextStyle(color: Color(0xFF0D47A1)),
               ),
             ),
@@ -216,7 +147,7 @@ class LoginScreen extends StatelessWidget {
               ),
               onPressed: () {},
               child: const Text(
-                "ចូលប្រើ",
+                "Login",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),

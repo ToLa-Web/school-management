@@ -36,11 +36,11 @@ class CourseProgressCard extends StatelessWidget {
           // Leading Image Section
           ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: Image.network(
+            child: Image.asset(
               imagePath,
               width: 60,
               height: 60,
-              fit: BoxFit.cover, // Fixed: This was BoxGap in previous version
+              fit: BoxFit.cover,
               errorBuilder: (context, error, stackTrace) => Container(
                 width: 60,
                 height: 60,
