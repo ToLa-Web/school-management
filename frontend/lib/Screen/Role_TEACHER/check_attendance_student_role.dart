@@ -13,27 +13,27 @@ class AttendanceScreen extends StatefulWidget {
 }
 
 class _AttendanceScreenState extends State<AttendanceScreen> {
-  // Selection State
+  // what the teacher has currently picked (which classroom and which date)
   String? selectedClassroomId;
   String selectedGrade = '';         // display label for the dropdown
   DateTime selectedDate = DateTime.now();
 
-  // API Data
+  // data we load from the server
   List<ClassroomDto> _classrooms = [];
   List<StudentDto> _classroomStudents = [];
   bool _isLoading = true;
   bool _isSubmitting = false;
 
-  /// Maps studentId → status string ("Present" / "Absent" / "Late")
+  // tracks each student's status: "Present", "Absent", or "Late"
   Map<String, String> attendanceRecords = {};
   bool _hasSubmitted = false;
 
-  // Computed stats
+  // quick totals so we can show the summary row without looping every time
   int get countPresent => attendanceRecords.values.where((v) => v == 'Present').length;
   int get countAbsent  => attendanceRecords.values.where((v) => v == 'Absent').length;
   int get countLate    => attendanceRecords.values.where((v) => v == 'Late').length;
 
-  // Day picker — last 5 days
+  // show the last 5 days so the teacher can pick which day to record
   List<DateTime> get _recentDays =>
       List.generate(5, (i) => DateTime.now().subtract(Duration(days: 4 - i)));
 
@@ -245,7 +245,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       padding: const EdgeInsets.fromLTRB(24, 10, 24, 16),
       child: Column(
         children: [
-          // Grade Selector
+          // dropdown to pick which classroom to take attendance for
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
             decoration: BoxDecoration(
@@ -288,7 +288,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             ),
           ),
           const SizedBox(height: 24),
-          // Day Picker
+          // tap a day to load that day's attendance
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: _recentDays.map((d) {
@@ -308,7 +308,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             }).toList(),
           ),
           const SizedBox(height: 24),
-          // Stats Row
+          // the dark blue summary row — total, present, absent, late
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
