@@ -1,16 +1,19 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
+import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import { getTeacher, updateTeacher } from '@/lib/api';
+import { Users, ArrowLeft, AlertCircle, Save, User, Phone, BookOpen, Calendar } from 'lucide-react';
 
 const inputCls =
-  'w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+  'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-slate-50 placeholder:text-slate-400';
 
-function Field({ label, required, children }) {
+function Field({ label, required, icon, children }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1.5">
+        {icon && <span className="text-slate-400">{icon}</span>}
         {label}{required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
       {children}
@@ -18,17 +21,18 @@ function Field({ label, required, children }) {
   );
 }
 
-export default function EditTeacherPage({ params }) {
+export default function EditTeacherPage() {
   useAuth();
 
   const router = useRouter();
+  const { id } = useParams();
   const [form,    setForm]    = useState(null);
   const [error,   setError]   = useState('');
   const [saving,  setSaving]  = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    getTeacher(params.id).then((data) => {
+    getTeacher(id).then((data) => {
       if (data) {
         setForm({
           firstName:   data.firstName   ?? '',
@@ -42,7 +46,7 @@ export default function EditTeacherPage({ params }) {
       }
       setLoading(false);
     });
-  }, [params.id]);
+  }, [id]);
 
   function set(field, value) {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -53,7 +57,7 @@ export default function EditTeacherPage({ params }) {
     setError('');
     setSaving(true);
     try {
-      const res = await updateTeacher(params.id, form);
+      const res = await updateTeacher(id, form);
       if (res?.ok) {
         router.push('/teachers');
       } else {
@@ -65,52 +69,90 @@ export default function EditTeacherPage({ params }) {
     }
   }
 
-  if (loading) return <p className="text-gray-500 text-sm">Loading…</p>;
-  if (!form)   return <p className="text-red-500 text-sm">{error}</p>;
+  if (loading) {
+    return (
+      <div className="max-w-lg">
+        <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
+          <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-slate-500 text-sm">Loading teacher...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!form) {
+    return (
+      <div className="max-w-lg">
+        <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-xl p-4">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          {error || 'Teacher not found.'}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-lg">
-      <h1 className="text-2xl font-bold mb-6">Edit Teacher</h1>
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <Link href="/teachers" className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+          <ArrowLeft className="w-5 h-5" />
+        </Link>
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
+          <Users className="w-5 h-5 text-white" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Edit Teacher</h1>
+          <p className="text-sm text-slate-500">{form.firstName} {form.lastName}</p>
+        </div>
+      </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-md p-3 mb-4">
+        <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-xl p-4 mb-4">
+          <AlertCircle className="w-5 h-5 shrink-0" />
           {error}
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm p-6 space-y-4">
-        <Field label="First Name" required>
-          <input type="text" required value={form.firstName}
-            onChange={(e) => set('firstName', e.target.value)} className={inputCls} />
-        </Field>
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 space-y-5">
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="First Name" required icon={<User className="w-4 h-4" />}>
+            <input type="text" required value={form.firstName}
+              onChange={(e) => set('firstName', e.target.value)} className={inputCls} />
+          </Field>
+          <Field label="Last Name" required icon={<User className="w-4 h-4" />}>
+            <input type="text" required value={form.lastName}
+              onChange={(e) => set('lastName', e.target.value)} className={inputCls} />
+          </Field>
+        </div>
 
-        <Field label="Last Name" required>
-          <input type="text" required value={form.lastName}
-            onChange={(e) => set('lastName', e.target.value)} className={inputCls} />
-        </Field>
-
-        <Field label="Subject">
+        <Field label="Subject" icon={<BookOpen className="w-4 h-4" />}>
           <input type="text" value={form.subject}
-            onChange={(e) => set('subject', e.target.value)} className={inputCls} />
+            onChange={(e) => set('subject', e.target.value)} placeholder="Mathematics" className={inputCls} />
         </Field>
 
-        <Field label="Phone Number">
+        <Field label="Phone Number" icon={<Phone className="w-4 h-4" />}>
           <input type="text" value={form.phoneNumber}
-            onChange={(e) => set('phoneNumber', e.target.value)} className={inputCls} />
+            onChange={(e) => set('phoneNumber', e.target.value)} placeholder="+1 234 567 890" className={inputCls} />
         </Field>
 
-        <Field label="Date of Birth">
+        <Field label="Date of Birth" icon={<Calendar className="w-4 h-4" />}>
           <input type="date" value={form.dateOfBirth}
             onChange={(e) => set('dateOfBirth', e.target.value)} className={inputCls} />
         </Field>
 
-        <div className="flex gap-3 pt-2">
+        <div className="flex gap-3 pt-3">
           <button type="submit" disabled={saving}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium px-5 py-2 rounded-md transition-colors">
-            {saving ? 'Saving…' : 'Save Changes'}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2">
+            {saving ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
           <button type="button" onClick={() => router.push('/teachers')}
-            className="text-sm text-gray-600 hover:text-gray-900 px-3 py-2">
+            className="text-slate-600 hover:text-slate-800 text-sm font-medium px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
             Cancel
           </button>
         </div>
