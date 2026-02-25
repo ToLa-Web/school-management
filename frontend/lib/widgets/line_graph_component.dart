@@ -99,8 +99,8 @@ class _LineGraphPainter extends CustomPainter {
         colors: [themeColor.withValues(alpha: 0.12), themeColor.withValues(alpha: 0.0)],
       ).createShader(Rect.fromLTWH(paddingLeft, 0, chartWidth, chartHeight));
 
-    // 1. Draw Dashed Grid Lines (Horizontal and vertical matching the reference)
-    // Ticks matching reference image: 0, 50, 188 (using 188 as maxY)
+    // draw horizontal and vertical dashed grid lines
+    // the y-axis ticks are 0, 50, and the max value
     final List<double> yTicks = [0, 50, maxY];
     for (var yVal in yTicks) {
       double yPos = chartHeight - (yVal / maxY * chartHeight);
@@ -114,10 +114,10 @@ class _LineGraphPainter extends CustomPainter {
       _drawText(canvas, Offset(0, yPos - 7), yVal.toInt().toString());
     }
 
-    // 2. Prepare Paths
+    // build the curve path — uses bezier curves so the line looks smooth
     if (dataPoints.length < 2) {
       if (dataPoints.isNotEmpty) {
-        // Draw a single point if needed
+        // only one data point, just draw a dot
         double x = paddingLeft;
         double y = chartHeight - (dataPoints[0] / maxY * chartHeight);
         canvas.drawCircle(Offset(x, y), 5, Paint()..color = themeColor);
@@ -127,7 +127,7 @@ class _LineGraphPainter extends CustomPainter {
 
     double xStep = chartWidth / (dataPoints.length - 1);
 
-    // Vertical dashed lines
+    // dashed vertical lines at each data point column
     for (int i = 0; i < dataPoints.length; i++) {
       double xPos = paddingLeft + (i * xStep);
       _drawDashedLine(
@@ -178,11 +178,11 @@ class _LineGraphPainter extends CustomPainter {
     fillPath.lineTo(paddingLeft, chartHeight);
     fillPath.close();
 
-    // 3. Draw Paths
+    // paint the filled area under the curve, then the line on top
     canvas.drawPath(fillPath, fillPaint);
     canvas.drawPath(path, linePaint);
 
-    // 4. Draw Dots
+    // small circle at each data point (white center so it pops)
     final Paint dotPaint = Paint()..color = themeColor;
     final Paint innerDotPaint = Paint()..color = Colors.white;
 
@@ -193,7 +193,7 @@ class _LineGraphPainter extends CustomPainter {
       canvas.drawCircle(Offset(x, y), 2.5, innerDotPaint);
     }
 
-    // 5. Special Blue Dot (outside the line, mimicking the reference image)
+    // one extra dark blue dot to highlight a specific point (sits outside the curve)
     double specialX = paddingLeft;
     double specialY = chartHeight - (105 / maxY * chartHeight);
     canvas.drawCircle(

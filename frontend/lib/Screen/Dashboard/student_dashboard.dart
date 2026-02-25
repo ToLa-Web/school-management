@@ -17,9 +17,8 @@ import 'package:tamdansers/Screen/Role_STUDENT/score_student_role.dart';
 import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_service.dart';
 
-// =============================================================================
 // MAIN DASHBOARD
-// =============================================================================
+
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
 
@@ -70,9 +69,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 }
 
-// =============================================================================
 // STUDENT HOME CONTENT
-// =============================================================================
+
 class StudentHomeContent extends StatefulWidget {
   const StudentHomeContent({super.key});
 
