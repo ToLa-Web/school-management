@@ -1492,284 +1492,294 @@ class _TeacherCoursesTabState extends State<TeacherCoursesTab> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        children: [
+      child: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
           // ── Header ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFF95738), Color(0xFFFF8A65)],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFF95738).withValues(alpha: 0.3),
-                        blurRadius: 12,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.auto_stories_rounded,
-                    color: Colors.white,
-                    size: 26,
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'My Courses',
-                      style: GoogleFonts.outfit(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF0D3B66),
-                      ),
-                    ),
-                    Text(
-                      '${_teacherCourses.length} courses · $_totalStudents students',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: Colors.grey.shade500,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                const Spacer(),
-                Bounceable(
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TeacherCourseScreen(),
-                    ),
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(10),
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0D3B66),
-                      borderRadius: BorderRadius.circular(14),
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFF95738), Color(0xFFFF8A65)],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0D3B66).withValues(alpha: 0.25),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: const Color(0xFFF95738).withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset: const Offset(0, 6),
                         ),
                       ],
                     ),
                     child: const Icon(
-                      Icons.add_rounded,
+                      Icons.auto_stories_rounded,
                       color: Colors.white,
-                      size: 22,
+                      size: 26,
                     ),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 16),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'My Courses',
+                        style: GoogleFonts.outfit(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0D3B66),
+                        ),
+                      ),
+                      Text(
+                        '${_teacherCourses.length} courses · $_totalStudents students',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const Spacer(),
+                  Bounceable(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TeacherCourseScreen(),
+                      ),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0D3B66),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0D3B66).withValues(alpha: 0.25),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
           // ── Stats Overview Card ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF0D3B66), Color(0xFF1E5B94)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0D3B66), Color(0xFF1E5B94)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(22),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0D3B66).withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(22),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF0D3B66).withValues(alpha: 0.25),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  _buildStatItem(
-                    '${_teacherCourses.where((c) => c['status'] == 'Active').length}',
-                    'Active',
-                    Icons.play_circle_outline_rounded,
-                    const Color(0xFF50E3C2),
-                  ),
-                  _buildStatDivider(),
-                  _buildStatItem(
-                    '$_totalStudents',
-                    'Students',
-                    Icons.people_outline_rounded,
-                    const Color(0xFF4A90E2),
-                  ),
-                  _buildStatDivider(),
-                  _buildStatItem(
-                    '${_teacherCourses.fold(0, (int sum, c) => sum + (c['lessons'] as int))}',
-                    'Lessons',
-                    Icons.menu_book_rounded,
-                    const Color(0xFFFFB75E),
-                  ),
-                ],
+                child: Row(
+                  children: [
+                    _buildStatItem(
+                      '${_teacherCourses.where((c) => c['status'] == 'Active').length}',
+                      'Active',
+                      Icons.play_circle_outline_rounded,
+                      const Color(0xFF50E3C2),
+                    ),
+                    _buildStatDivider(),
+                    _buildStatItem(
+                      '$_totalStudents',
+                      'Students',
+                      Icons.people_outline_rounded,
+                      const Color(0xFF4A90E2),
+                    ),
+                    _buildStatDivider(),
+                    _buildStatItem(
+                      '${_teacherCourses.fold(0, (int sum, c) => sum + (c['lessons'] as int))}',
+                      'Lessons',
+                      Icons.menu_book_rounded,
+                      const Color(0xFFFFB75E),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
 
-          const SizedBox(height: 20),
+          const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
           // ── Search Bar ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
-                    blurRadius: 15,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
-              ),
-              child: TextField(
-                onChanged: (v) =>
-                    setState(() => _searchQuery = v.toLowerCase()),
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF0D3B66),
-                  fontWeight: FontWeight.w600,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
                 ),
-                decoration: InputDecoration(
-                  hintText: 'Search your courses...',
-                  hintStyle: GoogleFonts.inter(
-                    color: Colors.grey.shade400,
-                    fontWeight: FontWeight.w500,
+                child: TextField(
+                  onChanged: (v) =>
+                      setState(() => _searchQuery = v.toLowerCase()),
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFF0D3B66),
+                    fontWeight: FontWeight.w600,
                   ),
-                  prefixIcon: Icon(
-                    Icons.search_rounded,
-                    color: Colors.grey.shade400,
-                    size: 22,
-                  ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 16,
+                  decoration: InputDecoration(
+                    hintText: 'Search your courses...',
+                    hintStyle: GoogleFonts.inter(
+                      color: Colors.grey.shade400,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: Colors.grey.shade400,
+                      size: 22,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 16,
+                    ),
                   ),
                 ),
               ),
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
           // ── Filter Chips ──
-          SizedBox(
-            height: 42,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: _filters.length,
-              itemBuilder: (context, index) {
-                final filter = _filters[index];
-                final isSelected = filter == _selectedFilter;
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: Bounceable(
-                    onTap: () => setState(() => _selectedFilter = filter),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 250),
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF0D3B66)
-                            : Colors.white,
-                        borderRadius: BorderRadius.circular(14),
-                        boxShadow: isSelected
-                            ? [
-                                BoxShadow(
-                                  color: const Color(
-                                    0xFF0D3B66,
-                                  ).withValues(alpha: 0.25),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ]
-                            : [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.03),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          filter,
-                          style: GoogleFonts.inter(
-                            color: isSelected
-                                ? Colors.white
-                                : Colors.grey.shade600,
-                            fontWeight: isSelected
-                                ? FontWeight.bold
-                                : FontWeight.w500,
-                            fontSize: 13,
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 42,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: _filters.length,
+                itemBuilder: (context, index) {
+                  final filter = _filters[index];
+                  final isSelected = filter == _selectedFilter;
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Bounceable(
+                      onTap: () => setState(() => _selectedFilter = filter),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 250),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? const Color(0xFF0D3B66)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                          boxShadow: isSelected
+                              ? [
+                                  BoxShadow(
+                                    color: const Color(
+                                      0xFF0D3B66,
+                                    ).withValues(alpha: 0.25),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ]
+                              : [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.03),
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            filter,
+                            style: GoogleFonts.inter(
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey.shade600,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
 
-          const SizedBox(height: 16),
+          const SliverToBoxAdapter(child: SizedBox(height: 16)),
 
           // ── Course List ──
-          Expanded(
-            child: _filteredCourses.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: 64,
-                          color: Colors.grey.shade300,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'No courses found',
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            color: Colors.grey.shade400,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+          if (_filteredCourses.isEmpty)
+            SliverFillRemaining(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.search_off_rounded,
+                      size: 64,
+                      color: Colors.grey.shade300,
                     ),
-                  )
-                : ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 4,
+                    const SizedBox(height: 12),
+                    Text(
+                      'No courses found',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        color: Colors.grey.shade400,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                    itemCount: _filteredCourses.length,
-                    itemBuilder: (context, index) {
-                      final course = _filteredCourses[index];
-                      return _buildTeacherCourseCard(course);
-                    },
-                  ),
-          ),
+                  ],
+                ),
+              ),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 4, 24, 50),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final course = _filteredCourses[index];
+                    return _buildTeacherCourseCard(course);
+                  },
+                  childCount: _filteredCourses.length,
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -2627,11 +2637,11 @@ class _TeacherMessagesTabState extends State<TeacherMessagesTab>
 
           // ── Online Now ──
           SizedBox(
-            height: 90,
+            height: 96,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _conversations
                   .where((c) => c['online'] == true)
                   .length,

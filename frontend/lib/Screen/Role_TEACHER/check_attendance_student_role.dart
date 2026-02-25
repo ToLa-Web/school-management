@@ -26,6 +26,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
   /// Maps studentId → status string ("Present" / "Absent" / "Late")
   Map<String, String> attendanceRecords = {};
+  bool _hasSubmitted = false;
 
   // Computed stats
   int get countPresent => attendanceRecords.values.where((v) => v == 'Present').length;
@@ -52,8 +53,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
             selectedClassroomId = classrooms.first.id;
             selectedGrade = classrooms.first.name;
           }
-          _isLoading = false;
-        });
+          _isLoading = false;          _hasSubmitted = false;        });
         if (selectedClassroomId != null) {
           await _loadStudentsForClassroom(selectedClassroomId!);
         }
@@ -74,6 +74,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
 
       if (mounted) {
         setState(() {
+          _hasSubmitted = false;
           _classroomStudents = detail.students
               .map((cs) => StudentDto(
                     id: cs.studentId,
@@ -119,6 +120,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       await ApiService().markAttendance(request);
 
       if (mounted) {
+        setState(() => _hasSubmitted = true);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Attendance for $selectedGrade saved!',
@@ -193,29 +195,43 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           ? const Center(child: CircularProgressIndicator())
           : Column(
         children: [
-          _buildModernHeaderSection(),
           Expanded(
-            child: _classroomStudents.isEmpty
-                ? Center(
-                    child: Text('No students enrolled in this classroom.',
-                        style: GoogleFonts.inter(color: Colors.grey)))
-                : ListView.builder(
+            child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-              itemCount: _classroomStudents.length,
-              itemBuilder: (context, index) {
-                final student = _classroomStudents[index];
-                final id = student.id;
-                return ModernStudentAttendanceCard(
-                  name: '${student.firstName} ${student.lastName}',
-                  englishName: student.firstName,
-                  id: id,
-                  status: attendanceRecords[id] ?? 'Present',
-                  onStatusChanged: (newStatus) {
-                    setState(() => attendanceRecords[id] = newStatus);
-                  },
-                );
-              },
+              slivers: [
+                SliverToBoxAdapter(child: _buildModernHeaderSection()),
+                if (_classroomStudents.isEmpty)
+                  SliverFillRemaining(
+                    child: Center(
+                      child: Text(
+                        'No students enrolled in this classroom.',
+                        style: GoogleFonts.inter(color: Colors.grey),
+                      ),
+                    ),
+                  )
+                else
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                    sliver: SliverList(
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final student = _classroomStudents[index];
+                          final id = student.id;
+                          return ModernStudentAttendanceCard(
+                            name: '${student.firstName} ${student.lastName}',
+                            englishName: student.firstName,
+                            id: id,
+                            status: attendanceRecords[id] ?? 'Present',
+                            onStatusChanged: (newStatus) {
+                              setState(() => attendanceRecords[id] = newStatus);
+                            },
+                          );
+                        },
+                        childCount: _classroomStudents.length,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
           _buildModernBottomSummary(),
@@ -528,33 +544,63 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           const SizedBox(height: 16),
           Bounceable(
             onTap: _isSubmitting ? null : _submitAttendance,
-            child: Container(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
               width: double.infinity,
               padding: const EdgeInsets.symmetric(vertical: 18),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4A90E2), Color(0xFF00C4FF)],
+                gradient: LinearGradient(
+                  colors: _hasSubmitted
+                      ? [const Color(0xFF50E3C2), const Color(0xFF2EA88D)]
+                      : [const Color(0xFF4A90E2), const Color(0xFF00C4FF)],
                   begin: Alignment.centerLeft,
                   end: Alignment.centerRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF4A90E2).withValues(alpha: 0.3),
+                    color: (_hasSubmitted
+                            ? const Color(0xFF50E3C2)
+                            : const Color(0xFF4A90E2))
+                        .withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: Center(
-                child: Text(
-                  'Submit Attendance',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isSubmitting
+                    ? const SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                    : Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _hasSubmitted
+                                ? Icons.check_circle_rounded
+                                : Icons.send_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _hasSubmitted
+                                ? 'Update Attendance'
+                                : 'Submit Attendance',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
               ),
             ),
           ),
@@ -631,6 +677,7 @@ class ModernStudentAttendanceCard extends StatelessWidget {
                         fontSize: 18,
                         color: const Color(0xFF0D3B66),
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
                     Text(
@@ -639,26 +686,9 @@ class ModernStudentAttendanceCard extends StatelessWidget {
                         color: Colors.grey.shade500,
                         fontSize: 13,
                       ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF3F6F8),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'ID: $id',
-                  style: GoogleFonts.inter(
-                    color: Colors.grey.shade600,
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                  ),
                 ),
               ),
             ],

@@ -195,7 +195,7 @@ class _AttendanceAnalysisScreenState extends State<AttendanceAnalysisScreen> {
           ),
           const SizedBox(height: 24),
           SizedBox(
-            height: 200,
+            height: 220,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -232,7 +232,7 @@ class _AttendanceAnalysisScreenState extends State<AttendanceAnalysisScreen> {
           children: [
             Container(
               width: 48,
-              height: 160,
+              height: 140,
               decoration: BoxDecoration(
                 color: const Color(0xFFF3F6F8),
                 borderRadius: BorderRadius.circular(16),
@@ -242,7 +242,7 @@ class _AttendanceAnalysisScreenState extends State<AttendanceAnalysisScreen> {
               duration: const Duration(milliseconds: 600),
               curve: Curves.easeOutCubic,
               width: 48,
-              height: (160 * (value > 0 ? value : 0.02)).clamp(4.0, 160.0),
+              height: (140 * (value > 0 ? value : 0.02)).clamp(4.0, 140.0),
               decoration: BoxDecoration(
                 color: color,
                 borderRadius: BorderRadius.circular(16),
