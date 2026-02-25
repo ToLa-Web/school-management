@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bounceable/flutter_bounceable.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ParentManagementScreen extends StatefulWidget {
   const ParentManagementScreen({super.key});
@@ -13,46 +15,67 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
+      backgroundColor: const Color(0xFFF3F6F8),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0D3B66),
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Parent Management",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(
+            color: const Color(0xFF0D3B66),
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text(
+            child: Text(
               "Cancel",
-              style: TextStyle(color: Colors.blueGrey),
+              style: GoogleFonts.inter(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Column(
           children: [
             // Tab Switcher
             Container(
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(10),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: Row(
                 children: [
-                  _buildTab(
+                  _buildModernTab(
                     "New Parent",
                     isNewParent,
                     () => setState(() => isNewParent = true),
                   ),
-                  _buildTab(
+                  _buildModernTab(
                     "Existing Parent",
                     !isNewParent,
                     () => setState(() => isNewParent = false),
@@ -60,77 +83,126 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 25),
+            const SizedBox(height: 30),
 
             // Profile Upload Section
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 children: [
-                  const Stack(
-                    children: [
-                      CircleAvatar(
-                        radius: 45,
-                        backgroundColor: Color(0xFFF0F0F0),
-                        child: Icon(
-                          Icons.insert_drive_file_outlined,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: CircleAvatar(
-                          radius: 15,
-                          backgroundColor: Colors.blue,
-                          child: Icon(
-                            Icons.edit,
-                            size: 15,
-                            color: Colors.white,
+                  Bounceable(
+                    onTap: () {},
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFF4A90E2).withValues(alpha: 0.2),
+                              width: 3,
+                            ),
+                          ),
+                          child: CircleAvatar(
+                            radius: 46,
+                            backgroundColor: Colors.grey.shade100,
+                            child: Icon(
+                              Icons.broken_image_rounded,
+                              size: 40,
+                              color: Colors.grey.shade400,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF4A90E2), Color(0xFF00C4FF)],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white, width: 2),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt_rounded,
+                              size: 16,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 10),
-                  const Text(
+                  const SizedBox(height: 16),
+                  Text(
                     "Upload Photo",
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      color: const Color(0xFF0D3B66),
+                    ),
                   ),
-                  const Text(
+                  const SizedBox(height: 4),
+                  Text(
                     "Tap to add parent photo",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: GoogleFonts.inter(
+                      color: Colors.grey.shade500,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
 
-                  const SizedBox(height: 20),
-                  _buildInputField(
+                  const SizedBox(height: 30),
+                  _buildModernInputField(
                     "Full Name (Khmer/English) *",
-                    "Example: Sok Dara / Sok Dara",
+                    "Example: Sok Dara",
+                    icon: Icons.person_rounded,
                   ),
-                  const SizedBox(height: 15),
-                  _buildInputField(
+                  const SizedBox(height: 20),
+                  _buildModernInputField(
                     "Phone number *",
                     "012 345 678",
-                    prefix: "🇰🇭 +855",
+                    prefixText: "🇰🇭 +855 ",
+                    icon: Icons.phone_rounded,
                   ),
-                  const SizedBox(height: 15),
-                  _buildDropdownField("Relationship *", "Select relationship"),
+                  const SizedBox(height: 20),
+                  _buildModernDropdownField(
+                    "Relationship *",
+                    "Select relationship",
+                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 24),
 
             // Link Student Section
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,93 +210,146 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        "Link with student",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF50E3C2).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: const Icon(
+                              Icons.link_rounded,
+                              color: Color(0xFF2EA88D),
+                              size: 18,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            "Link with student",
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                              color: const Color(0xFF0D3B66),
+                            ),
+                          ),
+                        ],
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
+                          horizontal: 10,
+                          vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(10),
+                          color: const Color(0xFF4A90E2).withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Text(
-                          "Selected 1",
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 10,
+                        child: Text(
+                          "Selected: 1",
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF4A90E2),
+                            fontSize: 12,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 15),
-                  TextField(
+                  const SizedBox(height: 20),
+                  TextFormField(
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w500,
+                      color: const Color(0xFF333333),
+                    ),
                     decoration: InputDecoration(
                       hintText: "Search by ID or name...",
-                      prefixIcon: const Icon(Icons.search),
+                      hintStyle: GoogleFonts.inter(
+                        color: Colors.grey.shade400,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search_rounded,
+                        color: Colors.grey.shade400,
+                      ),
                       filled: true,
-                      fillColor: Colors.grey.shade50,
+                      fillColor: const Color(0xFFF3F6F8),
                       border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(16),
                         borderSide: BorderSide.none,
                       ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 16),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 40),
 
             // Submit Button
-            SizedBox(
-              width: double.infinity,
-              height: 55,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+            Bounceable(
+              onTap: () {},
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0D3B66), Color(0xFF1E5B94)],
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
                   ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF0D3B66).withValues(alpha: 0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                onPressed: () {},
-                child: const Text(
-                  "Confirm & Send Invitation >",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Confirm & Send Invitation",
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ],
                 ),
               ),
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildTab(String label, bool isActive, VoidCallback onTap) {
+  Widget _buildModernTab(String label, bool isActive, VoidCallback onTap) {
     return Expanded(
-      child: GestureDetector(
+      child: Bounceable(
         onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 14),
           decoration: BoxDecoration(
-            color: isActive ? Colors.white : Colors.transparent,
-            borderRadius: BorderRadius.circular(10),
+            color: isActive ? const Color(0xFF4A90E2) : Colors.transparent,
+            borderRadius: BorderRadius.circular(16),
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: .05),
-                      blurRadius: 5,
+                      color: const Color(0xFF4A90E2).withValues(alpha: 0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ]
                 : [],
@@ -232,9 +357,10 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
           child: Center(
             child: Text(
               label,
-              style: TextStyle(
-                color: isActive ? Colors.blue : Colors.grey,
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.inter(
+                color: isActive ? Colors.white : Colors.grey.shade500,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.w600,
+                fontSize: 14,
               ),
             ),
           ),
@@ -243,45 +369,69 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
     );
   }
 
-  Widget _buildInputField(String label, String hint, {String? prefix}) {
+  Widget _buildModernInputField(
+    String label,
+    String hint, {
+    String? prefixText,
+    IconData? icon,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
           text: TextSpan(
             text: label.split('*')[0],
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+            style: GoogleFonts.inter(
+              color: Colors.grey.shade600,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
-            children: const [
+            children: [
               TextSpan(
                 text: ' *',
-                style: TextStyle(color: Colors.red),
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFF95738),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 8),
         TextFormField(
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w500,
+            color: const Color(0xFF333333),
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            prefixIcon: prefix != null
-                ? Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Text(prefix),
-                  )
-                : null,
-            filled: true,
-            fillColor: Colors.grey.shade50,
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+            hintStyle: GoogleFonts.inter(
+              color: Colors.grey.shade400,
+              fontWeight: FontWeight.w500,
             ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(color: Colors.grey.shade200),
+            prefixIcon: prefixText != null
+                ? Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 12, 16),
+                    child: Text(
+                      prefixText,
+                      style: GoogleFonts.inter(
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0D3B66),
+                      ),
+                    ),
+                  )
+                : (icon != null
+                      ? Icon(icon, color: Colors.grey.shade400, size: 20)
+                      : null),
+            filled: true,
+            fillColor: const Color(0xFFF3F6F8),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 16,
             ),
           ),
         ),
@@ -289,38 +439,50 @@ class _ParentManagementScreenState extends State<ParentManagementScreen> {
     );
   }
 
-  Widget _buildDropdownField(String label, String hint) {
+  Widget _buildModernDropdownField(String label, String hint) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         RichText(
           text: TextSpan(
             text: label.split('*')[0],
-            style: const TextStyle(
-              color: Colors.black,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
+            style: GoogleFonts.inter(
+              color: Colors.grey.shade600,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
             ),
-            children: const [
+            children: [
               TextSpan(
                 text: ' *',
-                style: TextStyle(color: Colors.red),
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFF95738),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
           decoration: BoxDecoration(
-            color: Colors.grey.shade50,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.grey.shade200),
+            color: const Color(0xFFF3F6F8),
+            borderRadius: BorderRadius.circular(16),
           ),
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               isExpanded: true,
-              hint: Text(hint),
+              icon: const Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.grey,
+              ),
+              hint: Text(
+                hint,
+                style: GoogleFonts.inter(
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
               items: [],
               onChanged: (value) {},
             ),

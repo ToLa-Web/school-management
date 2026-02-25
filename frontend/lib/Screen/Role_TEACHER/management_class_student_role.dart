@@ -1,62 +1,72 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:tamdansers/Screen/Dashboard/teacher_dashboard.dart';
+import 'package:flutter_bounceable/flutter_bounceable.dart';
+import 'package:google_fonts/google_fonts.dart';
+
 import 'package:tamdansers/Screen/Edit-Profile/teacher_edit_profile.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/add_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/create_class_role.dart';
+import 'package:tamdansers/Screen/Role_TEACHER/student_list_screen.dart';
+import 'package:tamdansers/services/api_service.dart';
+import 'package:tamdansers/services/api_models.dart';
+
 void main() {
   runApp(
-    const MaterialApp(
+    MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: TeacherManagementClassScreen(),
+      theme: ThemeData(
+        textTheme: GoogleFonts.interTextTheme(),
+        scaffoldBackgroundColor: const Color(0xFFF3F6F8),
+      ),
+      home: const TeacherManagementClassScreen(),
     ),
   );
 }
 
-// --- 1. MAIN NAVIGATION WRAPPER ---
+// ----------------------------------------------------------------------
+// 1. MAIN NAVIGATION WRAPPER
+// ----------------------------------------------------------------------
 class TeacherManagementClassScreen extends StatefulWidget {
   const TeacherManagementClassScreen({super.key});
 
   @override
-  State<TeacherManagementClassScreen> createState() => _TeacherDashboardState();
+  State<TeacherManagementClassScreen> createState() =>
+      _TeacherManagementClassScreenState();
 }
 
-class _TeacherDashboardState extends State<TeacherManagementClassScreen> {
+class _TeacherManagementClassScreenState
+    extends State<TeacherManagementClassScreen> {
   int _pageIndex = 0;
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   // Screens for the Bottom Navigation Bar
   final List<Widget> _screens = [
-    // const TeacherHomeContent(), // Classroom Management with Search/Filter
-    // const Center(child: Text("Course Screen")),
-    // const Center(child: Text("Add Student Screen")),
-    // const Center(child: Text("Settings/Profile Screen")),
-    const TeacherHomeContent(), // Your Classroom Management UI
-    const TeacherCourseScreen(), // Placeholder for Course Screen
+    const TeacherManagementHomeContent(),
+    const StudentListScreen(),
     const AddStudentScreen(),
-    const TeacherEditProfileScreen(), // Placeholder for Settings Screen
+    const TeacherEditProfileScreen(),
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
+      backgroundColor: const Color(0xFFF3F6F8),
       body: IndexedStack(index: _pageIndex, children: _screens),
       bottomNavigationBar: CurvedNavigationBar(
         key: _bottomNavigationKey,
         index: _pageIndex,
-        height: 60.0,
+        height: 65.0,
         items: const <Widget>[
-          Icon(Icons.grid_view_rounded, size: 30, color: Colors.white),
-          Icon(Icons.menu_book, size: 30, color: Colors.white),
-          Icon(Icons.chat_bubble, size: 30, color: Colors.white),
-          Icon(Icons.settings, size: 30, color: Colors.white),
+          Icon(Icons.class_rounded, size: 28, color: Colors.white),
+          Icon(Icons.people_rounded, size: 28, color: Colors.white),
+          Icon(Icons.person_add_rounded, size: 28, color: Colors.white),
+          Icon(Icons.settings_rounded, size: 28, color: Colors.white),
         ],
-        color: const Color(0xFF007A7A),
-        buttonBackgroundColor: const Color(0xFF007A7A),
-        backgroundColor: const Color(0xFFF5F7F9),
-        animationCurve: Curves.easeInOut,
-        animationDuration: const Duration(milliseconds: 300),
+        color: const Color(0xFF0D3B66),
+        buttonBackgroundColor: const Color(0xFFF95738),
+        backgroundColor: const Color(0xFFF3F6F8),
+        animationCurve: Curves.easeInOutCubic,
+        animationDuration: const Duration(milliseconds: 400),
         onTap: (index) {
           setState(() {
             _pageIndex = index;
@@ -67,125 +77,193 @@ class _TeacherDashboardState extends State<TeacherManagementClassScreen> {
   }
 }
 
-// --- 2. HOME CONTENT (With Search and Filter Logic) ---
-class TeacherHomeContent extends StatefulWidget {
-  const TeacherHomeContent({super.key});
+// ----------------------------------------------------------------------
+// 2. HOME CONTENT (With Search and Filter Logic)
+// ----------------------------------------------------------------------
+class TeacherManagementHomeContent extends StatefulWidget {
+  const TeacherManagementHomeContent({super.key});
 
   @override
-  State<TeacherHomeContent> createState() => _TeacherHomeContentState();
+  State<TeacherManagementHomeContent> createState() =>
+      _TeacherManagementHomeContentState();
 }
 
-class _TeacherHomeContentState extends State<TeacherHomeContent> {
-  // Mock Data: This represents your database
-  final List<Map<String, String>> _allClasses = [
-    {"grade": "Grade 7A", "teacher": "Teap Thita", "students": "36 students"},
-    {"grade": "Grade 8B", "teacher": "Sok Chea", "students": "30 students"},
-    {"grade": "Grade 12", "teacher": "Dr. Smith", "students": "25 students"},
-    {"grade": "Grade 10", "teacher": "Ly Hour", "students": "40 students"},
-    {"grade": "Grade 7C", "teacher": "Vannak", "students": "32 students"},
-  ];
+class _TeacherManagementHomeContentState
+    extends State<TeacherManagementHomeContent> {
+  List<ClassroomDto> _allClassrooms = [];
+  bool _isLoading = true;
 
-  // State variables for filtering
   String _searchQuery = "";
   String _selectedGradeFilter = "All";
+  String? _myTeacherId;
+  String? _myTeacherName;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClassrooms();
+  }
+
+  Future<void> _loadClassrooms() async {
+    try {
+      final api = ApiService();
+      final entityId = await api.getEntityId();
+      final results = await Future.wait([
+        api.getClassrooms(),
+        if (entityId != null) api.getTeacherById(entityId) else Future.value(null),
+      ]);
+      if (mounted) {
+        final teacher = results[1] as dynamic;
+        setState(() {
+          _allClassrooms = results[0] as List<ClassroomDto>;
+          _myTeacherId = entityId;
+          _myTeacherName = teacher != null ? teacher.fullName as String? : null;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // FILTERING LOGIC
-    // We filter the list every time the build method is called (whenever setState is triggered)
-    final List<Map<String, String>> filteredClasses = _allClasses.where((
-      classItem,
-    ) {
-      final String grade = classItem['grade']!.toLowerCase();
-      final String teacher = classItem['teacher']!.toLowerCase();
-      final String query = _searchQuery.toLowerCase();
-
-      // Check if search matches grade or teacher name
-      bool matchesSearch = grade.contains(query) || teacher.contains(query);
-
-      // Check if matches the selected ChoiceChip
-      bool matchesGrade =
-          _selectedGradeFilter == "All" ||
-          classItem['grade']!.contains(_selectedGradeFilter);
-
+    final filteredClasses = _allClassrooms.where((c) {
+      final query = _searchQuery.toLowerCase();
+      final resolvedTeacher = (c.teacherName != null && c.teacherName!.isNotEmpty)
+          ? c.teacherName!
+          : (c.teacherId != null && c.teacherId == _myTeacherId && _myTeacherName != null)
+              ? _myTeacherName!
+              : '';
+      final matchesSearch = c.name.toLowerCase().contains(query) ||
+          resolvedTeacher.toLowerCase().contains(query);
+      // c.grade is stored as just a number e.g. "10", filter label is "Grade 10"
+      final gradeNumber = _selectedGradeFilter == "All"
+          ? ""
+          : _selectedGradeFilter.replaceAll('Grade ', '').trim();
+      final matchesGrade = _selectedGradeFilter == "All" ||
+          (c.grade ?? '').trim() == gradeNumber ||
+          c.name.contains(gradeNumber);
       return matchesSearch && matchesGrade;
     }).toList();
 
     return Scaffold(
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFFF3F6F8),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Classroom Management',
-          style: TextStyle(
-            color: Colors.black,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0D3B66),
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Manage Classes',
+          style: GoogleFonts.outfit(
+            color: const Color(0xFF0D3B66),
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 22,
           ),
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_none, color: Colors.black),
+            icon: const Icon(
+              Icons.notifications_none_rounded,
+              color: Color(0xFF0D3B66),
+            ),
             onPressed: () {},
           ),
         ],
       ),
       body: Column(
         children: [
+          const SizedBox(height: 10),
           // Search and Add Button
           Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    onChanged: (value) {
-                      setState(() {
-                        _searchQuery = value;
-                      });
-                    },
-                    decoration: InputDecoration(
-                      hintText: 'Search by grade or teacher',
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      filled: true,
-                      fillColor: Colors.white,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(25),
-                        borderSide: BorderSide.none,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          _searchQuery = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        hintText: 'Search by grade or teacher...',
+                        hintStyle: GoogleFonts.inter(
+                          color: Colors.grey.shade400,
+                          fontSize: 14,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: Colors.grey,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: const EdgeInsets.symmetric(
+                          vertical: 18,
+                        ),
                       ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    // Navigate to the Create Class Screen
-                    Navigator.push(
+                const SizedBox(width: 12),
+                Bounceable(
+                  onTap: () async {
+                    final result = await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const CreateClassScreen(),
                       ),
                     );
+                    if (result == true) _loadClassrooms();
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A80F0),
-                    foregroundColor: Colors.white,
-                    shape: const CircleBorder(),
-                    padding: const EdgeInsets.all(12),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF95738),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF95738).withValues(alpha: 0.3),
+                          blurRadius: 15,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
                   ),
-                  child: const Icon(Icons.add, size: 24),
                 ),
               ],
             ),
           ),
-
+          const SizedBox(height: 20),
           // Filter Chips
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
               children:
                   [
@@ -197,46 +275,115 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
                     'Grade 8',
                     'Grade 7',
                   ].map((label) {
+                    bool isSelected = _selectedGradeFilter == label;
                     return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        label: Text(label),
-                        selected: _selectedGradeFilter == label,
-                        onSelected: (bool selected) {
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Bounceable(
+                        onTap: () {
                           setState(() {
-                            _selectedGradeFilter = selected ? label : "All";
+                            _selectedGradeFilter = isSelected ? "All" : label;
                           });
                         },
-                        selectedColor: const Color(0xFF4A80F0),
-                        labelStyle: TextStyle(
-                          color: _selectedGradeFilter == label
-                              ? Colors.white
-                              : Colors.black,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFF0D3B66)
+                                : Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected
+                                  ? const Color(0xFF0D3B66)
+                                  : Colors.grey.shade200,
+                            ),
+                            boxShadow: isSelected
+                                ? [
+                                    BoxShadow(
+                                      color: const Color(
+                                        0xFF0D3B66,
+                                      ).withValues(alpha: 0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ]
+                                : [],
+                          ),
+                          child: Text(
+                            label,
+                            style: GoogleFonts.inter(
+                              color: isSelected
+                                  ? Colors.white
+                                  : Colors.grey.shade600,
+                              fontWeight: isSelected
+                                  ? FontWeight.bold
+                                  : FontWeight.w500,
+                              fontSize: 13,
+                            ),
+                          ),
                         ),
                       ),
                     );
                   }).toList(),
             ),
           ),
-
+          const SizedBox(height: 10),
           // Classroom List
           Expanded(
-            child: filteredClasses.isEmpty
-                ? const Center(
-                    child: Text("No classes found matching your search."),
-                  )
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredClasses.length,
-                    itemBuilder: (context, index) {
-                      final item = filteredClasses[index];
-                      return ClassCard(
-                        grade: item['grade']!,
-                        teacher: item['teacher']!,
-                        students: item['students']!,
-                      );
-                    },
-                  ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : filteredClasses.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off_rounded,
+                              size: 60,
+                              color: Colors.grey.shade300,
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              "No classes found.",
+                              style: GoogleFonts.inter(color: Colors.grey.shade500),
+                            ),
+                          ],
+                        ),
+                      )
+                    : ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.all(24),
+                        itemCount: filteredClasses.length,
+                        itemBuilder: (context, index) {
+                          final c = filteredClasses[index];
+                          final List<Color> cardColors = [
+                            const Color(0xFF4A90E2),
+                            const Color(0xFF50E3C2),
+                            const Color(0xFFB86DFF),
+                            const Color(0xFFF5A623),
+                          ];
+                          final Color cardColor =
+                              cardColors[index % cardColors.length];
+
+                          final resolvedTeacher = (c.teacherName != null && c.teacherName!.isNotEmpty)
+                              ? c.teacherName!
+                              : (c.teacherId != null && c.teacherId == _myTeacherId && _myTeacherName != null)
+                                  ? _myTeacherName!
+                                  : 'No teacher';
+                          return Bounceable(
+                            onTap: () {},
+                            child: ModernClassCard(
+                              grade: c.name,
+                              teacher: resolvedTeacher,
+                              students: '${c.studentCount} students',
+                              accentColor: cardColor,
+                            ),
+                          );
+                        },
+                      ),
           ),
         ],
       ),
@@ -244,67 +391,148 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
   }
 }
 
-// --- 3. REUSABLE CLASS CARD ---
-class ClassCard extends StatelessWidget {
-  final String grade, teacher, students;
-  const ClassCard({
+// ----------------------------------------------------------------------
+// 3. REUSABLE MODERN CLASS CARD
+// ----------------------------------------------------------------------
+class ModernClassCard extends StatelessWidget {
+  final String grade;
+  final String teacher;
+  final String students;
+  final Color accentColor;
+
+  const ModernClassCard({
     super.key,
     required this.grade,
     required this.teacher,
     required this.students,
+    required this.accentColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      clipBehavior: Clip.antiAlias,
-      elevation: 2,
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: Colors.grey.shade100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Column(
         children: [
           Container(
-            height: 100,
-            width: double.infinity,
-            decoration: const BoxDecoration(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0277BD), Color(0xFF00B0FF)],
+                colors: [accentColor.withValues(alpha: 0.85), accentColor],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(28),
+                topRight: Radius.circular(28),
               ),
             ),
-            padding: const EdgeInsets.all(16),
-            alignment: Alignment.bottomLeft,
-            child: Text(
-              grade,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  grade,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.more_horiz_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ],
             ),
           ),
-          ListTile(
-            title: Text(
-              "Teacher: $teacher",
-              style: const TextStyle(
-                color: Color(0xFF4A80F0),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            subtitle: const Text("Homeroom Teacher"),
-            trailing: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.people, size: 16, color: Colors.grey),
-                  const SizedBox(width: 4),
-                  Text(students, style: const TextStyle(fontSize: 12)),
-                ],
-              ),
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: accentColor.withValues(alpha: 0.1),
+                  child: Icon(
+                    Icons.person_rounded,
+                    color: accentColor,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        teacher,
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0D3B66),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        "Homeroom Teacher",
+                        style: GoogleFonts.inter(
+                          color: Colors.grey.shade500,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF3F6F8),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.groups_rounded,
+                        size: 18,
+                        color: Colors.grey.shade600,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        students.split(' ')[0], // just the number
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF333333),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ],

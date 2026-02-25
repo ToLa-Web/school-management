@@ -1,0 +1,42 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SchoolService.Application.DTOs.Attendance;
+using SchoolService.Application.Interfaces;
+
+namespace SchoolService.API.Controllers;
+
+[ApiController]
+[Route("api/school/[controller]")]
+[Authorize]
+public class AttendanceController : ControllerBase
+{
+    private readonly IAttendanceService _attendanceService;
+
+    public AttendanceController(IAttendanceService attendanceService) => _attendanceService = attendanceService;
+
+    /// <summary>GET /api/school/attendance?classroomId=&amp;date=YYYY-MM-DD</summary>
+    [HttpGet]
+    public async Task<ActionResult> GetByClassroomAndDate(
+        [FromQuery] Guid classroomId,
+        [FromQuery] DateOnly date)
+    {
+        var records = await _attendanceService.GetByClassroomAndDateAsync(classroomId, date);
+        return Ok(records);
+    }
+
+    /// <summary>GET /api/school/attendance/{studentId}/history</summary>
+    [HttpGet("{studentId:guid}/history")]
+    public async Task<ActionResult> GetStudentHistory(Guid studentId)
+    {
+        var records = await _attendanceService.GetStudentHistoryAsync(studentId);
+        return Ok(records);
+    }
+
+    /// <summary>POST /api/school/attendance/mark — bulk mark a whole classroom for a date</summary>
+    [HttpPost("mark")]
+    public async Task<IActionResult> BulkMark([FromBody] BulkMarkAttendanceDto dto)
+    {
+        await _attendanceService.BulkMarkAsync(dto);
+        return Ok(new { message = "Attendance recorded." });
+    }
+}

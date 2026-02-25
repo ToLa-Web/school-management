@@ -13,6 +13,12 @@ public class SchoolDbContext : DbContext
     public DbSet<Teacher> Teachers => Set<Teacher>();
     public DbSet<Classroom> Classrooms => Set<Classroom>();
     public DbSet<StudentClassroom> StudentClassrooms => Set<StudentClassroom>();
+    public DbSet<Subject> Subjects => Set<Subject>();
+    public DbSet<TeacherSubject> TeacherSubjects => Set<TeacherSubject>();
+    public DbSet<Enrollment> Enrollments => Set<Enrollment>();
+    public DbSet<StudentGrade> StudentGrades => Set<StudentGrade>();
+    public DbSet<Attendance> Attendances => Set<Attendance>();
+    public DbSet<Schedule> Schedules => Set<Schedule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,5 +68,91 @@ public class SchoolDbContext : DbContext
             .WithMany(c => c.StudentClassrooms)
             .HasForeignKey(x => x.ClassroomId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // ── Subject ──
+        var subject = modelBuilder.Entity<Subject>();
+        subject.HasKey(s => s.Id);
+        subject.Property(s => s.SubjectName).IsRequired().HasMaxLength(150);
+
+        // ── TeacherSubject (many-to-many join) ──
+        var ts = modelBuilder.Entity<TeacherSubject>();
+        ts.HasKey(x => new { x.TeacherId, x.SubjectId });
+
+        ts.HasOne(x => x.Teacher)
+            .WithMany(t => t.TeacherSubjects)
+            .HasForeignKey(x => x.TeacherId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        ts.HasOne(x => x.Subject)
+            .WithMany(s => s.TeacherSubjects)
+            .HasForeignKey(x => x.SubjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ── Enrollment (Student ↔ Subject) ──
+        var enroll = modelBuilder.Entity<Enrollment>();
+        enroll.HasKey(e => e.Id);
+        enroll.HasIndex(e => new { e.StudentId, e.SubjectId }).IsUnique();
+
+        enroll.HasOne(e => e.Student)
+            .WithMany(s => s.Enrollments)
+            .HasForeignKey(e => e.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        enroll.HasOne(e => e.Subject)
+            .WithMany(s => s.Enrollments)
+            .HasForeignKey(e => e.SubjectId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // ── StudentGrade ──
+        var grade = modelBuilder.Entity<StudentGrade>();
+        grade.HasKey(g => g.Id);
+        grade.Property(g => g.Score).HasPrecision(5, 2);
+        grade.Property(g => g.Semester).IsRequired().HasMaxLength(20);
+
+        grade.HasOne(g => g.Student)
+            .WithMany(s => s.Grades)
+            .HasForeignKey(g => g.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        grade.HasOne(g => g.Subject)
+            .WithMany(s => s.Grades)
+            .HasForeignKey(g => g.SubjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // ── Attendance ──
+        var att = modelBuilder.Entity<Attendance>();
+        att.HasKey(a => a.Id);
+        att.Property(a => a.Status).HasConversion<int>();
+
+        att.HasOne(a => a.Student)
+            .WithMany(s => s.Attendances)
+            .HasForeignKey(a => a.StudentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        att.HasOne(a => a.Classroom)
+            .WithMany()
+            .HasForeignKey(a => a.ClassroomId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // ── Schedule ──
+        var sched = modelBuilder.Entity<Schedule>();
+        sched.HasKey(s => s.Id);
+        sched.Property(s => s.Day).IsRequired().HasMaxLength(20);
+        sched.Property(s => s.Time).IsRequired().HasMaxLength(30);
+
+        sched.HasOne(s => s.Classroom)
+            .WithMany()
+            .HasForeignKey(s => s.ClassroomId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        sched.HasOne(s => s.Subject)
+            .WithMany(sub => sub.Schedules)
+            .HasForeignKey(s => s.SubjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        sched.HasOne(s => s.Teacher)
+            .WithMany(t => t.Schedules)
+            .HasForeignKey(s => s.TeacherId)
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }

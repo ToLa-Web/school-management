@@ -117,7 +117,7 @@ class _ParentAttendanceMonitorState extends State<ParentAttendanceMonitor> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10),
         ],
       ),
       child: Row(
@@ -197,8 +197,8 @@ class _ParentAttendanceMonitorState extends State<ParentAttendanceMonitor> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: isPresent
-                      ? color.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1),
+                      ? color.withValues(alpha: 0.1)
+                      : Colors.red.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                 ),
                 child: Text(
@@ -301,7 +301,7 @@ class _SubjectItem extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.withOpacity(0.1),
+            backgroundColor: color.withValues(alpha: 0.1),
             child: Icon(icon, color: color, size: 20),
           ),
           const SizedBox(width: 12),

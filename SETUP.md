@@ -21,24 +21,17 @@ cd school-management
 
 ---
 
-## 2. Configure secrets
+## 2. Environment variables
 
-The `.env` file inside `backend/` holds two secrets Docker needs at startup.
-It is already filled in for development — do not commit it to git.
+The `.env` file inside `backend/` is already committed with development defaults — **no action needed**.
 
+It contains:
 ```
-backend/.env
-├── JWT_SECRET=...          ← signs all JWT tokens
-└── EMAILSETTINGS_APP_PASSWORD=...  ← Gmail app password for sending emails
+JWT_SECRET=...                  ← signs all JWT tokens
+EMAILSETTINGS_APP_PASSWORD=...  ← Gmail app password for sending emails
 ```
 
-If you are setting up from scratch:
-
-```bash
-cd backend
-cp .env.example .env
-# open .env and fill both values
-```
+> If you want to use your own Gmail for email sending, open `backend/.env` and replace `EMAILSETTINGS_APP_PASSWORD` with your own [Gmail App Password](https://support.google.com/accounts/answer/185833).
 
 ---
 
@@ -78,9 +71,9 @@ Your phone and computer must be on the **same Wi-Fi network**.
    - Windows: run `ipconfig`, look for `IPv4 Address` under Wi-Fi
    - Mac/Linux: run `ifconfig | grep inet`
 
-2. Open `frontend/lib/services/api_config.dart` and update line 10:
+2. Open `frontend/lib/services/api_config.dart` and update the `baseUrl` line:
    ```dart
-   static const String baseUrl = 'http://YOUR_IP_HERE:5001';
+   static const String baseUrl = 'http://YOUR_LAN_IP:5001';
    ```
 
 3. Run the app:

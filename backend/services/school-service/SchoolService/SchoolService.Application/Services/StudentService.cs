@@ -56,7 +56,8 @@ public class StudentService : IStudentService
             dto.Gender,
             dto.DateOfBirth,
             dto.Phone,
-            dto.Address);
+            dto.Address,
+            dto.Email);
 
         await _repository.AddAsync(student);
         return MapToResponse(student);
@@ -74,7 +75,8 @@ public class StudentService : IStudentService
             dto.Gender,
             dto.DateOfBirth,
             dto.Phone,
-            dto.Address);
+            dto.Address,
+            dto.Email);
 
         if (dto.IsActive)
             student.Activate();
@@ -103,6 +105,7 @@ public class StudentService : IStudentService
         DateOfBirth = s.DateOfBirth,
         Phone = s.Phone,
         Address = s.Address,
+        Email = s.Email,
         IsActive = s.IsActive,
         CreatedAt = s.CreatedAt
     };

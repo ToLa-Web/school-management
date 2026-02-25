@@ -45,12 +45,19 @@ Flutter App  ──►  API Gateway :5001
 
 All seed accounts use password: `Password123!`
 
-| Role    | Email                  |
-|---------|------------------------|
-| Admin   | admin@school.com       |
-| Teacher | teacher1@school.com    |
-| Student | student1@school.com    |
-| Parent  | parent1@school.com     |
+| Role    | Emails                                          |
+|---------|-------------------------------------------------|
+| Admin   | admin@school.com                                |
+| Teacher | teacher1@school.com, teacher2@school.com, teacher3@school.com |
+| Student | student1@school.com … student45@school.com      |
+| Parent  | parent1@school.com, parent2@school.com          |
+
+Teacher classes:
+- `teacher1` → Grade 10 (Class 10-A, 10-B, 10-C)
+- `teacher2` → Grade 11 (Class 11-A, 11-B, 11-C)
+- `teacher3` → Grade 12 (Class 12-A, 12-B, 12-C)
+
+Each class has 15 students.
 
 ---
 

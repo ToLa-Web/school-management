@@ -287,7 +287,7 @@ class _StudentRequestCard extends StatelessWidget {
                   vertical: 4,
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF1A1FB1).withOpacity(0.1),
+                  color: const Color(0xFF1A1FB1).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
@@ -349,7 +349,7 @@ class _StudentRequestCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: isPrimary
             ? null
-            : Border.all(color: const Color(0xFF1A1FB1).withOpacity(0.2)),
+            : Border.all(color: const Color(0xFF1A1FB1).withValues(alpha: 0.2)),
       ),
       child: Text(
         label,

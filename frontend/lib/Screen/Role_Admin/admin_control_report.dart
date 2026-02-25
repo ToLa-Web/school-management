@@ -147,7 +147,7 @@ class _AdminReportSchoolState extends State<AdminReportSchool> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             borderRadius: BorderRadius.circular(10),
           ),
           child: const Icon(
@@ -165,7 +165,7 @@ class _AdminReportSchoolState extends State<AdminReportSchool> {
       child: Container(
         padding: const EdgeInsets.all(15),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -179,7 +179,7 @@ class _AdminReportSchoolState extends State<AdminReportSchool> {
                   child: CircularProgressIndicator(
                     value: progress,
                     strokeWidth: 8,
-                    backgroundColor: Colors.white.withOpacity(0.1),
+                    backgroundColor: Colors.white.withValues(alpha: 0.1),
                     valueColor: const AlwaysStoppedAnimation<Color>(
                       Colors.amber,
                     ),
@@ -211,7 +211,7 @@ class _AdminReportSchoolState extends State<AdminReportSchool> {
         padding: const EdgeInsets.all(15),
         height: 110,
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -243,11 +243,11 @@ class _AdminReportSchoolState extends State<AdminReportSchool> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        _bar(20, Colors.green.withOpacity(0.2)),
-        _bar(40, Colors.green.withOpacity(0.4)),
-        _bar(30, Colors.green.withOpacity(0.6)),
-        _bar(60, Colors.green.withOpacity(0.8)),
-        _bar(50, Colors.green.withOpacity(0.7)),
+        _bar(20, Colors.green.withValues(alpha: 0.2)),
+        _bar(40, Colors.green.withValues(alpha: 0.4)),
+        _bar(30, Colors.green.withValues(alpha: 0.6)),
+        _bar(60, Colors.green.withValues(alpha: 0.8)),
+        _bar(50, Colors.green.withValues(alpha: 0.7)),
         _bar(80, Colors.green),
       ],
     );
@@ -280,7 +280,7 @@ class _AdminReportSchoolState extends State<AdminReportSchool> {
           child: LinearProgressIndicator(
             value: value,
             minHeight: 8,
-            backgroundColor: Colors.purple.withOpacity(0.1),
+            backgroundColor: Colors.purple.withValues(alpha: 0.1),
             valueColor: const AlwaysStoppedAnimation<Color>(Colors.purple),
           ),
         ),
@@ -355,7 +355,7 @@ class _ReportCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: iconColor.withOpacity(0.1),
+                      color: iconColor.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Icon(icon, color: iconColor, size: 20),

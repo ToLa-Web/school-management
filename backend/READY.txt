@@ -1,11 +1,11 @@
-## ✅ Your Backend is Ready!
+##  Your Backend is Ready!
 
 ### What You Have:
-- ✅ API running on http://localhost:5001/swagger
-- ✅ Database running on localhost:5433
-- ✅ Database UI on http://localhost:5050
-- ✅ 7 seed users ready to test
-- ✅ All documentation created
+-  API running on http://localhost:5001/swagger
+-  Database running on localhost:5433
+-  Database UI on http://localhost:5050
+-  7 seed users ready to test
+-  All documentation created
 
 ### For Your Team:
 

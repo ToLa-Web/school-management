@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bounceable/flutter_bounceable.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class StudentResultScreen extends StatefulWidget {
   const StudentResultScreen({super.key});
@@ -8,144 +10,247 @@ class StudentResultScreen extends StatefulWidget {
 }
 
 class _StudentResultScreenState extends State<StudentResultScreen> {
+  int _selectedStudentIndex = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
+      backgroundColor: const Color(0xFFF3F6F8),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0D3B66),
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           "Results & Rankings",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: GoogleFonts.outfit(
+            color: const Color(0xFF0D3B66),
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Month Dropdown Selection
-            _buildDropdownSelector(),
-            const SizedBox(height: 25),
+            _buildModernDropdownSelector(),
+            const SizedBox(height: 30),
 
-            const Text(
+            Text(
               "Select Student",
-              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.w600),
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF0D3B66),
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 16),
 
             // Student Selection Carousel
-            _buildStudentCarousel(),
-            const SizedBox(height: 30),
+            _buildModernStudentCarousel(),
+            const SizedBox(height: 35),
 
             // Subject Scores Header
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Subject Scores",
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0D3B66),
+                  ),
                 ),
-                TextButton.icon(
-                  onPressed: () {},
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text("Add Subject"),
+                Bounceable(
+                  onTap: () {},
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF4A90E2).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(
+                          Icons.add_rounded,
+                          size: 16,
+                          color: Color(0xFF4A90E2),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          "Add",
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF4A90E2),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 20),
 
             // Score List
-            _buildScoreItem(
+            _buildModernScoreItem(
               "Mathematics",
               "Core Subject",
               85,
-              Colors.blue.shade100,
-              Icons.grid_view_rounded,
+              const Color(0xFF4A90E2),
+              Icons.calculate_rounded,
             ),
-            _buildScoreItem(
+            _buildModernScoreItem(
               "Science",
               "Core Subject",
               92,
-              Colors.green.shade100,
-              Icons.science_outlined,
+              const Color(0xFF50E3C2),
+              Icons.science_rounded,
             ),
-            _buildScoreItem(
+            _buildModernScoreItem(
               "History",
               "Elective Subject",
               78,
-              Colors.orange.shade100,
+              const Color(0xFFFFB75E),
               Icons.menu_book_rounded,
             ),
-            _buildEmptyScoreField(),
+            _buildModernEmptyScoreField(),
 
-            const SizedBox(height: 30),
+            const SizedBox(height: 35),
 
             // Results Summary Card
-            _buildSummaryCard(),
+            _buildModernSummaryCard(),
 
-            const SizedBox(height: 25),
+            const SizedBox(height: 35),
 
             // Action Buttons
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {},
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  child: Bounceable(
+                    onTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.grey.shade200),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.02),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                       ),
-                      backgroundColor: Colors.white,
-                    ),
-                    child: const Text(
-                      "Save as Draft",
-                      style: TextStyle(color: Colors.blue),
+                      child: Center(
+                        child: Text(
+                          "Save Draft",
+                          style: GoogleFonts.inter(
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 15),
+                const SizedBox(width: 16),
                 Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.send_rounded, size: 18),
-                    label: const Text("Publish Results"),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                  child: Bounceable(
+                    onTap: () {},
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0D3B66), Color(0xFF1E5B94)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0D3B66).withValues(alpha: 0.3),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.send_rounded,
+                            color: Colors.white,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            "Publish",
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
               ],
             ),
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDropdownSelector() {
+  Widget _buildModernDropdownSelector() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: "Midterm Assessment • Jan 2026",
           isExpanded: true,
+          icon: const Icon(
+            Icons.keyboard_arrow_down_rounded,
+            color: Color(0xFF0D3B66),
+          ),
+          style: GoogleFonts.inter(
+            color: const Color(0xFF0D3B66),
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+          ),
           items: ["Midterm Assessment • Jan 2026"].map((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));
           }).toList(),
@@ -155,59 +260,96 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
     );
   }
 
-  Widget _buildStudentCarousel() {
+  Widget _buildModernStudentCarousel() {
+    final List<Map<String, dynamic>> students = [
+      {"name": "Leun", "gpa": "4.0"},
+      {"name": "Vibol", "gpa": ""},
+      {"name": "Chavy", "gpa": ""},
+      {"name": "David", "gpa": ""},
+      {"name": "Bopha", "gpa": ""},
+    ];
+
     return SizedBox(
-      height: 100,
-      child: ListView(
+      height: 110,
+      child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        children: [
-          _buildStudentAvatar("Leun", "4.0", true),
-          _buildStudentAvatar("Vibol", "", false),
-          _buildStudentAvatar("Chavy", "", false),
-          _buildStudentAvatar("David", "", false),
-        ],
+        physics: const BouncingScrollPhysics(),
+        itemCount: students.length,
+        itemBuilder: (context, index) {
+          bool isSelected = _selectedStudentIndex == index;
+          return Bounceable(
+            onTap: () {
+              setState(() => _selectedStudentIndex = index);
+            },
+            child: _buildModernStudentAvatar(
+              students[index]['name'] as String,
+              students[index]['gpa'] as String,
+              isSelected,
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildStudentAvatar(String name, String gpa, bool isSelected) {
+  Widget _buildModernStudentAvatar(String name, String gpa, bool isSelected) {
     return Padding(
       padding: const EdgeInsets.only(right: 20),
       child: Column(
         children: [
           Stack(
             children: [
-              Container(
-                padding: const EdgeInsets.all(3),
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: isSelected
-                      ? Border.all(color: Colors.blue, width: 2)
-                      : null,
+                  border: Border.all(
+                    color: isSelected
+                        ? const Color(0xFF4A90E2)
+                        : Colors.transparent,
+                    width: 2.5,
+                  ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: const Color(0xFF4A90E2).withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
                 ),
                 child: const CircleAvatar(
-                  radius: 30,
+                  radius: 32,
                   backgroundImage: NetworkImage(
                     'https://via.placeholder.com/150',
                   ),
                 ),
               ),
-              if (isSelected)
+              if (isSelected && gpa.isNotEmpty)
                 Positioned(
-                  bottom: 0,
-                  right: 0,
+                  bottom: -2,
+                  right: -2,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
+                      horizontal: 8,
+                      vertical: 4,
                     ),
                     decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(10),
+                      color: const Color(0xFFF95738),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Text(
                       gpa,
-                      style: const TextStyle(
+                      style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -217,12 +359,15 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                 ),
             ],
           ),
-          const SizedBox(height: 5),
+          const SizedBox(height: 8),
           Text(
             name,
-            style: TextStyle(
-              color: isSelected ? Colors.blue : Colors.black54,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            style: GoogleFonts.inter(
+              color: isSelected
+                  ? const Color(0xFF0D3B66)
+                  : Colors.grey.shade500,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              fontSize: 13,
             ),
           ),
         ],
@@ -230,137 +375,227 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
     );
   }
 
-  Widget _buildScoreItem(
+  Widget _buildModernScoreItem(
     String title,
     String subtitle,
     int score,
-    Color iconBg,
+    Color accentColor,
     IconData icon,
   ) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(15),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(10),
+              color: accentColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: Icon(icon, color: Colors.blue),
+            child: Icon(icon, color: accentColor, size: 24),
           ),
-          const SizedBox(width: 15),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: const Color(0xFF0D3B66),
+                  ),
                 ),
-              ),
-              Text(
-                subtitle,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
-              ),
-            ],
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF3F6F8),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "$score",
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: const Color(0xFF0D3B66),
+                  ),
+                ),
+                Text(
+                  "/100",
+                  style: GoogleFonts.inter(
+                    color: Colors.grey.shade400,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernEmptyScoreField() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.grey.shade200, width: 2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(16),
             ),
+            child: Icon(
+              Icons.edit_rounded,
+              color: Colors.grey.shade400,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
             child: Text(
-              "$score",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              "Enter subject name...",
+              style: GoogleFonts.inter(
+                color: Colors.grey.shade400,
+                fontSize: 15,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
-          const SizedBox(width: 10),
-          const Text(
-            "/100",
-            style: TextStyle(color: Colors.blue, fontSize: 12),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildEmptyScoreField() {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.grey.shade200,
-          style: BorderStyle.solid,
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(Icons.edit_outlined, color: Colors.grey),
-          const SizedBox(width: 15),
-          const Text(
-            "Enter subject name",
-            style: TextStyle(color: Colors.grey),
-          ),
-          const Spacer(),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             decoration: BoxDecoration(
-              color: Colors.grey.shade50,
-              borderRadius: BorderRadius.circular(10),
+              color: const Color(0xFFF3F6F8),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Text("--", style: TextStyle(color: Colors.grey)),
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            "/100",
-            style: TextStyle(color: Colors.grey, fontSize: 12),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  "--",
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: Colors.grey.shade400,
+                  ),
+                ),
+                Text(
+                  "/100",
+                  style: GoogleFonts.inter(
+                    color: Colors.grey.shade300,
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSummaryCard() {
+  Widget _buildModernSummaryCard() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A262F),
-        borderRadius: BorderRadius.circular(20),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0D3B66), Color(0xFF16477A)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0D3B66).withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Summary of Results",
-            style: TextStyle(
-              color: Colors.white70,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _buildSummaryStat("Total Score", "255", "of 300"),
-              _buildSummaryStat(
+              Text(
+                "Performance Summary",
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
+              ),
+              const Icon(Icons.analytics_rounded, color: Colors.white70),
+            ],
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildModernSummaryStat(
+                "Total Score",
+                "255",
+                "of 300",
+                const Color(0xFF50E3C2),
+              ),
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+              _buildModernSummaryStat(
                 "Average",
                 "85%",
-                "+2% compared to last month",
-                color: Colors.blue,
+                "+2% from last",
+                const Color(0xFF4A90E2),
               ),
-              _buildSummaryStat("Rank", "2", "out of 102"),
+              Container(
+                width: 1,
+                height: 40,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+              _buildModernSummaryStat(
+                "Rank",
+                "2nd",
+                "out of 102",
+                const Color(0xFFFFB75E),
+              ),
             ],
           ),
         ],
@@ -368,30 +603,40 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
     );
   }
 
-  Widget _buildSummaryStat(
+  Widget _buildModernSummaryStat(
     String label,
     String value,
-    String sub, {
-    Color color = Colors.white,
-  }) {
+    String sub,
+    Color accentColor,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          label,
-          style: const TextStyle(color: Colors.white54, fontSize: 10),
-        ),
-        const SizedBox(height: 5),
-        Text(
           value,
-          style: TextStyle(
-            color: color,
-            fontSize: 20,
+          style: GoogleFonts.outfit(
+            color: accentColor,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.9),
+            fontSize: 12,
             fontWeight: FontWeight.bold,
           ),
         ),
         const SizedBox(height: 2),
-        Text(sub, style: const TextStyle(color: Colors.white30, fontSize: 8)),
+        Text(
+          sub,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.5),
+            fontSize: 10,
+          ),
+        ),
       ],
     );
   }

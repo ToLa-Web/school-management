@@ -1,0 +1,53 @@
+using Microsoft.EntityFrameworkCore;
+using SchoolService.Application.Interfaces;
+using SchoolService.Domain.Entities;
+using SchoolService.Infrastructure.Data;
+
+namespace SchoolService.Infrastructure.Repositories;
+
+public class ScheduleRepository : IScheduleRepository
+{
+    private readonly SchoolDbContext _context;
+
+    public ScheduleRepository(SchoolDbContext context) => _context = context;
+
+    public async Task<List<Schedule>> GetByClassroomAsync(Guid classroomId)
+        => await _context.Schedules
+            .AsNoTracking()
+            .Include(s => s.Subject)
+            .Include(s => s.Teacher)
+            .Include(s => s.Classroom)
+            .Where(s => s.ClassroomId == classroomId)
+            .OrderBy(s => s.Day).ThenBy(s => s.Time)
+            .ToListAsync();
+
+    public async Task<List<Schedule>> GetByTeacherAsync(Guid teacherId)
+        => await _context.Schedules
+            .AsNoTracking()
+            .Include(s => s.Subject)
+            .Include(s => s.Classroom)
+            .Where(s => s.TeacherId == teacherId)
+            .OrderBy(s => s.Day).ThenBy(s => s.Time)
+            .ToListAsync();
+
+    public async Task<Schedule?> GetByIdAsync(Guid id)
+        => await _context.Schedules.FindAsync(id);
+
+    public async Task AddAsync(Schedule schedule)
+    {
+        await _context.Schedules.AddAsync(schedule);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateAsync(Schedule schedule)
+    {
+        _context.Schedules.Update(schedule);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(Schedule schedule)
+    {
+        _context.Schedules.Remove(schedule);
+        await _context.SaveChangesAsync();
+    }
+}

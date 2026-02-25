@@ -16,6 +16,12 @@ public class Teacher
     private readonly List<Classroom> _classrooms = new();
     public IReadOnlyCollection<Classroom> Classrooms => _classrooms;
 
+    private readonly List<TeacherSubject> _teacherSubjects = new();
+    public IReadOnlyCollection<TeacherSubject> TeacherSubjects => _teacherSubjects;
+
+    private readonly List<Schedule> _schedules = new();
+    public IReadOnlyCollection<Schedule> Schedules => _schedules;
+
     public Teacher(string firstName, string lastName)
     {
         UpdateBasicInfo(firstName, lastName, null, null, null, null, null);

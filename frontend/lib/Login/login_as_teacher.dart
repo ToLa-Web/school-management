@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tamdansers/contants/app_image.dart';
-import 'package:tamdansers/services/api_service.dart';
+import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_models.dart';
+import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/oauth_service.dart';
 
 class TeacherLoginScreen extends StatefulWidget {
@@ -83,6 +83,20 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           username: response.username,
           email: response.email,
         );
+        // Look up the school-service teacher record by matching email
+        try {
+          final teachers = await _apiService.getTeachers();
+          final emailLower = response.email.toLowerCase();
+          final nameLower = response.username.toLowerCase();
+          final match = teachers.firstWhere(
+            (t) =>
+                (t.email ?? '').toLowerCase() == emailLower ||
+                '${t.firstName} ${t.lastName}'.toLowerCase().contains(nameLower) ||
+                nameLower.contains(t.firstName.toLowerCase()),
+            orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
+          );
+          await _apiService.saveEntityId(match.id);
+        } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -116,6 +130,19 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           username: response.username,
           email: response.email,
         );
+        try {
+          final teachers = await _apiService.getTeachers();
+          final emailLower = response.email.toLowerCase();
+          final nameLower = response.username.toLowerCase();
+          final match = teachers.firstWhere(
+            (t) =>
+                (t.email ?? '').toLowerCase() == emailLower ||
+                '${t.firstName} ${t.lastName}'.toLowerCase().contains(nameLower) ||
+                nameLower.contains(t.firstName.toLowerCase()),
+            orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
+          );
+          await _apiService.saveEntityId(match.id);
+        } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -147,6 +174,19 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           username: response.username,
           email: response.email,
         );
+        try {
+          final teachers = await _apiService.getTeachers();
+          final emailLower = response.email.toLowerCase();
+          final nameLower = response.username.toLowerCase();
+          final match = teachers.firstWhere(
+            (t) =>
+                (t.email ?? '').toLowerCase() == emailLower ||
+                '${t.firstName} ${t.lastName}'.toLowerCase().contains(nameLower) ||
+                nameLower.contains(t.firstName.toLowerCase()),
+            orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
+          );
+          await _apiService.saveEntityId(match.id);
+        } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -288,7 +328,8 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () => Navigator.pushNamed(context, '/ForgotPassword'),
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/ForgotPassword'),
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 4),
                             ),

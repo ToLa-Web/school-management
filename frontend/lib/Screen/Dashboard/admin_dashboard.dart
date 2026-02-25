@@ -338,7 +338,7 @@ class _AdminHomeContentState extends State<AdminHomeContent> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : color.withOpacity(0.1),
+                color: isDark ? Colors.white24 : color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(icon, color: isDark ? Colors.white : color, size: 24),
