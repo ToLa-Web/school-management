@@ -460,15 +460,13 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
       final api = ApiService();
       final created = await api.createClassroom(classroom);
       if (created != null && mounted) {
-        // Assign teacher to the selected subject
         if (selectedSubjectId != null && _myTeacherId != null) {
           await api.assignTeacherToSubject(selectedSubjectId!, _myTeacherId!);
         }
-        // Enroll selected students
         for (final studentId in _selectedStudentIds) {
           await api.enrollStudent(created.id, studentId);
         }
-
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${created.name} created successfully!', style: GoogleFonts.inter()),

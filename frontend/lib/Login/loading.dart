@@ -62,9 +62,6 @@ class _SplashScreenState extends State<SplashScreen>
         case 'student':
           route = '/StudentDashboard';
           break;
-        case 'parent':
-          route = '/ParentDashboard';
-          break;
         default:
           route = '/RoleSelection';
       }

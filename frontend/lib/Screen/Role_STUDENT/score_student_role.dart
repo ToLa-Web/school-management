@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/services/api_service.dart';
-import 'package:tamdansers/services/api_models.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart'; // Adjust path if needed
 
 class StudentScoreScreen extends StatefulWidget {
@@ -17,8 +16,8 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
   int selectedSemesterIndex = 0; // 0 = Semester 1, 1 = Semester 2
 
   // Design Palette
-  final Color primaryTeal = const Color(0xFF0D3B66);
-  final Color scaffoldBg = const Color(0xFFF3F6F8);
+  static const Color primaryTeal = Color(0xFF0D3B66);
+  static const Color scaffoldBg = Color(0xFFF3F6F8);
 
   // API data
   final _api = ApiService();
@@ -127,27 +126,28 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
 
   @override
   Widget build(BuildContext context) {
-    late final List<Widget> screens = [
-      _buildScoreContent(),
-      Center(
-        child: Text(
-          "Library",
-          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ),
-      Center(
-        child: Text(
-          "Messages",
-          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
-      ),
-      const StudentEditProfileScreen(),
-    ];
-
     return Scaffold(
       backgroundColor: scaffoldBg,
       appBar: pageIndex == 0 ? _buildAppBar(context) : null,
-      body: IndexedStack(index: pageIndex, children: screens),
+      body: IndexedStack(
+        index: pageIndex,
+        children: [
+          _buildScoreContent(),
+          Center(
+            child: Text(
+              "Library",
+              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          Center(
+            child: Text(
+              "Messages",
+              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const StudentEditProfileScreen(),
+        ],
+      ),
     );
   }
 

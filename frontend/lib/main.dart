@@ -1,22 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:tamdansers/Login/forgot_password.dart';
 import 'package:tamdansers/Login/loading.dart';
-import 'package:tamdansers/Login/login_as_parent.dart';
 import 'package:tamdansers/Login/login_as_student.dart';
 import 'package:tamdansers/Login/login_as_teacher.dart';
 import 'package:tamdansers/Login/register.dart';
 import 'package:tamdansers/Login/role.dart';
-import 'package:tamdansers/Screen/Dashboard/parent_dashboard.dart';
 import 'package:tamdansers/Screen/Dashboard/student_dashboard.dart';
 import 'package:tamdansers/Screen/Dashboard/teacher_dashboard.dart';
-import 'package:tamdansers/Screen/Edit-Profile/parent_edit_profile.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
 import 'package:tamdansers/Screen/Edit-Profile/teacher_edit_profile.dart';
-import 'package:tamdansers/Screen/Role_PARENT/attendance_son_role.dart';
-import 'package:tamdansers/Screen/Role_PARENT/comment_and_signature_son_role.dart';
-import 'package:tamdansers/Screen/Role_PARENT/events_news_son_role.dart';
-import 'package:tamdansers/Screen/Role_PARENT/homework_son_role.dart';
-import 'package:tamdansers/Screen/Role_PARENT/result_monthly_son_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/attendance_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/course_student.role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/homework_student_role.dart';
@@ -47,7 +39,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: MainWrapper(),
+      home: const MainWrapper(),
       debugShowCheckedModeBanner: false,
       title: 'EduPortal',
       theme: ThemeData(
@@ -66,7 +58,6 @@ class MyApp extends StatelessWidget {
         '/SplashScreen': (context) => const SplashScreen(),
         //login as roles
         '/RoleSelection': (context) => const RoleSelectionScreen(),
-        '/ParentLoginScreen': (context) => const ParentLoginScreen(),
         '/login-teacher': (context) => const TeacherLoginScreen(),
         '/login-student': (context) => const StudentLoginScreen(),
         //Register Screen
@@ -76,12 +67,9 @@ class MyApp extends StatelessWidget {
         //Dashboards
         '/StudentDashboard': (context) => const StudentDashboard(),
         '/TeacherDashboard': (context) => const TeacherDashboard(),
-        '/ParentDashboard': (context) => const ParentDashboard(),
         //Edit Profile Screens can be added here
         '/StudentEditProfileScreen': (context) =>
             const StudentEditProfileScreen(),
-        '/ParentEditProfileScreen': (context) =>
-            const ParentEditProfileScreen(),
         '/TeacherEditProfileScreen': (context) =>
             const TeacherEditProfileScreen(),
         // Role student
@@ -113,13 +101,7 @@ class MyApp extends StatelessWidget {
         '/graph_screen': (context) =>
             const LineGraphComponent(dataPoints: [], labels: []),
 
-        //Role Parent
-        '/ParentHomeworkScreen': (context) => const ParentHomeworkScreen(),
-        '/ParentSignatureScreen': (context) => const ParentSignatureScreen(),
-        '/ParentAttendanceMonitorScreen': (context) =>
-            const ParentAttendanceMonitor(),
-        '/SchoolNewsEventsScreen': (context) => const SchoolNewsEventsScreen(),
-        '/StudentReportScreen': (context) => const StudentReportScreen(),
+
       },
     );
   }

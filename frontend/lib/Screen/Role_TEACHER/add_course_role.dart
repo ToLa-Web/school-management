@@ -33,8 +33,6 @@ class _AddCourseState extends State<AddCourse>
 
   final ApiService _api = ApiService();
   List<SubjectDto> _apiSubjects = [];
-  bool _loadingSubjects = true;
-
   final List<String> _subjects = [
     'Mathematics',
     'Khmer Literature',
@@ -109,12 +107,9 @@ class _AddCourseState extends State<AddCourse>
       if (mounted) {
         setState(() {
           _apiSubjects = subjects;
-          _loadingSubjects = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _loadingSubjects = false);
-    }
+    } catch (_) {}
   }
 
   @override

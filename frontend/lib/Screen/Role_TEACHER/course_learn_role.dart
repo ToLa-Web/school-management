@@ -373,11 +373,10 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
         // If the user clicked 'Save/Publish', result will be a Course object.
         if (result != null && result is Course) {
           setState(() {
-            // We insert at index 0 so the newest course appears at the top
             globalCourses.insert(0, result);
           });
 
-          // Optional: Show a success snackbar for better UX
+          if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text("${result.title} added successfully!"),

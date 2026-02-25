@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tamdansers/services/api_service.dart';
+import 'package:tamdansers/services/api_models.dart';
 
 class StudentResultScreen extends StatefulWidget {
   const StudentResultScreen({super.key});
@@ -10,10 +12,101 @@ class StudentResultScreen extends StatefulWidget {
 }
 
 class _StudentResultScreenState extends State<StudentResultScreen> {
-  int _selectedStudentIndex = 0;
+  final _api = ApiService();
+
+  List<ClassroomDto> _classrooms           = [];
+  List<StudentDto>   _students             = [];
+  List<GradeDto>     _grades               = [];
+  String?            _selectedClassroomId;
+  int                _selectedStudentIndex = 0;
+  bool               _isLoading            = true;
+  bool               _isGradeLoading       = false;
+
+  static const List<Color> _accentColors = [
+    Color(0xFF4A90E2), Color(0xFF50E3C2), Color(0xFFB86DFF),
+    Color(0xFFFF6B6B), Color(0xFFFFB75E), Color(0xFF0D3B66),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClassrooms();
+  }
+
+  Future<void> _loadClassrooms() async {
+    try {
+      final cls = await _api.getClassrooms();
+      if (mounted) {
+        setState(() {
+          _classrooms = cls;
+          if (cls.isNotEmpty) _selectedClassroomId = cls.first.id;
+          _isLoading = false;
+        });
+        if (_selectedClassroomId != null) {
+          await _loadStudents(_selectedClassroomId!);
+        }
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadStudents(String classroomId) async {
+    try {
+      final detail = await _api.getClassroomDetail(classroomId);
+      if (detail == null || !mounted) return;
+      setState(() {
+        _students = detail.students
+            .map((cs) => StudentDto(
+                  id: cs.studentId,
+                  firstName: cs.firstName,
+                  lastName: cs.lastName,
+                  gender: null, dateOfBirth: null,
+                  phone: null, address: null,
+                  isActive: true, createdAt: '',
+                ))
+            .toList();
+        _selectedStudentIndex = 0;
+        _grades = [];
+      });
+      if (_students.isNotEmpty) {
+        await _loadGrades(_students.first.id);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadGrades(String studentId) async {
+    setState(() => _isGradeLoading = true);
+    try {
+      final g = await _api.getGrades(studentId: studentId);
+      if (mounted) setState(() { _grades = g; _isGradeLoading = false; });
+    } catch (_) {
+      if (mounted) setState(() => _isGradeLoading = false);
+    }
+  }
+
+  List<Widget> _buildGradeItems() {
+    return _grades.asMap().entries.map((e) {
+      final grade = e.value;
+      final color = _accentColors[e.key % _accentColors.length];
+      return _buildModernScoreItem(
+        grade.subjectName,
+        grade.semester,
+        grade.score.round(),
+        color,
+        Icons.menu_book_rounded,
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        backgroundColor: Color(0xFFF3F6F8),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6F8),
       appBar: AppBar(
@@ -43,7 +136,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Month Dropdown Selection
+            // Classroom Dropdown
             _buildModernDropdownSelector(),
             const SizedBox(height: 30),
 
@@ -73,64 +166,26 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                     color: const Color(0xFF0D3B66),
                   ),
                 ),
-                Bounceable(
-                  onTap: () {},
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4A90E2).withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.add_rounded,
-                          size: 16,
-                          color: Color(0xFF4A90E2),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          "Add",
-                          style: GoogleFonts.inter(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF4A90E2),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
               ],
             ),
             const SizedBox(height: 20),
 
-            // Score List
-            _buildModernScoreItem(
-              "Mathematics",
-              "Core Subject",
-              85,
-              const Color(0xFF4A90E2),
-              Icons.calculate_rounded,
-            ),
-            _buildModernScoreItem(
-              "Science",
-              "Core Subject",
-              92,
-              const Color(0xFF50E3C2),
-              Icons.science_rounded,
-            ),
-            _buildModernScoreItem(
-              "History",
-              "Elective Subject",
-              78,
-              const Color(0xFFFFB75E),
-              Icons.menu_book_rounded,
-            ),
-            _buildModernEmptyScoreField(),
+            // Score List (dynamic from API)
+            if (_isGradeLoading)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Center(child: CircularProgressIndicator()),
+              )
+            else if (_grades.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'No grades recorded for this student.',
+                  style: GoogleFonts.inter(color: Colors.grey),
+                ),
+              )
+            else
+              ..._buildGradeItems(),
 
             const SizedBox(height: 35),
 
@@ -240,7 +295,7 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: "Midterm Assessment • Jan 2026",
+          value: _selectedClassroomId,
           isExpanded: true,
           icon: const Icon(
             Icons.keyboard_arrow_down_rounded,
@@ -251,40 +306,51 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
             fontWeight: FontWeight.bold,
             fontSize: 15,
           ),
-          items: ["Midterm Assessment • Jan 2026"].map((String value) {
-            return DropdownMenuItem<String>(value: value, child: Text(value));
+          items: _classrooms.map((c) {
+            return DropdownMenuItem<String>(
+              value: c.id,
+              child: Text(c.name),
+            );
           }).toList(),
-          onChanged: (_) {},
+          onChanged: (newId) async {
+            if (newId == null) return;
+            setState(() {
+              _selectedClassroomId = newId;
+              _students = [];
+              _grades = [];
+            });
+            await _loadStudents(newId);
+          },
         ),
       ),
     );
   }
 
   Widget _buildModernStudentCarousel() {
-    final List<Map<String, dynamic>> students = [
-      {"name": "Leun", "gpa": "4.0"},
-      {"name": "Vibol", "gpa": ""},
-      {"name": "Chavy", "gpa": ""},
-      {"name": "David", "gpa": ""},
-      {"name": "Bopha", "gpa": ""},
-    ];
-
+    if (_students.isEmpty) {
+      return Text(
+        'No students in this class.',
+        style: GoogleFonts.inter(color: Colors.grey),
+      );
+    }
     return SizedBox(
       height: 110,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
-        itemCount: students.length,
+        itemCount: _students.length,
         itemBuilder: (context, index) {
-          bool isSelected = _selectedStudentIndex == index;
+          final s = _students[index];
+          final selected = _selectedStudentIndex == index;
           return Bounceable(
             onTap: () {
               setState(() => _selectedStudentIndex = index);
+              _loadGrades(s.id);
             },
             child: _buildModernStudentAvatar(
-              students[index]['name'] as String,
-              students[index]['gpa'] as String,
-              isSelected,
+              '${s.firstName} ${s.lastName}',
+              '',
+              selected,
             ),
           );
         },
@@ -463,73 +529,10 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
     );
   }
 
-  Widget _buildModernEmptyScoreField() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.shade200, width: 2),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Icon(
-              Icons.edit_rounded,
-              color: Colors.grey.shade400,
-              size: 24,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              "Enter subject name...",
-              style: GoogleFonts.inter(
-                color: Colors.grey.shade400,
-                fontSize: 15,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF3F6F8),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  "--",
-                  style: GoogleFonts.outfit(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                    color: Colors.grey.shade400,
-                  ),
-                ),
-                Text(
-                  "/100",
-                  style: GoogleFonts.inter(
-                    color: Colors.grey.shade300,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildModernSummaryCard() {
+    final total   = _grades.fold(0.0, (s, g) => s + g.score);
+    final avg     = _grades.isEmpty ? 0.0 : total / _grades.length;
+    final maxTotal = _grades.length * 100.0;
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -570,30 +573,28 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
             children: [
               _buildModernSummaryStat(
                 "Total Score",
-                "255",
-                "of 300",
+                _grades.isEmpty ? "--" : "${total.round()}",
+                "of ${maxTotal.round()}",
                 const Color(0xFF50E3C2),
               ),
               Container(
-                width: 1,
-                height: 40,
+                width: 1, height: 40,
                 color: Colors.white.withValues(alpha: 0.1),
               ),
               _buildModernSummaryStat(
                 "Average",
-                "85%",
-                "+2% from last",
+                _grades.isEmpty ? "--" : "${avg.toStringAsFixed(1)}%",
+                "${_grades.length} subject(s)",
                 const Color(0xFF4A90E2),
               ),
               Container(
-                width: 1,
-                height: 40,
+                width: 1, height: 40,
                 color: Colors.white.withValues(alpha: 0.1),
               ),
               _buildModernSummaryStat(
-                "Rank",
-                "2nd",
-                "out of 102",
+                "Subjects",
+                "${_grades.length}",
+                "recorded",
                 const Color(0xFFFFB75E),
               ),
             ],

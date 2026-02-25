@@ -5,17 +5,6 @@ import 'package:tamdansers/Screen/Role_TEACHER/attendance_analysis_role.dart';
 import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/api_models.dart';
 
-void main() => runApp(
-  MaterialApp(
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      textTheme: GoogleFonts.interTextTheme(),
-      scaffoldBackgroundColor: const Color(0xFFF3F6F8),
-    ),
-    home: const AttendanceScreen(),
-  ),
-);
-
 class AttendanceScreen extends StatefulWidget {
   const AttendanceScreen({super.key});
 
@@ -190,7 +179,10 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const AttendanceAnalysisScreen(),
+                  builder: (context) => AttendanceAnalysisScreen(
+                    classroomId:   selectedClassroomId,
+                    classroomName: selectedGrade.isNotEmpty ? selectedGrade : null,
+                  ),
                 ),
               );
             },

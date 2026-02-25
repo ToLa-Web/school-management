@@ -9,6 +9,7 @@ import 'package:tamdansers/Screen/Role_TEACHER/check_attendance_student_role.dar
 import 'package:tamdansers/Screen/Role_TEACHER/course_learn_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/homework_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/input_score_student_role.dart';
+import 'package:tamdansers/Screen/Role_TEACHER/result_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/link_parent_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/management_class_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/notifications_role.dart';
@@ -20,17 +21,6 @@ import 'package:tamdansers/services/api_models.dart';
 // ----------------------------------------------------------------------
 // 1. MAIN APP & NAVIGATION
 // ----------------------------------------------------------------------
-void main() => runApp(
-  MaterialApp(
-    debugShowCheckedModeBanner: false,
-    theme: ThemeData(
-      textTheme: GoogleFonts.interTextTheme(),
-      scaffoldBackgroundColor: const Color(0xFFF3F6F8),
-    ),
-    home: const TeacherDashboard(),
-  ),
-);
-
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
 
@@ -100,7 +90,7 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
   List<ClassroomDto> _classrooms = [];
 
   // Define your tools with their corresponding destination screens
-  final List<ManagementTool> managementTools = [
+  static final List<ManagementTool> managementTools = [
     ManagementTool(
       name: 'Classes',
       icon: Icons.door_front_door,
@@ -130,6 +120,12 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
       icon: Icons.assessment,
       color: Colors.red,
       screen: const ScoreInputScreen(),
+    ),
+    ManagementTool(
+      name: 'Results',
+      icon: Icons.leaderboard_rounded,
+      color: Colors.deepPurple,
+      screen: const StudentResultScreen(),
     ),
     ManagementTool(
       name: 'Schedule',
@@ -165,8 +161,7 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
   }
 
   Future<void> _loadUserData() async {
-    final apiService = ApiService();
-    final name = await apiService.getUserName();
+    final name = await ApiService().getUserName();
     if (mounted) {
       setState(() {
         _userName = name ?? 'Alexander Smith';
@@ -176,11 +171,11 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
 
   Future<void> _loadSchoolData() async {
     try {
-      final apiService = ApiService();
+      final api = ApiService();
       final results = await Future.wait([
-        apiService.getStudents(),
-        apiService.getTeachers(),
-        apiService.getClassrooms(),
+        api.getStudents(),
+        api.getTeachers(),
+        api.getClassrooms(),
       ]);
       if (mounted) {
         setState(() {
@@ -1427,7 +1422,6 @@ class TeacherCoursesTab extends StatefulWidget {
 class _TeacherCoursesTabState extends State<TeacherCoursesTab> {
   String _selectedFilter = 'All';
   String _searchQuery = '';
-  bool _isLoading = true;
 
   final List<String> _filters = ['All', 'Active', 'Inactive'];
 
@@ -1476,12 +1470,9 @@ class _TeacherCoursesTabState extends State<TeacherCoursesTab> {
               'nextClass': c.teacherName ?? 'No teacher',
             };
           }).toList();
-          _isLoading = false;
         });
       }
-    } catch (_) {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    } catch (_) {}
   }
 
   List<Map<String, dynamic>> get _filteredCourses {

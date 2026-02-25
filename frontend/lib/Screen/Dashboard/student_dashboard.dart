@@ -16,14 +16,6 @@ import 'package:tamdansers/Screen/Role_STUDENT/schedule_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/score_student_role.dart';
 import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_service.dart';
-import 'package:tamdansers/services/api_models.dart';
-
-void main() => runApp(
-  const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: StudentDashboard(),
-  ),
-);
 
 // =============================================================================
 // MAIN DASHBOARD
@@ -91,6 +83,7 @@ class StudentHomeContent extends StatefulWidget {
 class _StudentHomeContentState extends State<StudentHomeContent> {
   String _userName = '';
   int _currentCarouselIndex = 0;
+  final ApiService _api = ApiService();
 
   @override
   void initState() {
@@ -99,8 +92,7 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
   }
 
   Future<void> _loadUserData() async {
-    final apiService = ApiService();
-    final name = await apiService.getUserName();
+    final name = await _api.getUserName();
     if (mounted) setState(() => _userName = name ?? 'Student');
   }
 

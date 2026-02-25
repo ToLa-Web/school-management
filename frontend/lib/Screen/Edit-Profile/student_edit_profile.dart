@@ -341,15 +341,14 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
                   Bounceable(
                     onTap: () async {
                       await ApiService().logout();
-                      if (mounted) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const RoleSelectionScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      }
+                      if (!context.mounted) return;
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const RoleSelectionScreen(),
+                        ),
+                        (route) => false,
+                      );
                     },
                     child: Container(
                       width: double.infinity,

@@ -510,7 +510,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
         Expanded(
           child: _buildOAuthButton(
             onPressed: _anyLoading ? null : _handleGoogleLogin,
-            icon: FaIcon(
+            icon: const FaIcon(
               FontAwesomeIcons.google,
               size: 20,
               color: Color(0xFFDB4437),
@@ -523,7 +523,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
         Expanded(
           child: _buildOAuthButton(
             onPressed: _anyLoading ? null : _handleFacebookLogin,
-            icon: FaIcon(
+            icon: const FaIcon(
               FontAwesomeIcons.facebookF,
               size: 20,
               color: Color(0xFF1877F2),

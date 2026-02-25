@@ -17,13 +17,13 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _apiService = ApiService();
   final _oauthService = OAuthService();
 
-  // Controllers per tab (Teacher=0, Student=1, Parent=2)
+  // Controllers per tab (Teacher=0, Student=1)
   final List<TextEditingController> _fullNameControllers =
-      List.generate(3, (_) => TextEditingController());
+      List.generate(2, (_) => TextEditingController());
   final List<TextEditingController> _emailControllers =
-      List.generate(3, (_) => TextEditingController());
+      List.generate(2, (_) => TextEditingController());
   final List<TextEditingController> _passwordControllers =
-      List.generate(3, (_) => TextEditingController());
+      List.generate(2, (_) => TextEditingController());
 
   bool _isLoading = false;
   bool _isGoogleLoading = false;
@@ -33,22 +33,20 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   bool get _anyLoading => _isLoading || _isGoogleLoading || _isFacebookLoading;
 
-  static const List<String> _tabLabels = ['Teacher', 'Student', 'Parent'];
+  static const List<String> _tabLabels = ['Teacher', 'Student'];
   static const List<String> _dashboardRoutes = [
     '/TeacherDashboard',
     '/StudentDashboard',
-    '/ParentDashboard',
   ];
   static const List<String> _loginRoutes = [
     '/login-teacher',
     '/login-student',
-    '/ParentLoginScreen',
   ];
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this, initialIndex: 1);
+    _tabController = TabController(length: 2, vsync: this, initialIndex: 1);
     _tabController.addListener(() => setState(() => _errorMessage = null));
   }
 
@@ -160,7 +158,9 @@ class _RegisterScreenState extends State<RegisterScreen>
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return AlertDialog(
+            return PopScope(
+              onPopInvokedWithResult: (didPop, result) => codeController.dispose(),
+              child: AlertDialog(
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
               title: const Column(
@@ -319,6 +319,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                   ),
                 ),
               ],
+            ),
             );
           },
         );
@@ -539,7 +540,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                           child: _buildOAuthButton(
                             onPressed:
                                 _anyLoading ? null : _handleGoogleSignUp,
-                            icon: FaIcon(FontAwesomeIcons.google, size: 20, color: Color(0xFFDB4437)),
+                            icon: const FaIcon(FontAwesomeIcons.google, size: 20, color: Color(0xFFDB4437)),
                             label: "Google",
                             isLoading: _isGoogleLoading,
                           ),
@@ -550,7 +551,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                             onPressed: _anyLoading
                                 ? null
                                 : _handleFacebookSignUp,
-                            icon: FaIcon(FontAwesomeIcons.facebookF, size: 20, color: Color(0xFF1877F2)),
+                            icon: const FaIcon(FontAwesomeIcons.facebookF, size: 20, color: Color(0xFF1877F2)),
                             label: "Facebook",
                             isLoading: _isFacebookLoading,
                           ),
