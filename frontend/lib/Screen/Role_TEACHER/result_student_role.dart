@@ -392,10 +392,13 @@ class _StudentResultScreenState extends State<StudentResultScreen> {
                           ),
                         ],
                 ),
-                child: const CircleAvatar(
+                child: CircleAvatar(
                   radius: 32,
-                  backgroundImage: NetworkImage(
-                    'https://via.placeholder.com/150',
+                  backgroundColor: Colors.grey.shade200,
+                  child: Icon(
+                    Icons.person_rounded,
+                    size: 34,
+                    color: Colors.grey.shade500,
                   ),
                 ),
               ),

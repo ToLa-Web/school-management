@@ -150,8 +150,10 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                         child: CircleAvatar(
                           radius: 56,
                           backgroundColor: Colors.grey.shade200,
-                          backgroundImage: const NetworkImage(
-                            'https://via.placeholder.com/150',
+                          child: Icon(
+                            Icons.person_rounded,
+                            size: 58,
+                            color: Colors.grey.shade400,
                           ),
                         ),
                       ),

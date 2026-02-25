@@ -21,10 +21,13 @@ class SettingsScreenTeacher extends StatelessWidget {
             Center(
               child: Stack(
                 children: [
-                  const CircleAvatar(
+                  CircleAvatar(
                     radius: 50,
-                    backgroundImage: NetworkImage(
-                      'https://via.placeholder.com/150',
+                    backgroundColor: Colors.grey.shade200,
+                    child: Icon(
+                      Icons.person_rounded,
+                      size: 52,
+                      color: Colors.grey.shade400,
                     ),
                   ),
                   Positioned(

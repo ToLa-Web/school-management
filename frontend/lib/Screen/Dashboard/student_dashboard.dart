@@ -2551,11 +2551,11 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
           // ── Online Now (horizontal list) ──
           SizedBox(
-            height: 90,
+            height: 96,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
               itemCount: _conversations
                   .where((c) => c['online'] == true)
                   .length,
