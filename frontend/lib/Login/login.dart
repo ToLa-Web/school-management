@@ -29,7 +29,7 @@ class LoginScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             const Text(
-              "សូមស្វាគមន៍មកវិញ",
+              "Welcome Back",
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
@@ -96,7 +96,7 @@ class LoginScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "ចូលប្រើជា $roleName",
+            "Login as $roleName",
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.blueGrey,
@@ -106,10 +106,8 @@ class LoginScreen extends StatelessWidget {
 
           // Identity Field
           _buildTextField(
-            label: roleName == "គ្រូបង្រៀន"
-                ? "លេខសម្គាល់គ្រូ"
-                : "លេខសម្គាល់សិស្ស",
-            hint: "បញ្ចូលលេខសម្គាល់របស់អ្នក",
+            label: roleName == "Teacher" ? "Teacher ID" : "Student ID",
+            hint: "Enter your ID",
             icon: Icons.person_outline,
           ),
 
@@ -117,7 +115,7 @@ class LoginScreen extends StatelessWidget {
 
           // Password Field
           _buildTextField(
-            label: "លេខសម្ងាត់",
+            label: "Password",
             hint: "••••••••",
             icon: Icons.lock_outline,
             isPassword: true,
@@ -128,7 +126,7 @@ class LoginScreen extends StatelessWidget {
             child: TextButton(
               onPressed: () {},
               child: const Text(
-                "ភ្លេចលេខសម្ងាត់?",
+                "Forgot Password?",
                 style: TextStyle(color: Color(0xFF0D47A1)),
               ),
             ),
@@ -149,7 +147,7 @@ class LoginScreen extends StatelessWidget {
               ),
               onPressed: () {},
               child: const Text(
-                "ចូលប្រើ",
+                "Login",
                 style: TextStyle(color: Colors.white, fontSize: 18),
               ),
             ),

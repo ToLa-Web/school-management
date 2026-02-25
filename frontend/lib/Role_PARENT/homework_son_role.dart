@@ -161,7 +161,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 15),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 15),
         ],
       ),
       child: Column(
@@ -285,7 +285,7 @@ class _ParentHomeworkScreenState extends State<ParentHomeworkScreen> {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: statusColor.withOpacity(0.1),
+                    color: statusColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: Text(

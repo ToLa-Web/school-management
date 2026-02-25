@@ -1,7 +1,9 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
-import 'package:tamdansers/contants/app_text_style.dart';
+import 'package:flutter_bounceable/flutter_bounceable.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:tamdansers/services/api_service.dart';
+import 'package:tamdansers/services/api_models.dart';
+import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart'; // Adjust path if needed
 
 class StudentScoreScreen extends StatefulWidget {
   const StudentScoreScreen({super.key});
@@ -12,65 +14,557 @@ class StudentScoreScreen extends StatefulWidget {
 
 class _StudentScoreScreenState extends State<StudentScoreScreen> {
   int pageIndex = 0;
-  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
+  int selectedSemesterIndex = 0; // 0 = Semester 1, 1 = Semester 2
 
-  // List of screens for the Navigation Bar
-  late final List<Widget> _screens = [
-    _buildScoreContent(), // Tab 0: Your Score Content
-    Center(child: Text("Library", style: AppTextStyle.sectionTitle20)),
-    Center(child: Text("Messages", style: AppTextStyle.sectionTitle20)),
-    const StudentEditProfileScreen(), // Tab 3: Profile
+  // Design Palette
+  final Color primaryTeal = const Color(0xFF0D3B66);
+  final Color scaffoldBg = const Color(0xFFF3F6F8);
+
+  // API data
+  final _api = ApiService();
+  bool _isLoading = true;
+  // semesterIndex → list of grade data
+  final Map<int, List<Map<String, dynamic>>> _semesterData = {};
+
+  // Calculator
+  final List<TextEditingController> _calcControllers = List.generate(
+    7,
+    (index) => TextEditingController(text: '0'),
+  );
+  double _calculatedAverage = 0.0;
+
+  static const List<String> _semesters = ['Semester 1', 'Semester 2'];
+  static const List<Color> _subjectColors = [
+    Color(0xFFFFB75E),
+    Color(0xFF4A90E2),
+    Color(0xFFB86DFF),
+    Color(0xFFFF6B6B),
+    Color(0xFF50E3C2),
+    Color(0xFFFFB75E),
+    Color(0xFF4A90E2),
+  ];
+  static const List<IconData> _subjectIcons = [
+    Icons.calculate_rounded,
+    Icons.science_rounded,
+    Icons.menu_book_rounded,
+    Icons.language_rounded,
+    Icons.biotech_rounded,
+    Icons.museum_rounded,
+    Icons.computer_rounded,
   ];
 
   @override
+  void initState() {
+    super.initState();
+    for (var ctrl in _calcControllers) {
+      ctrl.addListener(_updateCalculation);
+    }
+    _loadGrades();
+  }
+
+  @override
+  void dispose() {
+    for (var ctrl in _calcControllers) {
+      ctrl.dispose();
+    }
+    super.dispose();
+  }
+
+  void _updateCalculation() {
+    double total = 0;
+    for (var ctrl in _calcControllers) {
+      total += double.tryParse(ctrl.text) ?? 0;
+    }
+    setState(() {
+      _calculatedAverage = total / _calcControllers.length;
+    });
+  }
+
+  Future<void> _loadGrades() async {
+    setState(() => _isLoading = true);
+    try {
+      final entityId = await _api.getEntityId();
+      if (entityId == null || entityId.isEmpty) {
+        setState(() => _isLoading = false);
+        return;
+      }
+      final grades = await _api.getGrades(studentId: entityId);
+      final Map<int, List<Map<String, dynamic>>> data = {0: [], 1: []};
+      for (final grade in grades) {
+        final semIndex = (grade.semester == '1' || grade.semester == 'Semester 1') ? 0 : 1;
+        final colorIdx = data[semIndex]!.length % _subjectColors.length;
+        data[semIndex]!.add({
+          'name': grade.subjectName,
+          'score': grade.score.toStringAsFixed(0),
+          'color': _subjectColors[colorIdx],
+          'icon': _subjectIcons[colorIdx],
+        });
+      }
+      if (mounted) {
+        setState(() {
+          _semesterData.clear();
+          _semesterData.addAll(data);
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  List<Map<String, dynamic>> get _currentSubjects =>
+      _semesterData[selectedSemesterIndex] ?? [];
+
+  double _getCurrentSemesterAvg() {
+    final subjects = _currentSubjects;
+    if (subjects.isEmpty) return 0.0;
+    double sum = 0;
+    for (final item in subjects) {
+      sum += double.tryParse(item['score'] as String) ?? 0;
+    }
+    return sum / subjects.length;
+  }
+
+  @override
   Widget build(BuildContext context) {
+    late final List<Widget> screens = [
+      _buildScoreContent(),
+      Center(
+        child: Text(
+          "Library",
+          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+      Center(
+        child: Text(
+          "Messages",
+          style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+      ),
+      const StudentEditProfileScreen(),
+    ];
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F7F9),
-      // App bar only shows when we are on the Score tab
+      backgroundColor: scaffoldBg,
       appBar: pageIndex == 0 ? _buildAppBar(context) : null,
-      body: IndexedStack(index: pageIndex, children: _screens),
-      bottomNavigationBar: CurvedNavigationBar(
-        key: _bottomNavigationKey,
-        index: pageIndex,
-        height: 60.0,
-        items: const <Widget>[
-          Icon(Icons.grid_view_rounded, size: 30, color: Colors.white),
-          Icon(Icons.menu_book, size: 30, color: Colors.white),
-          Icon(Icons.chat_bubble, size: 30, color: Colors.white),
-          Icon(Icons.settings, size: 30, color: Colors.white),
+      body: IndexedStack(index: pageIndex, children: screens),
+    );
+  }
+
+  Widget _buildScoreContent() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          const SizedBox(height: 15),
+          _buildSemesterSelector(),
+          const SizedBox(height: 30),
+          _buildSummaryCard(),
+          const SizedBox(height: 35),
+          _buildSubjectScoreList(),
+          const SizedBox(height: 35),
+          _buildCalculatorSection(),
+          const SizedBox(height: 120),
         ],
-        color: const Color(0xFF007A7A),
-        buttonBackgroundColor: const Color(0xFF007A7A),
-        backgroundColor: const Color(0xFFF5F7F9),
-        animationCurve: Curves.easeInOut,
-        animationDuration: const Duration(milliseconds: 300),
-        onTap: (index) {
-          setState(() {
-            pageIndex = index;
-          });
-        },
       ),
     );
   }
 
-  // --- UI Sections ---
+  Widget _buildSemesterSelector() {
+    return Row(
+      children: List.generate(_semesters.length, (index) {
+        final isSelected = selectedSemesterIndex == index;
+        return Expanded(
+          child: Padding(
+            padding: EdgeInsets.only(right: index < _semesters.length - 1 ? 12 : 0),
+            child: Bounceable(
+              onTap: () => setState(() => selectedSemesterIndex = index),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                decoration: BoxDecoration(
+                  color: isSelected ? primaryTeal : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: primaryTeal.withValues(alpha: 0.3),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ]
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.03),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                ),
+                child: Center(
+                  child: Text(
+                    _semesters[index],
+                    style: GoogleFonts.inter(
+                      color: isSelected ? Colors.white : Colors.grey.shade600,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      }),
+    );
+  }
 
-  Widget _buildScoreContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+  Widget _buildSummaryCard() {
+    if (_isLoading) {
+      return Container(
+        height: 200,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [primaryTeal, primaryTeal.withValues(alpha: 0.85)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: const Center(
+          child: CircularProgressIndicator(color: Colors.white),
+        ),
+      );
+    }
+    final avg = _getCurrentSemesterAvg();
+    return Bounceable(
+      onTap: () {},
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(30),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [primaryTeal, primaryTeal.withValues(alpha: 0.85)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: primaryTeal.withValues(alpha: 0.3),
+              blurRadius: 25,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Average for ${_semesters[selectedSemesterIndex]}',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              avg.toStringAsFixed(2),
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 56,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+              ),
+            ),
+            Text(
+              'TOTAL SCORE AVERAGE',
+              style: GoogleFonts.inter(
+                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 35),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildStatDetail(
+                  'GRADE',
+                  avg >= 90 ? 'A+' : (avg >= 80 ? 'B' : 'C'),
+                ),
+                Container(
+                  height: 40,
+                  width: 1,
+                  color: Colors.white.withValues(alpha: 0.2),
+                ),
+                _buildStatDetail('STATUS', avg >= 50 ? 'PASSED' : 'FAILED'),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubjectScoreList() {
+    final subjects = _currentSubjects;
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
       child: Column(
         children: [
-          const SizedBox(height: 10),
-          _buildMonthSelector(),
-          const SizedBox(height: 20),
-          _buildSummaryCard(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Subject Analysis',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: primaryTeal,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: primaryTeal.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.insights_rounded,
+                  size: 20,
+                  color: primaryTeal,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 25),
-          _buildSubjectScoreList(),
+          if (subjects.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              child: Text(
+                'No grades recorded for this semester',
+                style: GoogleFonts.outfit(color: Colors.grey.shade400),
+              ),
+            )
+          else
+            ...subjects.map(
+              (s) => _subjectTile(
+                s['name'] as String,
+                '${s['score']}/100',
+                s['color'] as Color,
+                s['icon'] as IconData,
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _subjectTile(String name, String score, Color color, IconData icon) {
+    double scoreVal = double.tryParse(score.split('/')[0]) ?? 0;
+    return Bounceable(
+      onTap: () {},
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Row(
+          children: [
+            Container(
+              height: 52,
+              width: 52,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 20),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: const Color(0xFF0D3B66),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: LinearProgressIndicator(
+                      value: scoreVal / 100,
+                      backgroundColor: Colors.grey.withValues(alpha: 0.15),
+                      color: color,
+                      minHeight: 8,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 20),
+            Text(
+              score.split('/')[0],
+              style: GoogleFonts.outfit(
+                color: primaryTeal,
+                fontWeight: FontWeight.w900,
+                fontSize: 22,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCalculatorSection() {
+    final subjects = _currentSubjects;
+    final subjectNames = subjects.isNotEmpty
+        ? subjects.map((s) => s['name'] as String).toList()
+        : ['Mathematics', 'Physics', 'Khmer Literature', 'English', 'Chemistry', 'History', 'ICT'];
+    final count = subjectNames.length.clamp(1, _calcControllers.length);
+    // Sync calculator count if needed
+    return Container(
+      padding: const EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.calculate_rounded, color: primaryTeal, size: 24),
+              const SizedBox(width: 10),
+              Text(
+                "Score Predictor",
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: primaryTeal,
+                ),
+              ),
+            ],
+          ),
           const SizedBox(height: 25),
-          _buildPredictionActionCard(),
-          const SizedBox(height: 25),
-          _buildCalculatorSection(),
-          const SizedBox(height: 100), // Space for FAB/Nav
+          ...List.generate(
+            count,
+            (index) =>
+                _calcInputField(subjectNames[index], _calcControllers[index]),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 25),
+            child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                "ESTIMATED AVG",
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w800,
+                  color: Colors.grey.shade500,
+                  fontSize: 12,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              Text(
+                "${_calculatedAverage.toStringAsFixed(2)}%",
+                style: GoogleFonts.outfit(
+                  color: primaryTeal,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _calcInputField(String label, TextEditingController controller) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: scaffoldBg,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF0D3B66),
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                color: primaryTeal,
+                fontSize: 18,
+              ),
+              textAlign: TextAlign.right,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: "0",
+                hintStyle: GoogleFonts.outfit(
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.normal,
+                ),
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            "/ 100",
+            style: GoogleFonts.inter(
+              color: Colors.grey.shade500,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ],
       ),
     );
@@ -80,106 +574,30 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(
-          Icons.arrow_back_ios_new,
-          color: Colors.black,
-          size: 20,
+      leading: Bounceable(
+        onTap: () => Navigator.pop(context),
+        child: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0D3B66),
+            size: 18,
+          ),
         ),
-        onPressed: () => Navigator.pop(context),
       ),
-      title: Text("Monthly Results", style: AppTextStyle.sectionTitle20),
+      title: Text(
+        "Performance",
+        style: GoogleFonts.outfit(
+          color: const Color(0xFF0D3B66),
+          fontWeight: FontWeight.bold,
+          fontSize: 24,
+        ),
+      ),
       centerTitle: true,
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.share_outlined, color: Colors.black),
-          onPressed: () {},
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMonthSelector() {
-    final months = ["Jan", "Feb", "Mar", "Apr"];
-    return SizedBox(
-      height: 40,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: months.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 10),
-        itemBuilder: (context, index) {
-          bool isSelected = index == 2;
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 8),
-            decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF007A7A) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Center(
-              child: Text(
-                months[index],
-                style: AppTextStyle.body.copyWith(
-                  color: isSelected ? Colors.white : Colors.black54,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildSummaryCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(25),
-      decoration: BoxDecoration(
-        color: const Color(0xFF007A7A),
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Column(
-        children: [
-          Text(
-            "Monthly Average",
-            style: AppTextStyle.body.copyWith(color: Colors.white70),
-          ),
-          const SizedBox(height: 5),
-          Text(
-            "94.50",
-            style: AppTextStyle.sectionTitle20.copyWith(
-              color: Colors.white,
-              fontSize: 45,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 5),
-          _statBadge("Rank: 02"),
-          const SizedBox(height: 25),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatDetail("Total Score", "472.5"),
-              Container(height: 30, width: 1, color: Colors.white24),
-              _buildStatDetail("Grade", "A"),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _statBadge(String text) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Text(
-        text,
-        style: AppTextStyle.body.copyWith(color: Colors.white, fontSize: 12),
-      ),
     );
   }
 
@@ -188,239 +606,23 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
       children: [
         Text(
           label,
-          style: AppTextStyle.body.copyWith(
-            color: Colors.white70,
+          style: GoogleFonts.inter(
+            color: Colors.white.withValues(alpha: 0.8),
             fontSize: 11,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.2,
           ),
         ),
+        const SizedBox(height: 8),
         Text(
           value,
-          style: AppTextStyle.body.copyWith(
+          style: GoogleFonts.outfit(
             color: Colors.white,
             fontWeight: FontWeight.bold,
-            fontSize: 18,
+            fontSize: 24,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildSubjectScoreList() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.list_alt, size: 20, color: Color(0xFF007A7A)),
-              const SizedBox(width: 8),
-              Text(
-                "Subject Scores",
-                style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _subjectTile(
-            "Mathematics",
-            "98/100",
-            "Avg: 95",
-            Colors.orange,
-            Icons.functions,
-          ),
-          _subjectTile(
-            "Physics",
-            "92/100",
-            "Avg: 88",
-            Colors.blue,
-            Icons.science,
-          ),
-          _subjectTile(
-            "Khmer Literature",
-            "89/100",
-            "Avg: 85",
-            Colors.purple,
-            Icons.translate,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _subjectTile(
-    String name,
-    String score,
-    String avg,
-    Color color,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: color.withOpacity(0.1),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(width: 15),
-          Expanded(
-            child: Text(
-              name,
-              style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                score,
-                style: AppTextStyle.body.copyWith(
-                  color: const Color(0xFF007A7A),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                avg,
-                style: AppTextStyle.body.copyWith(
-                  fontSize: 10,
-                  color: Colors.grey,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPredictionActionCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.grey.shade200),
-      ),
-      child: Column(
-        children: [
-          Text(
-            "Your Score Prediction",
-            style: AppTextStyle.sectionTitle20.copyWith(fontSize: 18),
-          ),
-          Text(
-            "Estimate your expected score for next month",
-            style: AppTextStyle.body.copyWith(fontSize: 11, color: Colors.grey),
-          ),
-          const SizedBox(height: 15),
-          ElevatedButton.icon(
-            onPressed: () {},
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF007A7A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
-            ),
-            icon: const Icon(Icons.calculate, color: Colors.white),
-            label: Text(
-              "Calculate Total",
-              style: AppTextStyle.body.copyWith(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCalculatorSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Calculator",
-                style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
-              ),
-              const Icon(Icons.info_outline, size: 18, color: Colors.grey),
-            ],
-          ),
-          const SizedBox(height: 20),
-          _calcField("Attendance", "10", "10"),
-          _calcField("Homework", "25", "30"),
-          _calcField("Exams", "55", "60"),
-          const Divider(height: 40),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Estimated Result:",
-                style: AppTextStyle.body.copyWith(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "90 / 100 (A)",
-                style: AppTextStyle.sectionTitle20.copyWith(
-                  color: const Color(0xFF007A7A),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _calcField(String label, String value, String max) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 15),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            label,
-            style: AppTextStyle.body.copyWith(
-              fontSize: 12,
-              color: Colors.blueGrey,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFFF5F7F9),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(value, style: AppTextStyle.body),
-                Text(
-                  "/ $max",
-                  style: AppTextStyle.body.copyWith(
-                    color: Colors.grey,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

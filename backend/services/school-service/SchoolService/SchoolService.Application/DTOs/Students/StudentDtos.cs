@@ -22,6 +22,10 @@ public class StudentCreateDto
 
     [StringLength(255)]
     public string? Address { get; set; }
+
+    [StringLength(200)]
+    [EmailAddress]
+    public string? Email { get; set; }
 }
 
 public class StudentUpdateDto
@@ -45,6 +49,10 @@ public class StudentUpdateDto
     [StringLength(255)]
     public string? Address { get; set; }
 
+    [StringLength(200)]
+    [EmailAddress]
+    public string? Email { get; set; }
+
     public bool IsActive { get; set; } = true;
 }
 
@@ -57,6 +65,7 @@ public class StudentResponseDto
     public DateTime? DateOfBirth { get; set; }
     public string? Phone { get; set; }
     public string? Address { get; set; }
+    public string? Email { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
 }

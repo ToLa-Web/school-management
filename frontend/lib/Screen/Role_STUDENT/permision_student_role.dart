@@ -1,8 +1,23 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
-import 'package:tamdansers/contants/app_text_style.dart';
-
+import 'package:intl/intl.dart';
+import 'package:flutter_bounceable/flutter_bounceable.dart';
+import 'package:google_fonts/google_fonts.dart';
+// --- 1. DATA MODEL ---
+class LeaveRequest {
+  final String type;
+  final String date;
+  final String status;
+  final String reason;
+  final Color statusColor;
+  LeaveRequest({
+    required this.type,
+    required this.date,
+    required this.status,
+    required this.reason,
+    required this.statusColor,
+  });
+}
+// --- 2. MAIN SCREEN ---
 class StudentPermissionScreen extends StatefulWidget {
   const StudentPermissionScreen({super.key});
 
@@ -12,353 +27,667 @@ class StudentPermissionScreen extends StatefulWidget {
 }
 
 class _StudentPermissionScreenState extends State<StudentPermissionScreen> {
-  // Navigation State
-  int _pageIndex = 0;
-  final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
+  final _formKey = GlobalKey<FormState>();
 
-  // Theme Color & Form State
-  final Color primaryTeal = const Color(0xFF007A7C);
   String? selectedLeaveType = 'Sick Leave';
+  DateTime? selectedDate;
+  final TextEditingController _reasonController = TextEditingController();
 
-  // Define the screens for the navigation bar
-  late final List<Widget> _screens = [
-    _buildPermissionFormContent(), // Tab 0: The Permission Form
-    Center(child: Text("Library", style: AppTextStyle.sectionTitle20)),
-    Center(child: Text("Messages", style: AppTextStyle.sectionTitle20)),
-    const StudentEditProfileScreen(),
+  final List<LeaveRequest> historyData = [
+    LeaveRequest(
+      type: 'Sick Leave',
+      date: '12 Feb 2026',
+      status: 'Approved',
+      reason: 'High fever and flu. Doctor prescribed 3 days of rest.',
+      statusColor: const Color(0xFF50E3C2),
+    ),
+    LeaveRequest(
+      type: 'Personal',
+      date: '10 Feb 2026',
+      status: 'Pending',
+      reason: 'Family emergency requiring immediate travel.',
+      statusColor: const Color(0xFFFFB75E),
+    ),
   ];
+
+  Future<void> _pickDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2030),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF0D3B66),
+              onPrimary: Colors.white,
+              onSurface: Color(0xFF0D3B66),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked != null) setState(() => selectedDate = picked);
+  }
+
+  void _submitForm() {
+    if (!_formKey.currentState!.validate()) return;
+    if (selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "Please choose a date first",
+            style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: const Color(0xFFFF6B6B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+      return;
+    }
+
+    setState(() {
+      historyData.insert(
+        0,
+        LeaveRequest(
+          type: selectedLeaveType!,
+          date: DateFormat('dd MMM yyyy').format(selectedDate!),
+          status: 'Pending',
+          reason: _reasonController.text,
+          statusColor: const Color(0xFFFFB75E),
+        ),
+      );
+      _reasonController.clear();
+      selectedDate = null;
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle_rounded, color: Colors.white),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                "Permission request sent successfully!",
+                style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF50E3C2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      // Only show the specific Permission AppBar when on the first tab
-      appBar: _pageIndex == 0
-          ? AppBar(
-              backgroundColor: Colors.white,
-              elevation: 0,
-              leading: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: CircleAvatar(
-                  backgroundColor: Colors.teal.withOpacity(0.1),
-                  child: IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back_ios_new,
-                      color: Color(0xFF007A7C),
-                      size: 18,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-              ),
-              title: const Text(
-                'Submit Leave Request',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              centerTitle: true,
-            )
-          : null,
-      body: IndexedStack(index: _pageIndex, children: _screens),
-      bottomNavigationBar: CurvedNavigationBar(
-        key: _bottomNavigationKey,
-        index: _pageIndex,
-        height: 60.0,
-        items: const <Widget>[
-          Icon(Icons.grid_view_rounded, size: 30, color: Colors.white),
-          Icon(Icons.menu_book, size: 30, color: Colors.white),
-          Icon(Icons.chat_bubble, size: 30, color: Colors.white),
-          Icon(Icons.settings, size: 30, color: Colors.white),
-        ],
-        color: const Color(0xFF007A7C),
-        buttonBackgroundColor: const Color(0xFF007A7C),
-        backgroundColor: const Color(0xFFF8F9FA),
-        animationCurve: Curves.easeInOut,
-        animationDuration: const Duration(milliseconds: 300),
-        onTap: (index) {
-          setState(() {
-            _pageIndex = index;
-          });
-        },
-      ),
-    );
-  }
-
-  // --- Content for the Permission Form Tab ---
-  Widget _buildPermissionFormContent() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 5),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildLabel('Leave Type'),
-                _buildDropdown(),
-                const SizedBox(height: 20),
-                _buildLabel('Date'),
-                _buildDatePicker(),
-                const SizedBox(height: 20),
-                _buildLabel('Reason'),
-                _buildReasonField(),
-                const SizedBox(height: 20),
-                _buildAttachmentButton(),
-                const SizedBox(height: 25),
-                SizedBox(
-                  width: double.infinity,
-                  height: 55,
-                  child: ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: const Icon(Icons.send, color: Colors.white),
-                    label: const Text(
-                      'Submit',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryTeal,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: const Color(0xFFF3F6F8),
+      appBar: _buildAppBar(),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(24.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Leave History',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.03),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Request Leave",
+                      style: GoogleFonts.outfit(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF0D3B66),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    _buildLabel('Leave Type'),
+                    _buildDropdown(),
+                    const SizedBox(height: 20),
+                    _buildLabel('Date'),
+                    _buildDatePickerDisplay(),
+                    const SizedBox(height: 20),
+                    _buildLabel('Reason'),
+                    _buildReasonField(),
+                    const SizedBox(height: 30),
+                    _buildSubmitButton(),
+                  ],
+                ),
               ),
-              TextButton(
-                onPressed: () {},
-                child: Text('View All', style: TextStyle(color: primaryTeal)),
-              ),
+              const SizedBox(height: 35),
+              _buildHistorySection(),
             ],
           ),
-          const SizedBox(height: 10),
-          _buildHistoryItem(
-            title: 'Sick Leave',
-            date: '15 Oct 2024',
-            description: 'I have a high fever...',
-            status: 'Pending',
-            statusColor: Colors.orange,
-          ),
-          const SizedBox(height: 12),
-          _buildHistoryItem(
-            title: 'Personal Leave',
-            date: '10 Oct 2024',
-            description: 'Attending a family event...',
-            status: 'Approved',
-            statusColor: Colors.green,
-          ),
-        ],
+        ),
       ),
     );
   }
 
-  // --- Helper Widgets (Inside State Class) ---
-
-  Widget _buildLabel(String text) => Padding(
-    padding: const EdgeInsets.only(bottom: 8.0),
-    child: Text(
-      text,
-      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-    ),
-  );
-
+  // UI Components
   Widget _buildDropdown() => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 12),
+    padding: const EdgeInsets.symmetric(horizontal: 16),
     decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Colors.black12),
+      color: const Color(0xFFF3F6F8),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: Colors.transparent),
     ),
     child: DropdownButtonHideUnderline(
       child: DropdownButton<String>(
         value: selectedLeaveType,
         isExpanded: true,
-        items: ['Sick Leave', 'Personal Leave'].map((String value) {
-          return DropdownMenuItem<String>(value: value, child: Text(value));
-        }).toList(),
-        onChanged: (newValue) => setState(() => selectedLeaveType = newValue),
-      ),
-    ),
-  );
-
-  Widget _buildDatePicker() => Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      borderRadius: BorderRadius.circular(10),
-      border: Border.all(color: Colors.black12),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        const Text('15 Oct 2024', style: TextStyle(fontSize: 16)),
-        Icon(Icons.calendar_today, color: primaryTeal),
-      ],
-    ),
-  );
-
-  Widget _buildReasonField() => TextField(
-    maxLines: 4,
-    decoration: InputDecoration(
-      hintText: 'Enter the reason for the leave...',
-      hintStyle: const TextStyle(color: Colors.black26),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Colors.black12),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(10),
-        borderSide: const BorderSide(color: Colors.black12),
-      ),
-    ),
-  );
-
-  Widget _buildAttachmentButton() => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.symmetric(vertical: 12),
-    decoration: BoxDecoration(
-      border: Border.all(color: primaryTeal.withOpacity(0.3)),
-      borderRadius: BorderRadius.circular(10),
-      color: primaryTeal.withOpacity(0.05),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.attach_file, color: primaryTeal),
-        const SizedBox(width: 8),
-        Text(
-          'Attach supporting document',
-          style: TextStyle(color: primaryTeal, fontWeight: FontWeight.bold),
+        icon: Icon(
+          Icons.keyboard_arrow_down_rounded,
+          color: Colors.grey.shade500,
         ),
-      ],
+        style: GoogleFonts.inter(
+          color: const Color(0xFF0D3B66),
+          fontWeight: FontWeight.w600,
+          fontSize: 16,
+        ),
+        items: ['Sick Leave', 'Personal Leave', 'Other'].map((val) {
+          return DropdownMenuItem(value: val, child: Text(val));
+        }).toList(),
+        onChanged: (v) => setState(() => selectedLeaveType = v),
+      ),
     ),
   );
-
-  Widget _buildHistoryItem({
-    required String title,
-    required String date,
-    required String description,
-    required String status,
-    required Color statusColor,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
+  Widget _buildDatePickerDisplay() => Bounceable(
+    onTap: _pickDate,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(15),
+        color: const Color(0xFFF3F6F8),
+        borderRadius: BorderRadius.circular(16),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
           Text(
-            'Date: $date',
-            style: const TextStyle(color: Colors.grey, fontSize: 13),
+            selectedDate == null
+                ? 'Choose Date'
+                : DateFormat('dd MMM yyyy').format(selectedDate!),
+            style: GoogleFonts.inter(
+              color: selectedDate == null
+                  ? Colors.grey.shade500
+                  : const Color(0xFF0D3B66),
+              fontWeight: selectedDate == null
+                  ? FontWeight.w500
+                  : FontWeight.w600,
+              fontSize: 16,
+            ),
           ),
-          const Divider(height: 20),
-          Text(
-            description,
-            style: const TextStyle(color: Colors.black54),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          Icon(
+            Icons.calendar_month_rounded,
+            color: Colors.grey.shade500,
+            size: 22,
           ),
         ],
       ),
-    );
-  }
-}
+    ),
+  );
+  Widget _buildReasonField() => TextFormField(
+    controller: _reasonController,
+    maxLines: 4,
+    style: GoogleFonts.inter(
+      color: const Color(0xFF0D3B66),
+      fontWeight: FontWeight.w500,
+    ),
+    validator: (v) => (v == null || v.isEmpty) ? "Please enter a reason" : null,
+    decoration: InputDecoration(
+      hintText: 'Why do you need leave?',
+      hintStyle: GoogleFonts.inter(
+        color: Colors.grey.shade400,
+        fontWeight: FontWeight.w500,
+      ),
+      fillColor: const Color(0xFFF3F6F8),
+      filled: true,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      contentPadding: const EdgeInsets.all(16),
+    ),
+  );
 
-class _Legend extends StatelessWidget {
-  final Color color;
-  final String label;
-  const _Legend({required this.color, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+  Widget _buildSubmitButton() => Bounceable(
+    onTap: _submitForm,
+    child: Container(
+      width: double.infinity,
+      height: 55,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0D3B66),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0D3B66).withValues(alpha: 0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          'Submit Request',
+          style: GoogleFonts.inter(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+      ),
+    ),
+  );
+
+  Widget _buildHistorySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recent Requests',
+              style: GoogleFonts.outfit(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0D3B66),
+              ),
+            ),
+            Bounceable(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AllHistoryScreen(data: historyData),
+                  ),
+                );
+              },
+              child: Text(
+                'View All',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF4A90E2),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        if (historyData.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(40.0),
+              child: Text(
+                "No requests found.",
+                style: GoogleFonts.inter(color: Colors.grey.shade500),
+              ),
+            ),
+          )
+        else
+          _HistoryCard(item: historyData[0]),
       ],
     );
   }
+
+  Widget _buildLabel(String text) => Padding(
+    padding: const EdgeInsets.only(bottom: 10.0, left: 4),
+    child: Text(
+      text,
+      style: GoogleFonts.inter(
+        fontWeight: FontWeight.bold,
+        fontSize: 13,
+        color: Colors.grey.shade600,
+      ),
+    ),
+  );
+  AppBar _buildAppBar() => AppBar(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    title: Text(
+      'Permissions',
+      style: GoogleFonts.outfit(
+        color: const Color(0xFF0D3B66),
+        fontWeight: FontWeight.bold,
+        fontSize: 24,
+      ),
+    ),
+    centerTitle: true,
+    leading: Bounceable(
+      onTap: () {
+        Navigator.pop(context);
+      },
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Color(0xFF0D3B66),
+          size: 18,
+        ),
+      ),
+    ),
+  );
 }
 
-class _SubjectItem extends StatelessWidget {
-  final String title, status;
-  final Color statusColor, color;
-  final IconData icon;
-
-  const _SubjectItem({
-    required this.title,
-    required this.status,
-    required this.statusColor,
-    required this.icon,
-    required this.color,
-  });
+// --- 3. ALL HISTORY SCREEN ---
+class AllHistoryScreen extends StatelessWidget {
+  final List<LeaveRequest> data;
+  const AllHistoryScreen({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
-    return Container();
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F6F8),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          "All Leave Requests",
+          style: GoogleFonts.outfit(
+            color: const Color(0xFF0D3B66),
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
+        leading: Bounceable(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.arrow_back_ios_new_rounded,
+              color: Color(0xFF0D3B66),
+              size: 18,
+            ),
+          ),
+        ),
+      ),
+      body: ListView.separated(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        itemCount: data.length,
+        separatorBuilder: (context, index) => const SizedBox(height: 16),
+        itemBuilder: (context, index) => _HistoryCard(item: data[index]),
+      ),
+    );
+  }
+}
+
+// --- 4. DETAIL VIEW SCREEN ---
+class RequestDetailScreen extends StatelessWidget {
+  final LeaveRequest item;
+  const RequestDetailScreen({super.key, required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F6F8),
+      appBar: AppBar(
+        title: Text(
+          "Permission Details",
+          style: GoogleFonts.outfit(
+            color: const Color(0xFF0D3B66),
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Bounceable(
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            margin: const EdgeInsets.all(8),
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.close_rounded,
+              color: Color(0xFF0D3B66),
+              size: 20,
+            ),
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(24.0),
+        child: Container(
+          padding: const EdgeInsets.all(30),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.04),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    item.type,
+                    style: GoogleFonts.outfit(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0D3B66),
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: item.statusColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      item.status.toUpperCase(),
+                      style: GoogleFonts.inter(
+                        color: item.statusColor,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today_rounded,
+                    size: 16,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    item.date,
+                    style: GoogleFonts.inter(
+                      color: Colors.grey.shade600,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 35),
+              Text(
+                "Reason for Leave",
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey.shade400,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF3F6F8),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  item.reason,
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    height: 1.6,
+                    color: const Color(0xFF0D3B66),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// --- 5. REUSABLE UI CARD (Now Clickable) ---
+class _HistoryCard extends StatelessWidget {
+  final LeaveRequest item;
+  const _HistoryCard({required this.item});
+
+  @override
+  Widget build(BuildContext context) {
+    return Bounceable(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RequestDetailScreen(item: item),
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.03),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  item.type,
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: const Color(0xFF0D3B66),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: item.statusColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    item.status.toUpperCase(),
+                    style: GoogleFonts.inter(
+                      color: item.statusColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time_rounded,
+                  size: 14,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  item.date,
+                  style: GoogleFonts.inter(
+                    color: Colors.grey.shade500,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Container(
+              height: 1,
+              width: double.infinity,
+              color: Colors.grey.shade100,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              item.reason,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.inter(
+                color: Colors.grey.shade600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

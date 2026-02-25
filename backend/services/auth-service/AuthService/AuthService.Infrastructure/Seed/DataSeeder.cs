@@ -27,28 +27,22 @@ public class DataSeeder
 
         var users = new List<User>
         {
-            // Admin users
+            // Admin
             CreateUser("admin@school.com", "admin", UserRole.Admin),
-            // CreateUser("adminmanager@school.com", "adminmanager", UserRole.Admin),
 
-            // Teacher users
-            CreateUser("teacher1@school.com", "teacher_john", UserRole.Teacher),
+            // Teachers
+            CreateUser("teacher1@school.com", "teacher_john",  UserRole.Teacher),
             CreateUser("teacher2@school.com", "teacher_sarah", UserRole.Teacher),
-            // CreateUser("teacher3@school.com", "teacher_mike", UserRole.Teacher),
-            // CreateUser("teacher4@school.com", "teacher_emily", UserRole.Teacher),
+            CreateUser("teacher3@school.com", "teacher_mike",  UserRole.Teacher),
 
-            // Student users
-            CreateUser("student1@school.com", "student_alice", UserRole.Student),
-            CreateUser("student2@school.com", "student_bob", UserRole.Student),
-            // CreateUser("student3@school.com", "student_charlie", UserRole.Student),
-            // CreateUser("student4@school.com", "student_diana", UserRole.Student),
-            // CreateUser("student5@school.com", "student_eve", UserRole.Student),
-            // CreateUser("student6@school.com", "student_frank", UserRole.Student),
-
-            // Parent users
+            // Parents
             CreateUser("parent1@school.com", "parent_john", UserRole.Parent),
             CreateUser("parent2@school.com", "parent_jane", UserRole.Parent),
         };
+
+        // Students: student1@school.com … student45@school.com
+        for (int i = 1; i <= 45; i++)
+            users.Add(CreateUser($"student{i}@school.com", $"student{i}", UserRole.Student));
 
         // Set all emails as verified for demo purposes
         foreach (var user in users)

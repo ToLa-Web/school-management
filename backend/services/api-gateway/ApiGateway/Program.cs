@@ -23,14 +23,14 @@ builder.Services.AddSingleton<Consul.IConsulClient>(sp => new Consul.ConsulClien
     cfg.Address = new Uri($"http://{consulHost}:{consulPort}");
 }));
 
-builder.Services.AddReverseProxy().LoadFromMemory(
-    new List<Yarp.ReverseProxy.Configuration.RouteConfig>(),
-    new List<Yarp.ReverseProxy.Configuration.ClusterConfig>());
+// Load static config from appsettings.json as the initial/fallback config
+builder.Services.AddReverseProxy()
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
 // Try to discover registered services from Consul in the background.
-// This runs non-blocking so the gateway starts even if Consul is slow.
+// If successful, update YARP's config with discovered routes/clusters.
 _ = Task.Run(async () =>
 {
     var consulHost = builder.Configuration["consul:host"] ?? "consul";

@@ -147,3 +147,114 @@ export async function getHealthDashboard() {
   const res = await request('/api/school/servicehealth/dashboard');
   return res.ok ? res.json() : null;
 }
+
+// ── Subjects ──────────────────────────────────────────────────────────────────
+
+export async function getSubjects() {
+  const res = await request('/api/school/subjects');
+  return res.ok ? res.json() : null;
+}
+
+export async function getSubject(id) {
+  const res = await request(`/api/school/subjects/${id}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function createSubject(subjectName) {
+  return request('/api/school/subjects', {
+    method: 'POST',
+    body: JSON.stringify({ subjectName }),
+  });
+}
+
+export async function updateSubject(id, subjectName) {
+  return request(`/api/school/subjects/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ subjectName }),
+  });
+}
+
+export async function deleteSubject(id) {
+  return request(`/api/school/subjects/${id}`, { method: 'DELETE' });
+}
+
+export async function assignTeacherToSubject(subjectId, teacherId) {
+  return request(`/api/school/subjects/${subjectId}/assign-teacher`, {
+    method: 'POST',
+    body: JSON.stringify({ teacherId }),
+  });
+}
+
+export async function removeTeacherFromSubject(subjectId, teacherId) {
+  return request(`/api/school/subjects/${subjectId}/remove-teacher/${teacherId}`, {
+    method: 'DELETE',
+  });
+}
+
+// ── Grades ────────────────────────────────────────────────────────────────────
+
+export async function getGrades({ studentId, subjectId, semester } = {}) {
+  const params = new URLSearchParams();
+  if (studentId) params.set('studentId', studentId);
+  if (subjectId) params.set('subjectId', subjectId);
+  if (semester) params.set('semester', semester);
+  const res = await request(`/api/school/grades?${params}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function createGrade(data) {
+  return request('/api/school/grades', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteGrade(id) {
+  return request(`/api/school/grades/${id}`, { method: 'DELETE' });
+}
+
+// ── Attendance ────────────────────────────────────────────────────────────────
+
+export async function getAttendance({ classroomId, studentId, date } = {}) {
+  const params = new URLSearchParams();
+  if (classroomId) params.set('classroomId', classroomId);
+  if (studentId) params.set('studentId', studentId);
+  if (date) params.set('date', date);
+  const res = await request(`/api/school/attendance?${params}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function getStudentAttendanceHistory(studentId) {
+  const res = await request(`/api/school/attendance/student/${studentId}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function createAttendance(data) {
+  return request('/api/school/attendance', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+// ── Schedules ─────────────────────────────────────────────────────────────────
+
+export async function getClassroomSchedule(classroomId) {
+  const res = await request(`/api/school/schedules/classroom/${classroomId}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function getTeacherSchedule(teacherId) {
+  const res = await request(`/api/school/schedules/teacher/${teacherId}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function createSchedule(data) {
+  return request('/api/school/schedules', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteSchedule(id) {
+  return request(`/api/school/schedules/${id}`, { method: 'DELETE' });
+}

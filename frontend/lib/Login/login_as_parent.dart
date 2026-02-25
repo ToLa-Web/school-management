@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tamdansers/contants/app_image.dart';
-import 'package:tamdansers/services/api_service.dart';
+import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_models.dart';
+import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/oauth_service.dart';
 
 class ParentLoginScreen extends StatefulWidget {
@@ -290,7 +290,8 @@ class _ParentLoginScreenState extends State<ParentLoginScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () => Navigator.pushNamed(context, '/ForgotPassword'),
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/ForgotPassword'),
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 4),
                             ),

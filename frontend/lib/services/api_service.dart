@@ -1,7 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:logging/logging.dart';
 import 'api_config.dart';
 import 'api_models.dart';
+
+final Logger _logger = Logger('ApiService');
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -78,7 +81,7 @@ class ApiService {
       _accessToken = await _secureStorage.read(key: 'access_token');
       _refreshToken = await _secureStorage.read(key: 'refresh_token');
     } catch (e) {
-      print('Error loading tokens: $e');
+      _logger.warning('Error loading tokens: $e');
     }
   }
 
@@ -178,6 +181,16 @@ class ApiService {
     return await _secureStorage.read(key: 'user_email');
   }
 
+  /// Save the school-service entity ID (student or teacher) after login.
+  Future<void> saveEntityId(String entityId) async {
+    await _secureStorage.write(key: 'entity_id', value: entityId);
+  }
+
+  /// Get the saved school-service entity ID (student or teacher).
+  Future<String?> getEntityId() async {
+    return await _secureStorage.read(key: 'entity_id');
+  }
+
   /// POST /api/auth/refresh
   Future<bool> _refreshAccessToken() async {
     if (_refreshToken == null) return false;
@@ -196,7 +209,7 @@ class ApiService {
         return true;
       }
     } catch (e) {
-      print('Token refresh error: $e');
+      _logger.warning('Token refresh error: $e');
     }
     return false;
   }
@@ -211,7 +224,7 @@ class ApiService {
         );
       }
     } catch (e) {
-      print('Logout error: $e');
+      _logger.warning('Logout error: $e');
     } finally {
       _accessToken = null;
       _refreshToken = null;
@@ -221,6 +234,7 @@ class ApiService {
         _secureStorage.delete(key: 'user_role'),
         _secureStorage.delete(key: 'user_name'),
         _secureStorage.delete(key: 'user_email'),
+        _secureStorage.delete(key: 'entity_id'),
       ]);
     }
   }
@@ -234,7 +248,7 @@ class ApiService {
       );
       return response.statusCode == 200;
     } on DioException catch (e) {
-      print('Request verification code error: ${e.message}');
+      _logger.warning('Request verification code error: ${e.message}');
     }
     return false;
   }
@@ -248,7 +262,7 @@ class ApiService {
       );
       return response.statusCode == 200 && response.data == true;
     } on DioException catch (e) {
-      print('Verify email error: ${e.message}');
+      _logger.warning('Verify email error: ${e.message}');
     }
     return false;
   }
@@ -262,7 +276,7 @@ class ApiService {
       );
       return response.statusCode == 200;
     } on DioException catch (e) {
-      print('Request password reset error: ${e.message}');
+      _logger.warning('Request password reset error: ${e.message}');
     }
     return false;
   }
@@ -280,7 +294,7 @@ class ApiService {
       );
       return response.statusCode == 200 && response.data == true;
     } on DioException catch (e) {
-      print('Reset password error: ${e.message}');
+      _logger.warning('Reset password error: ${e.message}');
     }
     return false;
   }
@@ -301,7 +315,7 @@ class ApiService {
         return authResponse;
       }
     } on DioException catch (e) {
-      print('Google auth error: ${e.message}');
+      _logger.warning('Google auth error: ${e.message}');
     }
     return null;
   }
@@ -322,8 +336,491 @@ class ApiService {
         return authResponse;
       }
     } on DioException catch (e) {
-      print('Facebook auth error: ${e.message}');
+      _logger.warning('Facebook auth error: ${e.message}');
     }
     return null;
   }
+
+  // ================================================
+  // School-Service Endpoints
+  // ================================================
+
+  /// GET /api/school/Students — returns list or paged result
+  Future<List<StudentDto>> getStudents({int? page, int? pageSize}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['pageSize'] = pageSize;
+
+      final response = await _dio.get(
+        ApiConfig.studentsEndpoint,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        // Backend returns plain list if no pagination params, PagedResult otherwise
+        if (response.data is List) {
+          return (response.data as List)
+              .map((e) => StudentDto.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } else if (response.data is Map) {
+          final paged = PagedResult.fromJson(
+            response.data as Map<String, dynamic>,
+            StudentDto.fromJson,
+          );
+          return paged.items;
+        }
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get students error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// GET /api/school/Students/{id}
+  Future<StudentDto?> getStudentById(String id) async {
+    try {
+      final response = await _dio.get('${ApiConfig.studentsEndpoint}/$id');
+      if (response.statusCode == 200 && response.data != null) {
+        return StudentDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get student by id error: ${e.message}');
+    }
+    return null;
+  }
+
+  /// POST /api/school/Students
+  Future<StudentDto?> createStudent(StudentDto student) async {
+    try {
+      final response = await _dio.post(
+        ApiConfig.studentsEndpoint,
+        data: student.toJson(),
+      );
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
+        return StudentDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Create student error: ${e.message}');
+      if (e.response?.data != null && e.response?.data is Map) {
+        throw Exception(e.response?.data['message'] ?? 'Create student failed');
+      }
+    }
+    return null;
+  }
+
+  /// GET /api/school/Teachers — returns list or paged result
+  Future<List<TeacherDto>> getTeachers({int? page, int? pageSize}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['pageSize'] = pageSize;
+
+      final response = await _dio.get(
+        ApiConfig.teachersEndpoint,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data is List) {
+          return (response.data as List)
+              .map((e) => TeacherDto.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } else if (response.data is Map) {
+          final paged = PagedResult.fromJson(
+            response.data as Map<String, dynamic>,
+            TeacherDto.fromJson,
+          );
+          return paged.items;
+        }
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get teachers error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// GET /api/school/Teachers/{id}
+  Future<TeacherDto?> getTeacherById(String id) async {
+    try {
+      final response = await _dio.get('${ApiConfig.teachersEndpoint}/$id');
+      if (response.statusCode == 200 && response.data != null) {
+        return TeacherDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get teacher by id error: ${e.message}');
+    }
+    return null;
+  }
+
+  /// POST /api/school/Teachers
+  Future<TeacherDto?> createTeacher(TeacherDto teacher) async {
+    try {
+      final response = await _dio.post(
+        ApiConfig.teachersEndpoint,
+        data: teacher.toJson(),
+      );
+      if ((response.statusCode == 200 || response.statusCode == 201) &&
+          response.data != null) {
+        return TeacherDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Create teacher error: ${e.message}');
+      if (e.response?.data != null && e.response?.data is Map) {
+        throw Exception(e.response?.data['message'] ?? 'Create teacher failed');
+      }
+    }
+    return null;
+  }
+
+  /// GET /api/school/Classrooms — returns list or paged result
+  Future<List<ClassroomDto>> getClassrooms({int? page, int? pageSize}) async {
+    try {
+      final queryParams = <String, dynamic>{};
+      if (page != null) queryParams['page'] = page;
+      if (pageSize != null) queryParams['pageSize'] = pageSize;
+
+      final response = await _dio.get(
+        ApiConfig.classroomsEndpoint,
+        queryParameters: queryParams.isNotEmpty ? queryParams : null,
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        if (response.data is List) {
+          return (response.data as List)
+              .map((e) => ClassroomDto.fromJson(e as Map<String, dynamic>))
+              .toList();
+        } else if (response.data is Map) {
+          final paged = PagedResult.fromJson(
+            response.data as Map<String, dynamic>,
+            ClassroomDto.fromJson,
+          );
+          return paged.items;
+        }
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get classrooms error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// GET /api/school/Classrooms/{id} — returns detail with students list
+  Future<ClassroomDetailDto?> getClassroomDetail(String id) async {
+    try {
+      final response = await _dio.get('${ApiConfig.classroomsEndpoint}/$id');
+      if (response.statusCode == 200 && response.data != null) {
+        return ClassroomDetailDto.fromJson(
+            response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get classroom detail error: ${e.message}');
+    }
+    return null;
+  }
+
+  /// POST /api/school/Classrooms — create a new classroom
+  Future<ClassroomDto?> createClassroom(ClassroomDto classroom) async {
+    try {
+      final response = await _dio.post(
+        ApiConfig.classroomsEndpoint,
+        data: classroom.toJson(),
+      );
+      if (response.statusCode == 201 && response.data != null) {
+        return ClassroomDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Create classroom error: ${e.message}');
+      rethrow;
+    }
+    return null;
+  }
+
+  /// POST /api/school/Classrooms/{id}/enroll
+  Future<bool> enrollStudent(String classroomId, String studentId) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConfig.classroomsEndpoint}/$classroomId/enroll',
+        data: {'studentId': studentId},
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      _logger.warning('Enroll student error: ${e.message}');
+    }
+    return false;
+  }
+
+  /// PUT /api/school/Students/{id}
+  Future<bool> updateStudent(String id, StudentDto student) async {
+    try {
+      final response = await _dio.put(
+        '${ApiConfig.studentsEndpoint}/$id',
+        data: student.toJson(),
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      _logger.warning('Update student error: ${e.message}');
+      rethrow;
+    }
+  }
+
+  /// DELETE /api/school/Students/{id}
+  Future<bool> deleteStudent(String id) async {
+    try {
+      final response = await _dio.delete('${ApiConfig.studentsEndpoint}/$id');
+      return response.statusCode == 200 || response.statusCode == 204;
+    } on DioException catch (e) {
+      _logger.warning('Delete student error: ${e.message}');
+      rethrow;
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Subjects
+  // ────────────────────────────────────────────────────────────
+
+  /// GET /api/school/Subjects
+  Future<List<SubjectDto>> getSubjects() async {
+    try {
+      final response = await _dio.get(ApiConfig.subjectsEndpoint);
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => SubjectDto.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get subjects error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// GET /api/school/Subjects/{id}
+  Future<SubjectDto?> getSubjectById(String id) async {
+    try {
+      final response = await _dio.get('${ApiConfig.subjectsEndpoint}/$id');
+      if (response.statusCode == 200) {
+        return SubjectDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get subject error: ${e.message}');
+    }
+    return null;
+  }
+
+  /// POST /api/school/Subjects
+  Future<SubjectDto?> createSubject(String subjectName) async {
+    try {
+      final response = await _dio.post(
+        ApiConfig.subjectsEndpoint,
+        data: {'subjectName': subjectName},
+      );
+      if (response.statusCode == 201) {
+        return SubjectDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Create subject error: ${e.message}');
+      rethrow;
+    }
+    return null;
+  }
+
+  /// POST /api/school/Subjects/{id}/assign-teacher
+  Future<bool> assignTeacherToSubject(String subjectId, String teacherId) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConfig.subjectsEndpoint}/$subjectId/assign-teacher',
+        data: {'teacherId': teacherId},
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      _logger.warning('Assign teacher error: ${e.message}');
+    }
+    return false;
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Grades
+  // ────────────────────────────────────────────────────────────
+
+  /// GET /api/school/Grades?studentId=&subjectId=&semester=
+  Future<List<GradeDto>> getGrades({String? studentId, String? subjectId, String? semester}) async {
+    try {
+      final params = <String, dynamic>{};
+      if (studentId != null) params['studentId'] = studentId;
+      if (subjectId != null) params['subjectId'] = subjectId;
+      if (semester != null) params['semester'] = semester;
+
+      final response = await _dio.get(ApiConfig.gradesEndpoint, queryParameters: params);
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => GradeDto.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get grades error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// POST /api/school/Grades
+  Future<GradeDto?> createGrade(GradeDto grade) async {
+    try {
+      final response = await _dio.post(
+        ApiConfig.gradesEndpoint,
+        data: grade.toJson(),
+      );
+      if (response.statusCode == 201) {
+        return GradeDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Create grade error: ${e.message}');
+      rethrow;
+    }
+    return null;
+  }
+
+  /// PUT /api/school/Grades/{id}
+  Future<bool> updateGrade(String id, double score, String semester) async {
+    try {
+      final response = await _dio.put(
+        '${ApiConfig.gradesEndpoint}/$id',
+        data: {'score': score, 'semester': semester},
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      _logger.warning('Update grade error: ${e.message}');
+    }
+    return false;
+  }
+
+  /// DELETE /api/school/Grades/{id}
+  Future<bool> deleteGrade(String id) async {
+    try {
+      final response = await _dio.delete('${ApiConfig.gradesEndpoint}/$id');
+      return response.statusCode == 204;
+    } on DioException catch (e) {
+      _logger.warning('Delete grade error: ${e.message}');
+    }
+    return false;
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Attendance
+  // ────────────────────────────────────────────────────────────
+
+  /// GET /api/school/Attendance?classroomId=&date=YYYY-MM-DD
+  Future<List<AttendanceDto>> getClassroomAttendance(String classroomId, String date) async {
+    try {
+      final response = await _dio.get(
+        ApiConfig.attendanceEndpoint,
+        queryParameters: {'classroomId': classroomId, 'date': date},
+      );
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => AttendanceDto.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get attendance error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// GET /api/school/Attendance/{studentId}/history
+  Future<List<AttendanceDto>> getStudentAttendanceHistory(String studentId) async {
+    try {
+      final response = await _dio.get('${ApiConfig.attendanceEndpoint}/$studentId/history');
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => AttendanceDto.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get student attendance error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// POST /api/school/Attendance/mark
+  Future<bool> markAttendance(BulkMarkAttendanceRequest request) async {
+    try {
+      final response = await _dio.post(
+        '${ApiConfig.attendanceEndpoint}/mark',
+        data: request.toJson(),
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      _logger.warning('Mark attendance error: ${e.message}');
+      rethrow;
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────
+  // Schedules
+  // ────────────────────────────────────────────────────────────
+
+  /// GET /api/school/Schedules?classroomId=
+  Future<List<ScheduleDto>> getClassroomSchedule(String classroomId) async {
+    try {
+      final response = await _dio.get(
+        ApiConfig.schedulesEndpoint,
+        queryParameters: {'classroomId': classroomId},
+      );
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => ScheduleDto.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get schedule error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// GET /api/school/Schedules?teacherId=
+  Future<List<ScheduleDto>> getTeacherSchedule(String teacherId) async {
+    try {
+      final response = await _dio.get(
+        ApiConfig.schedulesEndpoint,
+        queryParameters: {'teacherId': teacherId},
+      );
+      if (response.statusCode == 200 && response.data is List) {
+        return (response.data as List)
+            .map((e) => ScheduleDto.fromJson(e as Map<String, dynamic>))
+            .toList();
+      }
+    } on DioException catch (e) {
+      _logger.warning('Get teacher schedule error: ${e.message}');
+    }
+    return [];
+  }
+
+  /// POST /api/school/Schedules
+  Future<ScheduleDto?> createSchedule(ScheduleDto schedule) async {
+    try {
+      final response = await _dio.post(
+        ApiConfig.schedulesEndpoint,
+        data: schedule.toJson(),
+      );
+      if (response.statusCode == 201) {
+        return ScheduleDto.fromJson(response.data as Map<String, dynamic>);
+      }
+    } on DioException catch (e) {
+      _logger.warning('Create schedule error: ${e.message}');
+      rethrow;
+    }
+    return null;
+  }
+
+  /// DELETE /api/school/Schedules/{id}
+  Future<bool> deleteSchedule(String id) async {
+    try {
+      final response = await _dio.delete('${ApiConfig.schedulesEndpoint}/$id');
+      return response.statusCode == 204;
+    } on DioException catch (e) {
+      _logger.warning('Delete schedule error: ${e.message}');
+    }
+    return false;
+  }
 }
+

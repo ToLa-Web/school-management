@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:tamdansers/contants/app_image.dart';
-import 'package:tamdansers/services/api_service.dart';
+import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_models.dart';
+import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/oauth_service.dart';
 
 class StudentLoginScreen extends StatefulWidget {
@@ -37,8 +37,10 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeAnimation =
-        CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+    _fadeAnimation = CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOut,
+    );
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0, 0.15),
       end: Offset.zero,
@@ -81,6 +83,20 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.username,
           email: response.email,
         );
+        // Look up the school-service student record by matching email
+        try {
+          final students = await _apiService.getStudents();
+          final emailLower = response.email.toLowerCase();
+          final nameLower = response.username.toLowerCase();
+          final match = students.firstWhere(
+            (s) =>
+                (s.email ?? '').toLowerCase() == emailLower ||
+                '${s.firstName} ${s.lastName}'.toLowerCase().contains(nameLower) ||
+                nameLower.contains(s.firstName.toLowerCase()),
+            orElse: () => students.isEmpty ? throw Exception('none') : students.first,
+          );
+          await _apiService.saveEntityId(match.id);
+        } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -93,7 +109,8 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
     } catch (e) {
       if (!mounted) return;
       setState(
-          () => _errorMessage = e.toString().replaceFirst('Exception: ', ''));
+        () => _errorMessage = e.toString().replaceFirst('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -113,6 +130,19 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.username,
           email: response.email,
         );
+        try {
+          final students = await _apiService.getStudents();
+          final emailLower = response.email.toLowerCase();
+          final nameLower = response.username.toLowerCase();
+          final match = students.firstWhere(
+            (s) =>
+                (s.email ?? '').toLowerCase() == emailLower ||
+                '${s.firstName} ${s.lastName}'.toLowerCase().contains(nameLower) ||
+                nameLower.contains(s.firstName.toLowerCase()),
+            orElse: () => students.isEmpty ? throw Exception('none') : students.first,
+          );
+          await _apiService.saveEntityId(match.id);
+        } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -123,7 +153,8 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
     } catch (e) {
       if (!mounted) return;
       setState(
-          () => _errorMessage = e.toString().replaceFirst('Exception: ', ''));
+        () => _errorMessage = e.toString().replaceFirst('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _isGoogleLoading = false);
     }
@@ -143,6 +174,19 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.username,
           email: response.email,
         );
+        try {
+          final students = await _apiService.getStudents();
+          final emailLower = response.email.toLowerCase();
+          final nameLower = response.username.toLowerCase();
+          final match = students.firstWhere(
+            (s) =>
+                (s.email ?? '').toLowerCase() == emailLower ||
+                '${s.firstName} ${s.lastName}'.toLowerCase().contains(nameLower) ||
+                nameLower.contains(s.firstName.toLowerCase()),
+            orElse: () => students.isEmpty ? throw Exception('none') : students.first,
+          );
+          await _apiService.saveEntityId(match.id);
+        } catch (_) {}
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
@@ -153,7 +197,8 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
     } catch (e) {
       if (!mounted) return;
       setState(
-          () => _errorMessage = e.toString().replaceFirst('Exception: ', ''));
+        () => _errorMessage = e.toString().replaceFirst('Exception: ', ''),
+      );
     } finally {
       if (mounted) setState(() => _isFacebookLoading = false);
     }
@@ -197,8 +242,11 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.arrow_back_ios_new,
-                                  color: Colors.white, size: 18),
+                              icon: const Icon(
+                                Icons.arrow_back_ios_new,
+                                color: Colors.white,
+                                size: 18,
+                              ),
                               onPressed: () => Navigator.pop(context),
                             ),
                           ),
@@ -282,16 +330,18 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () => Navigator.pushNamed(context, '/ForgotPassword'),
+                            onPressed: () =>
+                                Navigator.pushNamed(context, '/ForgotPassword'),
                             style: TextButton.styleFrom(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 4)),
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                            ),
                             child: Text(
                               "Forgot Password?",
                               style: TextStyle(
-                                  color: primary,
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600),
+                                color: primary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                         ),
@@ -331,8 +381,10 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           const Icon(Icons.error_outline, color: Colors.red, size: 20),
           const SizedBox(width: 10),
           Expanded(
-            child: Text(_errorMessage!,
-                style: const TextStyle(color: Colors.red, fontSize: 13)),
+            child: Text(
+              _errorMessage!,
+              style: const TextStyle(color: Colors.red, fontSize: 13),
+            ),
           ),
         ],
       ),
@@ -351,19 +403,21 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF344054),
-                fontSize: 14)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF344054),
+            fontSize: 14,
+          ),
+        ),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
           keyboardType: keyboardType,
           obscureText: isPassword ? _isObscured : false,
           decoration: InputDecoration(
-            prefixIcon:
-                Icon(icon, color: const Color(0xFF98A2B3), size: 20),
+            prefixIcon: Icon(icon, color: const Color(0xFF98A2B3), size: 20),
             hintText: hint,
             hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
             suffixIcon: isPassword
@@ -375,14 +429,15 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                       color: const Color(0xFF98A2B3),
                       size: 20,
                     ),
-                    onPressed: () =>
-                        setState(() => _isObscured = !_isObscured),
+                    onPressed: () => setState(() => _isObscured = !_isObscured),
                   )
                 : null,
             filled: true,
             fillColor: Colors.white,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 16,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: Color(0xFFE4E7EC)),
@@ -411,8 +466,9 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           foregroundColor: Colors.white,
           elevation: 2,
           shadowColor: primary.withValues(alpha: 0.3),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
         ),
         onPressed: _anyLoading ? null : _handleLogin,
         child: _isLoading
@@ -420,10 +476,14 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                 width: 24,
                 height: 24,
                 child: CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 2.5),
+                  color: Colors.white,
+                  strokeWidth: 2.5,
+                ),
               )
-            : const Text("Login",
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600)),
+            : const Text(
+                "Login",
+                style: TextStyle(fontSize: 17, fontWeight: FontWeight.w600),
+              ),
       ),
     );
   }
@@ -434,8 +494,10 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
         const Expanded(child: Divider(color: Color(0xFFD0D5DD))),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text("or continue with",
-              style: TextStyle(color: Colors.grey.shade500, fontSize: 13)),
+          child: Text(
+            "or continue with",
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 13),
+          ),
         ),
         const Expanded(child: Divider(color: Color(0xFFD0D5DD))),
       ],
@@ -448,7 +510,11 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
         Expanded(
           child: _buildOAuthButton(
             onPressed: _anyLoading ? null : _handleGoogleLogin,
-            icon: FaIcon(FontAwesomeIcons.google, size: 20, color: Color(0xFFDB4437)),
+            icon: FaIcon(
+              FontAwesomeIcons.google,
+              size: 20,
+              color: Color(0xFFDB4437),
+            ),
             label: "Google",
             isLoading: _isGoogleLoading,
           ),
@@ -457,7 +523,11 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
         Expanded(
           child: _buildOAuthButton(
             onPressed: _anyLoading ? null : _handleFacebookLogin,
-            icon: FaIcon(FontAwesomeIcons.facebookF, size: 20, color: Color(0xFF1877F2)),
+            icon: FaIcon(
+              FontAwesomeIcons.facebookF,
+              size: 20,
+              color: Color(0xFF1877F2),
+            ),
             label: "Facebook",
             isLoading: _isFacebookLoading,
           ),
@@ -478,8 +548,9 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
           side: const BorderSide(color: Color(0xFFE4E7EC)),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
           backgroundColor: Colors.white,
         ),
         child: isLoading
@@ -493,10 +564,13 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                 children: [
                   icon,
                   const SizedBox(width: 8),
-                  Text(label,
-                      style: const TextStyle(
-                          color: Color(0xFF344054),
-                          fontWeight: FontWeight.w500)),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      color: Color(0xFF344054),
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
       ),
@@ -507,15 +581,20 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("Don't have an account? ",
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 14)),
+        Text(
+          "Don't have an account? ",
+          style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
+        ),
         GestureDetector(
           onTap: () => Navigator.pushNamed(context, '/RegisterScreen'),
-          child: Text("Sign up",
-              style: TextStyle(
-                  color: primary,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 14)),
+          child: Text(
+            "Sign up",
+            style: TextStyle(
+              color: primary,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
         ),
       ],
     );

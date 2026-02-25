@@ -182,7 +182,7 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
       width: 80,
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        border: Border.all(color: color.withOpacity(0.1)),
+        border: Border.all(color: color.withValues(alpha: 0.1)),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
@@ -343,7 +343,7 @@ class StudentAttendanceCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(5),
       ),
       child: Text(status, style: TextStyle(color: color, fontSize: 10)),
