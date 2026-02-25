@@ -70,9 +70,8 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 }
 
-// =============================================================================
 // STUDENT HOME CONTENT
-// =============================================================================
+
 class StudentHomeContent extends StatefulWidget {
   const StudentHomeContent({super.key});
 
