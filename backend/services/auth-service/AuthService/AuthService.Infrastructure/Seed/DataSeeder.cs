@@ -19,36 +19,41 @@ public class DataSeeder
 
     public async Task SeedDataAsync()
     {
-        // Check if users already exist
-        if (await _context.Users.AnyAsync())
-        {
-            return; // Data already seeded
-        }
+        if (await _context.Users.AnyAsync()) return;
 
         var users = new List<User>
         {
             // Admin
-            CreateUser("admin@school.com", "admin", UserRole.Admin),
+            CreateUser("admin@school.com",   "admin",            UserRole.Admin),
 
-            // Teachers
-            CreateUser("teacher1@school.com", "teacher_john",  UserRole.Teacher),
-            CreateUser("teacher2@school.com", "teacher_sarah", UserRole.Teacher),
-            CreateUser("teacher3@school.com", "teacher_mike",  UserRole.Teacher),
+            // 5 Teachers — one per subject (Cambodian names, matches SchoolService seed)
+            // teacher1 = Sopheak Meas   → Mathematics
+            // teacher2 = Dara Chan      → Science
+            // teacher3 = Bopha Sok      → English
+            // teacher4 = Rithy Phal     → History
+            // teacher5 = Sreyla Noun    → Physical Education
+            CreateUser("teacher1@school.com", "teacher_sopheak", UserRole.Teacher),
+            CreateUser("teacher2@school.com", "teacher_dara",    UserRole.Teacher),
+            CreateUser("teacher3@school.com", "teacher_bopha",   UserRole.Teacher),
+            CreateUser("teacher4@school.com", "teacher_rithy",   UserRole.Teacher),
+            CreateUser("teacher5@school.com", "teacher_sreyla",  UserRole.Teacher),
 
             // Parents
-            CreateUser("parent1@school.com", "parent_john", UserRole.Parent),
-            CreateUser("parent2@school.com", "parent_jane", UserRole.Parent),
+            CreateUser("parent1@school.com", "parent_sokha",  UserRole.Parent),
+            CreateUser("parent2@school.com", "parent_chanta", UserRole.Parent),
         };
 
-        // Students: student1@school.com … student45@school.com
-        for (int i = 1; i <= 45; i++)
+        // 47 students total:
+        //   Class 10-A → student1  … student15  (15 students)
+        //   Class 11-A → student16 … student25  (10 students)
+        //   Class 12-A → student26 … student32  ( 7 students)
+        //   Class 10-B → student33 … student41  ( 9 students)
+        //   Class 12-B → student42 … student47  ( 6 students)
+        for (int i = 1; i <= 47; i++)
             users.Add(CreateUser($"student{i}@school.com", $"student{i}", UserRole.Student));
 
-        // Set all emails as verified for demo purposes
         foreach (var user in users)
-        {
             user.VerifyEmail();
-        }
 
         await _context.Users.AddRangeAsync(users);
         await _context.SaveChangesAsync();
@@ -57,13 +62,8 @@ public class DataSeeder
     private User CreateUser(string email, string username, UserRole role)
     {
         var user = new User(email, username, role);
-        var defaultPassword = "Password123!"; // Default password for all seed users
-        var hashedPassword = _passwordHasher.HashPassword(user, defaultPassword);
-        
-        // Set password hash through reflection since it's a private setter
-        var passwordHashProperty = typeof(User).GetProperty("PasswordHash");
-        passwordHashProperty?.SetValue(user, hashedPassword);
-
+        var hashedPassword = _passwordHasher.HashPassword(user, "Password123!");
+        typeof(User).GetProperty("PasswordHash")?.SetValue(user, hashedPassword);
         return user;
     }
 }

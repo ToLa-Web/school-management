@@ -170,7 +170,10 @@ public class AuthenticationService : IAuthenticationService
     public async Task<UserResponseDto> RegisterAsync(UserCreateDto dto)
     {
         var email = dto.Email.Trim();
-        var username = dto.Username.Trim();
+        var firstName = dto.FirstName.Trim();
+        var lastName = dto.LastName.Trim();
+        // Store full name in the Username field for internal use
+        var username = $"{firstName} {lastName}";
 
         // Check email
         if (await _userRepo.EmailExistsAsync(email.ToUpperInvariant()))
@@ -193,7 +196,8 @@ public class AuthenticationService : IAuthenticationService
         {
             Id = user.Id,
             Email = user.Email,
-            Username = user.Username,
+            FirstName = firstName,
+            LastName = lastName,
             Role = user.Role,
             UserRole = user.Role.ToString(),
             IsEmailVerified = user.IsEmailVerified
@@ -232,7 +236,8 @@ public class AuthenticationService : IAuthenticationService
         return new AuthResponseDto
         {
             UserId = user.Id,
-            Username = user.Username,
+            FirstName = SplitUsername(user.Username).FirstName,
+            LastName = SplitUsername(user.Username).LastName,
             Email = user.Email,
             Role = user.Role,
             UserRole = user.Role.ToString(),
@@ -274,7 +279,8 @@ public class AuthenticationService : IAuthenticationService
         return new AuthResponseDto
         {
             UserId = user.Id,
-            Username = user.Username,
+            FirstName = SplitUsername(user.Username).FirstName,
+            LastName = SplitUsername(user.Username).LastName,
             Email = user.Email,
             Role = user.Role,
             UserRole = user.Role.ToString(),
@@ -483,7 +489,8 @@ private async Task<AuthResponseDto?> AuthenticateExternalAsync(ExternalAuthIdent
     return new AuthResponseDto
     {
         UserId = user.Id,
-        Username = user.Username,
+        FirstName = SplitUsername(user.Username).FirstName,
+        LastName = SplitUsername(user.Username).LastName,
         Email = user.Email,
         Role = user.Role,
         UserRole = user.Role.ToString(),
@@ -494,4 +501,74 @@ private async Task<AuthResponseDto?> AuthenticateExternalAsync(ExternalAuthIdent
         LastLoginAt = user.LastLoginAt
     };
 }
+
+    public async Task<UserResponseDto> AdminCreateUserAsync(AdminCreateUserDto dto)
+    {
+        var email = dto.Email.Trim();
+        var firstName = dto.FirstName.Trim();
+        var lastName = dto.LastName.Trim();
+        var username = $"{firstName} {lastName}";
+
+        if (await _userRepo.EmailExistsAsync(email.ToUpperInvariant()))
+            throw new DuplicateEmailException(email);
+
+        var user = new User(email, username, dto.Role);
+        var hash = _passwordHasher.HashPassword(user, dto.Password);
+        user.SetPasswordHash(hash);
+        user.VerifyEmail(); // admin-created accounts skip email verification
+
+        await _userRepo.AddAsync(user);
+
+        return new UserResponseDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            FirstName = firstName,
+            LastName = lastName,
+            Role = user.Role,
+            UserRole = user.Role.ToString(),
+            IsEmailVerified = user.IsEmailVerified
+        };
+    }
+
+    public async Task<IEnumerable<UserResponseDto>> GetAllUsersAsync()
+    {
+        var users = await _userRepo.GetAllAsync();
+        return users.Select(u =>
+        {
+            var (fn, ln) = SplitUsername(u.Username ?? "");
+            return new UserResponseDto
+            {
+                Id = u.Id,
+                Email = u.Email,
+                FirstName = fn,
+                LastName = ln,
+                Role = u.Role,
+                UserRole = u.Role.ToString(),
+                IsEmailVerified = u.IsEmailVerified
+            };
+        });
+    }
+
+    public async Task DeleteUserAsync(Guid userId)
+    {
+        var deleted = await _userRepo.DeleteAsync(userId);
+        if (!deleted)
+            throw new NotFoundException($"User {userId} not found.");
+    }
+
+    public async Task UpdateUserRoleAsync(Guid userId, Domain.Enums.UserRole newRole)
+    {
+        var updated = await _userRepo.UpdateRoleAsync(userId, newRole);
+        if (!updated)
+            throw new NotFoundException($"User {userId} not found.");
+    }
+
+    private static (string FirstName, string LastName) SplitUsername(string username)
+    {
+        var parts = username.Trim().Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 2
+            ? (parts[0], string.Join(" ", parts[1..]))
+            : (username.Trim(), string.Empty);
+    }
 }

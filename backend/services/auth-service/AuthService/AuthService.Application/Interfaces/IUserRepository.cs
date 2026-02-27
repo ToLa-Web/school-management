@@ -10,9 +10,10 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string normalizedEmail);
     Task<User?> GetByRefreshTokenAsync(string refreshToken);
     //Task<User?> GetByUsernameAsync(string username);
-    //Task<IEnumerable<User>> GetAllAsync();
     Task<User> AddAsync(User user);
     Task UpdateAsync(User user);
     Task<User?> GetByExternalLoginAsync(ExternalAuthProvider provider, string providerUserId);
-    //Task<bool> DeleteAsync(int userId);
+    Task<IEnumerable<User>> GetAllAsync();
+    Task<bool> DeleteAsync(Guid userId);
+    Task<bool> UpdateRoleAsync(Guid userId, UserRole newRole);
 }
