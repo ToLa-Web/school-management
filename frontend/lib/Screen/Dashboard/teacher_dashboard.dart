@@ -1,3 +1,4 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
@@ -9,21 +10,19 @@ import 'package:tamdansers/Screen/Role_TEACHER/check_attendance_student_role.dar
 import 'package:tamdansers/Screen/Role_TEACHER/course_learn_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/homework_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/input_score_student_role.dart';
-import 'package:tamdansers/Screen/Role_TEACHER/result_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/link_parent_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/management_class_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/notifications_role.dart';
-import 'package:tamdansers/Screen/Role_TEACHER/schedule_detail_role.dart';
+import 'package:tamdansers/Screen/Role_TEACHER/result_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/schedule_student_role.dart';
-import 'package:tamdansers/services/api_service.dart';
+import 'package:tamdansers/Screen/Role_TEACHER/student_list_screen.dart';
+import 'package:tamdansers/Screen/Role_TEACHER/teacher_list_screen.dart';
+import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_models.dart';
+import 'package:tamdansers/services/api_service.dart';
 
-// ----------------------------------------------------------------------
-// 1. MAIN APP & NAVIGATION
-// ----------------------------------------------------------------------
 class TeacherDashboard extends StatefulWidget {
   const TeacherDashboard({super.key});
-
   @override
   State<TeacherDashboard> createState() => _TeacherDashboardState();
 }
@@ -31,14 +30,12 @@ class TeacherDashboard extends StatefulWidget {
 class _TeacherDashboardState extends State<TeacherDashboard> {
   int _pageIndex = 0;
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
-
   final List<Widget> _screens = [
     const TeacherHomeContent(),
     const TeacherCoursesTab(),
     const TeacherMessagesTab(),
     const TeacherSettingsScreen(),
   ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,6 +80,7 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
   String _userName = '';
   bool _isToolsExpanded = false;
   bool _isLoading = true;
+  int _currentCarouselIndex = 0;
 
   // API data
   List<StudentDto> _students = [];
@@ -113,7 +111,7 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
       name: 'Students',
       icon: Icons.group_add,
       color: Colors.orange,
-      screen: const AddStudentScreen(),
+      screen: const StudentListScreen(),
     ),
     ManagementTool(
       name: 'Grades',
@@ -139,12 +137,7 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
       color: const Color(0xFF8E44AD),
       screen: const ParentManagementScreen(),
     ),
-    ManagementTool(
-      name: 'Message',
-      icon: Icons.campaign_rounded,
-      color: const Color(0xFFE67E22),
-      screen: const AnnounceToParentsScreen(),
-    ),
+
     ManagementTool(
       name: 'Homework',
       icon: Icons.assignment_turned_in_rounded,
@@ -239,6 +232,8 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
               child: _buildQuickActions(),
             ),
             const SizedBox(height: 30),
+            _buildEventCarousel(),
+            const SizedBox(height: 30),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: _buildSectionTitle(
@@ -248,7 +243,8 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const TeacherScheduleScreen(),
+                      builder: (context) =>
+                          TeacherAllClassesScreen(classes: _buildClassData()),
                     ),
                   );
                 },
@@ -338,6 +334,473 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
     );
   }
 
+  // ── Event Carousel ───────────────────────────────────────────────────────
+  Widget _buildEventCarousel() {
+    final List<Map<String, dynamic>> events = [
+      {
+        "title": "Annual Sports Day",
+        "date": "14 Oct 2026",
+        "time": "10:00 AM - 4:00 PM",
+        "location": "School Grounds",
+        "img": AppImages.event1,
+        "category": "Sports",
+        "attendees": 245,
+        "description":
+            "Join us for a day of athletic excellence and teamwork! Featuring track & field events, team sports, and fun activities for everyone.",
+      },
+      {
+        "title": "Tech Exhibition",
+        "date": "20 Oct 2026",
+        "time": "9:00 AM - 3:00 PM",
+        "location": "Innovation Lab",
+        "img": AppImages.event2,
+        "category": "Technology",
+        "attendees": 189,
+        "description":
+            "Showcasing the latest student innovations in robotics, software development, and engineering projects.",
+      },
+      {
+        "title": "Science Fair 2026",
+        "date": "12 Nov 2026",
+        "time": "11:00 AM - 5:00 PM",
+        "location": "Science Hall",
+        "img": AppImages.event3,
+        "category": "Science",
+        "attendees": 312,
+        "description":
+            "Explore groundbreaking experiments and discoveries presented by our talented young scientists.",
+      },
+      {
+        "title": "Music Festival",
+        "date": "05 Dec 2026",
+        "time": "2:00 PM - 8:00 PM",
+        "location": "Auditorium",
+        "img": AppImages.event2,
+        "category": "Arts",
+        "attendees": 450,
+        "description":
+            "A celebration of student musical talent featuring bands, choirs, and solo performances.",
+      },
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header row
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Upcoming Events",
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0D3B66),
+                    ),
+                  ),
+                  Text(
+                    "${events.length} events this season",
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TeacherEventsListScreen(),
+                  ),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0D3B66).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFF0D3B66).withValues(alpha: 0.18),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        "View All",
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF0D3B66),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 11,
+                        color: Color(0xFF0D3B66),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Carousel
+        CarouselSlider.builder(
+          itemCount: events.length,
+          itemBuilder: (context, index, realIndex) {
+            final event = events[index];
+            final Color accent = _evtColor(event["category"]);
+            return Bounceable(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => TeacherEventDetailScreen(event: event),
+                ),
+              ),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accent.withValues(alpha: 0.35),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Background image
+                      Image.asset(event["img"], fit: BoxFit.cover),
+                      // Scrim
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              accent.withValues(alpha: 0.15),
+                              Colors.black.withValues(alpha: 0.55),
+                              Colors.black.withValues(alpha: 0.85),
+                            ],
+                            stops: const [0.0, 0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                      // Decorative glow orb
+                      Positioned(
+                        top: -30,
+                        left: -30,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: accent.withValues(alpha: 0.18),
+                          ),
+                        ),
+                      ),
+                      // Top row: category chip + attendees
+                      Positioned(
+                        top: 18,
+                        left: 18,
+                        right: 18,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 7,
+                              ),
+                              decoration: BoxDecoration(
+                                color: accent,
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: accent.withValues(alpha: 0.45),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _evtIcon(event["category"]),
+                                    size: 13,
+                                    color: Colors.white,
+                                  ),
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    event["category"],
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 7,
+                                ),
+                                color: Colors.white.withValues(alpha: 0.18),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.people_alt_rounded,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      "${event["attendees"]}",
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Bottom glassmorphism card
+                      Positioned(
+                        bottom: 16,
+                        left: 16,
+                        right: 16,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.13),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.25),
+                              ),
+                              borderRadius: BorderRadius.circular(22),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  event["title"],
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    _evtChip(
+                                      Icons.calendar_today_rounded,
+                                      event["date"],
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: _evtChip(
+                                        Icons.location_on_rounded,
+                                        event["location"],
+                                        expand: true,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Row(
+                                  children: [
+                                    _evtChip(
+                                      Icons.access_time_rounded,
+                                      event["time"],
+                                    ),
+                                    const Spacer(),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 7,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: accent,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            "Details",
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          const Icon(
+                                            Icons.arrow_forward_rounded,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          options: CarouselOptions(
+            height: 320,
+            enlargeCenterPage: true,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 4),
+            autoPlayAnimationDuration: const Duration(milliseconds: 700),
+            autoPlayCurve: Curves.easeInOutCubic,
+            pauseAutoPlayOnTouch: true,
+            viewportFraction: 0.88,
+            enlargeFactor: 0.22,
+            onPageChanged: (index, reason) {
+              setState(() => _currentCarouselIndex = index);
+            },
+          ),
+        ),
+
+        // Animated pill indicators
+        const SizedBox(height: 14),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: events.asMap().entries.map((entry) {
+            final bool isActive = entry.key == _currentCarouselIndex;
+            final Color dotColor = _evtColor(events[entry.key]["category"]);
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeInOut,
+              width: isActive ? 28 : 8,
+              height: 8,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: isActive
+                    ? dotColor
+                    : const Color(0xFF0D3B66).withValues(alpha: 0.18),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: dotColor.withValues(alpha: 0.45),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [],
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _evtChip(IconData icon, String label, {bool expand = false}) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        color: Colors.white.withValues(alpha: 0.15),
+        child: Row(
+          mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white70, size: 12),
+            const SizedBox(width: 5),
+            Flexible(
+              child: Text(
+                label,
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Color _evtColor(String category) {
+    switch (category) {
+      case "Sports":
+        return const Color(0xFFFFB75E);
+      case "Technology":
+        return const Color(0xFF4A90E2);
+      case "Science":
+        return const Color(0xFF50E3C2);
+      case "Arts":
+        return const Color(0xFFB86DFF);
+      default:
+        return const Color(0xFFF95738);
+    }
+  }
+
+  IconData _evtIcon(String category) {
+    switch (category) {
+      case "Sports":
+        return Icons.sports_soccer_rounded;
+      case "Technology":
+        return Icons.computer_rounded;
+      case "Science":
+        return Icons.science_rounded;
+      case "Arts":
+        return Icons.music_note_rounded;
+      default:
+        return Icons.event_rounded;
+    }
+  }
+
   Widget _buildSectionTitle(
     String title, {
     String? actionText,
@@ -405,7 +868,9 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
               backgroundColor: Colors.white,
               child: CircleAvatar(
                 radius: 26,
-                backgroundImage: AssetImage('assets/images/grade1.jpg'),
+                backgroundImage: NetworkImage(
+                  'https://img.freepik.com/free-vector/mans-face-flat-style_90220-2877.jpg?semt=ais_hybrid&w=740&q=80',
+                ),
               ),
             ),
           ),
@@ -548,7 +1013,9 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.3),
+                      ),
                     ),
                     child: const Text(
                       "Active",
@@ -565,9 +1032,38 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  _buildModernStatItem("Classes", _isLoading ? "..." : _classrooms.length.toString().padLeft(2, '0')),
-                  _buildModernStatItem("Students", _isLoading ? "..." : _students.length.toString()),
-                  _buildModernStatItem("Teachers", _isLoading ? "..." : _teachers.length.toString()),
+                  _buildModernStatItem(
+                    "Classes",
+                    _isLoading
+                        ? "..."
+                        : _classrooms.length.toString().padLeft(2, '0'),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TeacherManagementClassScreen(),
+                      ),
+                    ),
+                  ),
+                  _buildModernStatItem(
+                    "Students",
+                    _isLoading ? "..." : _students.length.toString(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const StudentListScreen(),
+                      ),
+                    ),
+                  ),
+                  _buildModernStatItem(
+                    "Teachers",
+                    _isLoading ? "..." : _teachers.length.toString(),
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const TeacherListScreen(),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -577,28 +1073,55 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
     );
   }
 
-  Widget _buildModernStatItem(String label, String value) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          value,
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-          ),
+  Widget _buildModernStatItem(
+    String label,
+    String value, {
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: onTap != null ? 0.12 : 0.0),
+          borderRadius: BorderRadius.circular(14),
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: GoogleFonts.inter(
-            color: Colors.white.withValues(alpha: 0.7),
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
-          ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              value,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.7),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                if (onTap != null) ...[
+                  const SizedBox(width: 4),
+                  Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 10,
+                    color: Colors.white.withValues(alpha: 0.6),
+                  ),
+                ],
+              ],
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
@@ -829,6 +1352,76 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
     );
   }
 
+  // Shared data builder – used by both the preview grid and full schedule screen
+  List<Map<String, dynamic>> _buildClassData() {
+    const List<Color> cardColors = [
+      Color(0xFF4A90E2),
+      Color(0xFFE67E22),
+      Color(0xFF27AE60),
+      Color(0xFFF95738),
+      Color(0xFFB86DFF),
+      Color(0xFF50E3C2),
+    ];
+    const List<IconData> cardIcons = [
+      Icons.functions_rounded,
+      Icons.menu_book_rounded,
+      Icons.biotech_rounded,
+      Icons.science_rounded,
+      Icons.calculate_rounded,
+      Icons.computer_rounded,
+    ];
+    const List<String> timeSlots = [
+      '07:00 - 08:00',
+      '08:10 - 09:10',
+      '09:20 - 10:20',
+      '10:30 - 11:30',
+      '13:00 - 14:00',
+      '14:10 - 15:10',
+      '15:20 - 16:20',
+    ];
+    final now = TimeOfDay.now();
+    return _classrooms.asMap().entries.map((entry) {
+      final i = entry.key;
+      final c = entry.value;
+      final color = cardColors[i % cardColors.length];
+      final timeSlot = timeSlots[i % timeSlots.length];
+      final startParts = timeSlot.split(' - ')[0].split(':');
+      final endParts = timeSlot.split(' - ')[1].split(':');
+      final startMins =
+          (int.tryParse(startParts[0]) ?? 0) * 60 +
+          (int.tryParse(startParts[1]) ?? 0);
+      final endMins =
+          (int.tryParse(endParts[0]) ?? 0) * 60 +
+          (int.tryParse(endParts[1]) ?? 0);
+      final nowMins = now.hour * 60 + now.minute;
+      return {
+        'title': c.name,
+        'subtitle': '${c.grade ?? "No grade"} • ${c.studentCount} students',
+        'subject': c.name,
+        'subjectIcon': cardIcons[i % cardIcons.length],
+        'subjectColor': color,
+        'time': timeSlot,
+        'timeRange': timeSlot,
+        'accent': color,
+        'isDone': nowMins >= endMins,
+        'isCurrent': nowMins >= startMins && nowMins < endMins,
+        'topic': c.teacherName != null
+            ? 'Teacher: ${c.teacherName}'
+            : 'No teacher assigned',
+        'students': c.studentCount,
+        'room': c.grade ?? 'Room ${i + 1}',
+        'description': 'Academic Year: ${c.academicYear ?? "N/A"}',
+        'homework': 'Review chapter ${i + 1} exercises',
+        'materials': <String>['Textbook', 'Worksheet ${i + 1}', 'Whiteboard'],
+        'academicYear': c.academicYear ?? 'N/A',
+        'teacherName': c.teacherName ?? 'N/A',
+        'classroomId': c.id,
+        'isActive': c.isActive,
+        'classColor': color,
+      };
+    }).toList();
+  }
+
   Widget _buildModernTimelineSchedule() {
     if (_isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -844,65 +1437,23 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
         child: Center(
           child: Column(
             children: [
-              Icon(Icons.class_rounded, size: 48,
-                  color: Colors.grey.shade300),
+              Icon(Icons.class_rounded, size: 48, color: Colors.grey.shade300),
               const SizedBox(height: 12),
-              Text("No classrooms yet",
-                  style: GoogleFonts.inter(
-                    color: Colors.grey.shade500, fontSize: 15)),
+              Text(
+                "No classrooms yet",
+                style: GoogleFonts.inter(
+                  color: Colors.grey.shade500,
+                  fontSize: 15,
+                ),
+              ),
             ],
           ),
         ),
       );
     }
 
-    // Build class cards from real classroom data
-    final List<Color> cardColors = [
-      const Color(0xFF4A90E2),
-      const Color(0xFFE67E22),
-      const Color(0xFF27AE60),
-      const Color(0xFFF95738),
-      const Color(0xFFB86DFF),
-      const Color(0xFF50E3C2),
-    ];
-    final List<IconData> cardIcons = [
-      Icons.functions_rounded,
-      Icons.menu_book_rounded,
-      Icons.biotech_rounded,
-      Icons.science_rounded,
-      Icons.calculate_rounded,
-      Icons.computer_rounded,
-    ];
-
-    final List<Map<String, dynamic>> todayClasses = _classrooms
-        .asMap()
-        .entries
-        .map((entry) {
-      final i = entry.key;
-      final c = entry.value;
-      final color = cardColors[i % cardColors.length];
-      return {
-        'title': c.name,
-        'subtitle':
-            '${c.grade ?? "No grade"} • ${c.studentCount} students',
-        'subject': c.name,
-        'subjectIcon': cardIcons[i % cardIcons.length],
-        'subjectColor': color,
-        'time': '',
-        'timeRange': c.academicYear ?? '',
-        'accent': color,
-        'isDone': false,
-        'isCurrent': i == 0,
-        'topic': c.teacherName != null
-            ? 'Teacher: ${c.teacherName}'
-            : 'No teacher assigned',
-        'students': c.studentCount,
-        'room': c.grade ?? '',
-        'description': 'Academic Year: ${c.academicYear ?? "N/A"}',
-        'homework': '',
-        'materials': <String>[],
-      };
-    }).toList();
+    // Show only the first 2 classes as a preview
+    final previewClasses = _buildClassData().take(2).toList();
 
     return GridView.builder(
       shrinkWrap: true,
@@ -913,9 +1464,9 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
         crossAxisSpacing: 14,
         childAspectRatio: 0.95,
       ),
-      itemCount: todayClasses.length,
+      itemCount: previewClasses.length,
       itemBuilder: (context, index) {
-        return _buildClassCard(todayClasses[index]);
+        return _buildClassCard(previewClasses[index]);
       },
     );
   }
@@ -967,7 +1518,10 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: isCurrent
-              ? Border.all(color: subjectColor.withValues(alpha: 0.3), width: 1.5)
+              ? Border.all(
+                  color: subjectColor.withValues(alpha: 0.3),
+                  width: 1.5,
+                )
               : null,
           boxShadow: [
             BoxShadow(
@@ -1156,6 +1710,12 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                   icon: Icons.person_rounded,
                   title: "Personal Information",
                   color: const Color(0xFF4A90E2),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TeacherEditProfileScreen(),
+                    ),
+                  ),
                 ),
                 _modernSubTile(
                   icon: Icons.security_rounded,
@@ -1166,6 +1726,12 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
                   icon: Icons.notifications_active_rounded,
                   title: "Notifications",
                   color: const Color(0xFFF5A623),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TeacherNotificationScreen(),
+                    ),
+                  ),
                 ),
                 _modernSubTile(
                   icon: Icons.translate_rounded,
@@ -1313,9 +1879,10 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
     required String title,
     required Color color,
     String? trailing,
+    VoidCallback? onTap,
   }) {
     return Bounceable(
-      onTap: () {},
+      onTap: onTap ?? () {},
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Row(
@@ -1559,7 +2126,9 @@ class _TeacherCoursesTabState extends State<TeacherCoursesTab> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF0D3B66).withValues(alpha: 0.25),
+                            color: const Color(
+                              0xFF0D3B66,
+                            ).withValues(alpha: 0.25),
                             blurRadius: 10,
                             offset: const Offset(0, 4),
                           ),
@@ -1771,13 +2340,10 @@ class _TeacherCoursesTabState extends State<TeacherCoursesTab> {
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(24, 4, 24, 50),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final course = _filteredCourses[index];
-                    return _buildTeacherCourseCard(course);
-                  },
-                  childCount: _filteredCourses.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final course = _filteredCourses[index];
+                  return _buildTeacherCourseCard(course);
+                }, childCount: _filteredCourses.length),
               ),
             ),
         ],
@@ -2492,7 +3058,9 @@ class _TeacherMessagesTabState extends State<TeacherMessagesTab>
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0D3B66).withValues(alpha: 0.25),
+                          color: const Color(
+                            0xFF0D3B66,
+                          ).withValues(alpha: 0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -2563,7 +3131,9 @@ class _TeacherMessagesTabState extends State<TeacherMessagesTab>
                             decoration: BoxDecoration(
                               color: _msgTabController.index == 0
                                   ? const Color(0xFFF95738)
-                                  : const Color(0xFFF95738).withValues(alpha: 0.15),
+                                  : const Color(
+                                      0xFFF95738,
+                                    ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -2663,14 +3233,16 @@ class _TeacherMessagesTabState extends State<TeacherMessagesTab>
                               gradient: LinearGradient(
                                 colors: [
                                   user['color'] as Color,
-                                  (user['color'] as Color).withValues(alpha: 0.6),
+                                  (user['color'] as Color).withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ],
                               ),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: (user['color'] as Color).withValues(alpha: 
-                                    0.3,
+                                  color: (user['color'] as Color).withValues(
+                                    alpha: 0.3,
                                   ),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
@@ -3393,6 +3965,1390 @@ class _TeacherChatDetailScreenState extends State<TeacherChatDetailScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+// =============================================================================
+// TEACHER EVENT DETAIL SCREEN
+// =============================================================================
+class TeacherEventDetailScreen extends StatelessWidget {
+  final Map<String, dynamic> event;
+  const TeacherEventDetailScreen({super.key, required this.event});
+
+  Color _color(String category) {
+    switch (category) {
+      case "Sports":
+        return const Color(0xFFFFB75E);
+      case "Technology":
+        return const Color(0xFF4A90E2);
+      case "Science":
+        return const Color(0xFF50E3C2);
+      case "Arts":
+        return const Color(0xFFB86DFF);
+      default:
+        return const Color(0xFFF95738);
+    }
+  }
+
+  Widget _chip(IconData icon, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label.length > 10 ? "${label.substring(0, 8)}..." : label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: Colors.grey.shade700,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color accent = _color(event["category"]);
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F6F8),
+      appBar: AppBar(
+        title: Text(
+          event["title"],
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
+        foregroundColor: const Color(0xFF0D3B66),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Stack(
+              children: [
+                Image.asset(
+                  event["img"],
+                  height: 280,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+                Positioned(
+                  top: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: accent.withValues(alpha: 0.5),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      event["category"],
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            Container(
+              transform: Matrix4.translationValues(0.0, -30.0, 0.0),
+              padding: const EdgeInsets.all(30),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF3F6F8),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _chip(
+                        Icons.calendar_month_rounded,
+                        event["date"],
+                        const Color(0xFFF95738),
+                      ),
+                      _chip(
+                        Icons.access_time_rounded,
+                        event["time"],
+                        const Color(0xFF4A90E2),
+                      ),
+                      _chip(
+                        Icons.location_on_rounded,
+                        event["location"],
+                        const Color(0xFF50E3C2),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(
+                                  0xFF0D3B66,
+                                ).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.people_rounded,
+                                color: Color(0xFF0D3B66),
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Attendees",
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade600,
+                                  ),
+                                ),
+                                Text(
+                                  "${event["attendees"]} people",
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFF0D3B66),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(
+                              0xFF50E3C2,
+                            ).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "${((event["attendees"] / 500) * 100).toInt()}% capacity",
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF50E3C2),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Text(
+                    "About Event",
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0D3B66),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    event["description"] ?? "No description available.",
+                    style: GoogleFonts.inter(
+                      fontSize: 15,
+                      height: 1.6,
+                      color: Colors.grey.shade700,
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0D3B66),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        "Got it!",
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// TEACHER SCHEDULE DETAIL SCREEN
+// =============================================================================
+class TeacherScheduleDetailScreen extends StatelessWidget {
+  final Map<String, dynamic> classData;
+  const TeacherScheduleDetailScreen({super.key, required this.classData});
+
+  Widget _infoCard({
+    required IconData icon,
+    required String label,
+    required String value,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, size: 18, color: color),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              color: Colors.grey.shade500,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: GoogleFonts.outfit(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0D3B66),
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionHeader(String title, IconData icon, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 18, color: color),
+        ),
+        const SizedBox(width: 12),
+        Text(
+          title,
+          style: GoogleFonts.outfit(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0D3B66),
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color accent =
+        (classData['classColor'] as Color?) ?? const Color(0xFF4A90E2);
+    final String title = classData['title'] ?? '';
+    final String timeRange = classData['timeRange'] ?? classData['time'] ?? '';
+    final String room = classData['room'] ?? '';
+    final int students = classData['students'] ?? 0;
+    final String teacherName = classData['teacherName'] ?? 'N/A';
+    final String academicYear =
+        classData['academicYear'] ?? classData['description'] ?? 'N/A';
+    final String homework = classData['homework'] ?? '';
+    final List<String> materials = List<String>.from(
+      classData['materials'] ?? [],
+    );
+    final bool isActive = classData['isActive'] ?? true;
+    final bool isCurrent = classData['isCurrent'] ?? false;
+    final bool isDone = classData['isDone'] ?? false;
+    final IconData subjectIcon =
+        classData['subjectIcon'] ?? Icons.class_rounded;
+
+    final String statusLabel = isDone
+        ? 'Completed'
+        : (isCurrent ? 'In Progress' : 'Upcoming');
+    final Color statusColor = isDone
+        ? const Color(0xFF27AE60)
+        : (isCurrent ? const Color(0xFF4A90E2) : const Color(0xFFF5A623));
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F6F8),
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // ── Hero header ──────────────────────────────────────────────────
+          SliverAppBar(
+            expandedHeight: 220,
+            pinned: true,
+            backgroundColor: accent,
+            foregroundColor: Colors.white,
+            leading: Padding(
+              padding: const EdgeInsets.all(8),
+              child: GestureDetector(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            flexibleSpace: FlexibleSpaceBar(
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [accent, accent.withValues(alpha: 0.75)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                child: Stack(
+                  children: [
+                    Positioned(
+                      top: -20,
+                      right: -20,
+                      child: Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.08),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 30,
+                      left: -30,
+                      child: Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withValues(alpha: 0.05),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 30,
+                      left: 24,
+                      right: 24,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Icon(
+                              subjectIcon,
+                              color: Colors.white,
+                              size: 32,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  title,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.25),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.3,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    statusLabel,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Body ─────────────────────────────────────────────────────────
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Quick-info grid
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    childAspectRatio: 1.4,
+                    children: [
+                      _infoCard(
+                        icon: Icons.access_time_rounded,
+                        label: "Class Time",
+                        value: timeRange.isEmpty ? 'Not set' : timeRange,
+                        color: const Color(0xFF4A90E2),
+                      ),
+                      _infoCard(
+                        icon: Icons.people_rounded,
+                        label: "Students",
+                        value: '$students enrolled',
+                        color: const Color(0xFF27AE60),
+                      ),
+                      _infoCard(
+                        icon: Icons.meeting_room_rounded,
+                        label: "Grade / Room",
+                        value: room.isEmpty ? 'N/A' : room,
+                        color: const Color(0xFFFFB75E),
+                      ),
+                      _infoCard(
+                        icon: Icons.calendar_today_rounded,
+                        label: "Academic Year",
+                        value: academicYear,
+                        color: const Color(0xFFB86DFF),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Teacher card
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.person_rounded,
+                            color: accent,
+                            size: 28,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Teacher",
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                teacherName,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF0D3B66),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? const Color(0xFF27AE60).withValues(alpha: 0.1)
+                                : Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            isActive ? "Active" : "Inactive",
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: isActive
+                                  ? const Color(0xFF27AE60)
+                                  : Colors.red,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Capacity bar
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.04),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _sectionHeader(
+                          "Class Capacity",
+                          Icons.bar_chart_rounded,
+                          accent,
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              "Enrolled Students",
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            Text(
+                              "$students / 40",
+                              style: GoogleFonts.outfit(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0D3B66),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: LinearProgressIndicator(
+                            value: students > 0
+                                ? (students / 40).clamp(0.0, 1.0)
+                                : 0,
+                            backgroundColor: Colors.grey.shade100,
+                            valueColor: AlwaysStoppedAnimation<Color>(accent),
+                            minHeight: 10,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          "${((students / 40) * 100).clamp(0, 100).toInt()}% capacity filled",
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Homework section
+                  if (homework.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _sectionHeader(
+                            "Homework",
+                            Icons.assignment_rounded,
+                            const Color(0xFFF95738),
+                          ),
+                          const SizedBox(height: 14),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(
+                                0xFFF95738,
+                              ).withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(
+                                  0xFFF95738,
+                                ).withValues(alpha: 0.15),
+                              ),
+                            ),
+                            child: Text(
+                              homework,
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                height: 1.5,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  // Materials section
+                  if (materials.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.04),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _sectionHeader(
+                            "Materials",
+                            Icons.library_books_rounded,
+                            const Color(0xFF50E3C2),
+                          ),
+                          const SizedBox(height: 14),
+                          ...materials.map(
+                            (m) => Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 8,
+                                    height: 8,
+                                    decoration: const BoxDecoration(
+                                      color: Color(0xFF50E3C2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Text(
+                                    m,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  const SizedBox(height: 30),
+
+                  // Close button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: accent,
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        "Close",
+                        style: GoogleFonts.inter(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// TEACHER EVENTS LIST SCREEN
+// =============================================================================
+class TeacherEventsListScreen extends StatelessWidget {
+  const TeacherEventsListScreen({super.key});
+
+  static final List<Map<String, dynamic>> _events = [
+    {
+      "title": "Annual Sports Day",
+      "date": "14 Oct 2026",
+      "time": "10:00 AM - 4:00 PM",
+      "location": "School Grounds",
+      "img": AppImages.event1,
+      "category": "Sports",
+      "attendees": 245,
+      "description":
+          "Join us for a day of athletic excellence and teamwork! Featuring track & field events, team sports, and fun activities for everyone.",
+    },
+    {
+      "title": "Tech Exhibition",
+      "date": "20 Oct 2026",
+      "time": "9:00 AM - 3:00 PM",
+      "location": "Innovation Lab",
+      "img": AppImages.event2,
+      "category": "Technology",
+      "attendees": 189,
+      "description":
+          "Showcasing the latest student innovations in robotics, software development, and engineering projects.",
+    },
+    {
+      "title": "Science Fair 2026",
+      "date": "12 Nov 2026",
+      "time": "11:00 AM - 5:00 PM",
+      "location": "Science Hall",
+      "img": AppImages.event3,
+      "category": "Science",
+      "attendees": 312,
+      "description":
+          "Explore groundbreaking experiments and discoveries presented by our talented young scientists.",
+    },
+    {
+      "title": "Music Festival",
+      "date": "05 Dec 2026",
+      "time": "2:00 PM - 8:00 PM",
+      "location": "Auditorium",
+      "img": AppImages.event2,
+      "category": "Arts",
+      "attendees": 450,
+      "description":
+          "A celebration of student musical talent featuring bands, choirs, and solo performances.",
+    },
+    {
+      "title": "Charity Auction",
+      "date": "15 Dec 2026",
+      "time": "6:00 PM - 9:00 PM",
+      "location": "Main Hall",
+      "img": AppImages.event2,
+      "category": "Fundraising",
+      "attendees": 150,
+      "description":
+          "Raising funds for local community projects. Come bid on amazing items donated by local businesses.",
+    },
+  ];
+
+  Color _categoryColor(String category) {
+    switch (category) {
+      case "Sports":
+        return const Color(0xFFFFB75E);
+      case "Technology":
+        return const Color(0xFF4A90E2);
+      case "Science":
+        return const Color(0xFF50E3C2);
+      case "Arts":
+        return const Color(0xFFB86DFF);
+      default:
+        return const Color(0xFFF95738);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F6F8),
+      appBar: AppBar(
+        title: Text(
+          "Upcoming Events",
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0D3B66),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0D3B66),
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: ListView.builder(
+        physics: const BouncingScrollPhysics(),
+        padding: const EdgeInsets.all(24),
+        itemCount: _events.length,
+        itemBuilder: (context, index) => Bounceable(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => TeacherEventDetailScreen(event: _events[index]),
+            ),
+          ),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.04),
+                  blurRadius: 15,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(24),
+                      ),
+                      child: Image.asset(
+                        _events[index]["img"],
+                        height: 180,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: _categoryColor(_events[index]["category"]),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          _events[index]["category"],
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _events[index]["title"],
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: const Color(0xFF0D3B66),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.calendar_month_rounded,
+                                  size: 14,
+                                  color: Color(0xFFF95738),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _events[index]["date"],
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFFF95738),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Icon(
+                                  Icons.access_time_rounded,
+                                  size: 14,
+                                  color: Color(0xFF4A90E2),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  (_events[index]["time"] as String).split(
+                                    " - ",
+                                  )[0],
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF4A90E2),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                const Icon(
+                                  Icons.location_on_rounded,
+                                  size: 14,
+                                  color: Color(0xFF50E3C2),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _events[index]["location"],
+                                  style: GoogleFonts.inter(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                const Icon(
+                                  Icons.people_rounded,
+                                  size: 14,
+                                  color: Color(0xFFB86DFF),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  "${_events[index]["attendees"]} people",
+                                  style: GoogleFonts.inter(
+                                    color: Colors.grey.shade600,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F6F8),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 14,
+                          color: Color(0xFF0D3B66),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// TEACHER ALL CLASSES SCREEN (Full Schedule)
+// =============================================================================
+class TeacherAllClassesScreen extends StatelessWidget {
+  final List<Map<String, dynamic>> classes;
+  const TeacherAllClassesScreen({super.key, required this.classes});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F6F8),
+      appBar: AppBar(
+        title: Text(
+          "Today's Schedule",
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            color: const Color(0xFF0D3B66),
+          ),
+        ),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: Color(0xFF0D3B66),
+            size: 20,
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0D3B66).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${classes.length} Classes',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: const Color(0xFF0D3B66),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: classes.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.class_rounded,
+                    size: 64,
+                    color: Colors.grey.shade300,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No classes scheduled today',
+                    style: GoogleFonts.inter(
+                      color: Colors.grey.shade500,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.all(20),
+              itemCount: classes.length,
+              itemBuilder: (context, index) {
+                final c = classes[index];
+                final Color color =
+                    (c['classColor'] as Color?) ?? const Color(0xFF4A90E2);
+                final bool isCurrent = c['isCurrent'] ?? false;
+                final bool isDone = c['isDone'] ?? false;
+                final String timeRange = c['timeRange'] ?? '';
+                final String statusLabel = isDone
+                    ? 'Done'
+                    : (isCurrent ? 'In Progress' : 'Upcoming');
+                final Color statusColor = isDone
+                    ? const Color(0xFF27AE60)
+                    : (isCurrent
+                          ? const Color(0xFF4A90E2)
+                          : const Color(0xFFF5A623));
+
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (_, a, __) =>
+                          TeacherScheduleDetailScreen(classData: c),
+                      transitionsBuilder: (_, animation, __, child) =>
+                          SlideTransition(
+                            position:
+                                Tween<Offset>(
+                                  begin: const Offset(1.0, 0.0),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                ),
+                            child: child,
+                          ),
+                      transitionDuration: const Duration(milliseconds: 300),
+                    ),
+                  ),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      border: isCurrent
+                          ? Border.all(
+                              color: color.withValues(alpha: 0.4),
+                              width: 1.5,
+                            )
+                          : null,
+                      boxShadow: [
+                        BoxShadow(
+                          color: isCurrent
+                              ? color.withValues(alpha: 0.12)
+                              : Colors.black.withValues(alpha: 0.03),
+                          blurRadius: 14,
+                          offset: const Offset(0, 5),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        // Time column
+                        SizedBox(
+                          width: 72,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                timeRange.split(' - ').first,
+                                style: GoogleFonts.outfit(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: isCurrent
+                                      ? color
+                                      : const Color(0xFF0D3B66),
+                                ),
+                              ),
+                              Text(
+                                timeRange.contains(' - ')
+                                    ? timeRange.split(' - ').last
+                                    : '',
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Divider line
+                        Container(
+                          width: 2,
+                          height: 48,
+                          margin: const EdgeInsets.symmetric(horizontal: 14),
+                          decoration: BoxDecoration(
+                            color: isCurrent ? color : Colors.grey.shade200,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+
+                        // Icon
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            c['subjectIcon'] as IconData? ??
+                                Icons.class_rounded,
+                            color: color,
+                            size: 22,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+
+                        // Info
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                c['title'] ?? '',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: const Color(0xFF0D3B66),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                '${c['students']} students  •  ${c['room']}',
+                                style: GoogleFonts.inter(
+                                  fontSize: 12,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // Status badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
+                          ),
+                          decoration: BoxDecoration(
+                            color: statusColor.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            statusLabel,
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: statusColor,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
     );
   }
 }

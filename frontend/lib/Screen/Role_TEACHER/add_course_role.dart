@@ -1,11 +1,11 @@
 // lib/screens/add_course.dart
 
 import 'package:flutter/material.dart';
-import 'package:tamdansers/Screen/Role_TEACHER/course_learn_role.dart';
+import 'package:flutter_bounceable/flutter_bounceable.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/model/course_model.dart';
-import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/api_models.dart';
- // ← list screen
+import 'package:tamdansers/services/api_service.dart';
 
 class AddCourse extends StatefulWidget {
   const AddCourse({super.key});
@@ -43,11 +43,7 @@ class _AddCourseState extends State<AddCourse>
     'History',
   ];
 
-  List<String> get _effectiveSubjects => _apiSubjects.isNotEmpty
-      ? _apiSubjects.map((s) => s.subjectName).toList()
-      : _subjects;
-
-  final List<String> _grades = [
+  List<String> get _gradeList => [
     'Grade 7',
     'Grade 8',
     'Grade 9',
@@ -135,9 +131,7 @@ class _AddCourseState extends State<AddCourse>
             surface: Colors.white,
             onSurface: Color(0xFF1F2937),
           ),
-          dialogTheme: const DialogThemeData(
-            backgroundColor: Colors.white,
-          ),
+          dialogTheme: const DialogThemeData(backgroundColor: Colors.white),
         ),
         child: child!,
       ),
@@ -149,13 +143,46 @@ class _AddCourseState extends State<AddCourse>
 
   Future<void> _handleCreateCourse() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_selectedSubject == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please select a subject',
+            style: GoogleFonts.plusJakartaSans(),
+          ),
+          backgroundColor: const Color(0xFF6366F1),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
+    if (_selectedGrade == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Please select a grade',
+            style: GoogleFonts.plusJakartaSans(),
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+      return;
+    }
 
     setState(() => _isCreating = true);
 
     try {
       // If the selected subject isn't in the API list, create it
-      final existingNames =
-          _apiSubjects.map((s) => s.subjectName.toLowerCase()).toSet();
+      final existingNames = _apiSubjects
+          .map((s) => s.subjectName.toLowerCase())
+          .toSet();
       final subjectName = _selectedSubject ?? '';
       if (subjectName.isNotEmpty &&
           !existingNames.contains(subjectName.toLowerCase())) {
@@ -173,35 +200,391 @@ class _AddCourseState extends State<AddCourse>
       description: _descriptionController.text.trim(),
     );
 
-    globalCourses.add(newCourse);
-
     if (mounted) setState(() => _isCreating = false);
 
     if (!mounted) return;
 
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Course created successfully!'),
-        backgroundColor: Colors.green.shade700,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    Navigator.pop(context, newCourse);
+  }
 
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const TeacherCourseScreen()),
+  static const _accentColors = [
+    Color(0xFF6366F1),
+    Color(0xFF8B5CF6),
+    Color(0xFF10B981),
+    Color(0xFFF59E0B),
+    Color(0xFFEC4899),
+    Color(0xFFEF4444),
+  ];
+
+  Color _subjectColor(String name) =>
+      _accentColors[name.hashCode.abs() % _accentColors.length];
+
+  // ── Field section label ─────────────────────────────────────────────
+  Widget _buildFieldLabel(IconData icon, String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, size: 16, color: color),
+        ),
+        const SizedBox(width: 10),
+        Text(
+          label,
+          style: GoogleFonts.plusJakartaSans(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF0F172A),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Selectable Subject Cards (mirrors TeacherCourseScreen) ──────────────
+  Widget _buildSubjectCards() {
+    // Source 1: API subjects
+    if (_apiSubjects.isNotEmpty) {
+      return Column(
+        children: _apiSubjects.asMap().entries.map((e) {
+          final s = e.value;
+          final color = _subjectColor(s.subjectName);
+          final isSelected = _selectedSubject == s.subjectName;
+          return Bounceable(
+            onTap: () => setState(
+              () => _selectedSubject = isSelected ? null : s.subjectName,
+            ),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? color.withValues(alpha: 0.06)
+                    : Colors.white.withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isSelected ? color : Colors.grey.shade200,
+                  width: isSelected ? 2 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isSelected
+                        ? color.withValues(alpha: 0.14)
+                        : Colors.black.withValues(alpha: 0.03),
+                    blurRadius: isSelected ? 20 : 10,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [color, color.withValues(alpha: 0.65)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(15),
+                      boxShadow: [
+                        BoxShadow(
+                          color: color.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        s.subjectName.isNotEmpty
+                            ? s.subjectName[0].toUpperCase()
+                            : '?',
+                        style: GoogleFonts.plusJakartaSans(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          s.subjectName,
+                          style: GoogleFonts.plusJakartaSans(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            color: const Color(0xFF0F172A),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: s.isActive
+                                    ? const Color(0xFF10B981)
+                                    : Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(width: 5),
+                            Text(
+                              s.isActive ? 'Active' : 'Inactive',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: s.isActive
+                                    ? const Color(0xFF10B981)
+                                    : Colors.grey,
+                              ),
+                            ),
+                            if (s.teacherNames.isNotEmpty) ...[
+                              const SizedBox(width: 8),
+                              Container(
+                                width: 3,
+                                height: 3,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  s.teacherNames.join(', '),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: GoogleFonts.plusJakartaSans(
+                                    fontSize: 12,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isSelected)
+                    Container(
+                      padding: const EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: color,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.check_rounded,
+                        color: Colors.white,
+                        size: 14,
+                      ),
+                    )
+                  else
+                    Icon(
+                      Icons.radio_button_off_rounded,
+                      color: Colors.grey.shade300,
+                      size: 22,
+                    ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
+      );
+    }
+
+    // Source 2: globalCourses
+    final globalSubjects = globalCourses.map((c) => c.subject).toSet().toList();
+    final displaySubjects = globalSubjects.isNotEmpty
+        ? globalSubjects
+        : _subjects;
+
+    return Column(
+      children: displaySubjects.asMap().entries.map((e) {
+        final name = e.value;
+        final color = _subjectColor(name);
+        final style = _subjectStyles[name];
+        final isSelected = _selectedSubject == name;
+        return Bounceable(
+          onTap: () =>
+              setState(() => _selectedSubject = isSelected ? null : name),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? color.withValues(alpha: 0.06)
+                  : Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: isSelected ? color : Colors.grey.shade200,
+                width: isSelected ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isSelected
+                      ? color.withValues(alpha: 0.14)
+                      : Colors.black.withValues(alpha: 0.03),
+                  blurRadius: isSelected ? 20 : 10,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [color, color.withValues(alpha: 0.65)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(15),
+                    boxShadow: [
+                      BoxShadow(
+                        color: color.withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: style != null
+                        ? Icon(
+                            style['icon'] as IconData,
+                            color: Colors.white,
+                            size: 22,
+                          )
+                        : Text(
+                            name.isNotEmpty ? name[0].toUpperCase() : '?',
+                            style: GoogleFonts.plusJakartaSans(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    name,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+                if (isSelected)
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_rounded,
+                      color: Colors.white,
+                      size: 14,
+                    ),
+                  )
+                else
+                  Icon(
+                    Icons.radio_button_off_rounded,
+                    color: Colors.grey.shade300,
+                    size: 22,
+                  ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  // ── Selectable Grade Chips ─────────────────────────────────────────
+  Widget _buildGradeChips() {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children: _gradeList.map((grade) {
+        final isSelected = _selectedGrade == grade;
+        const color = Color(0xFF10B981);
+        return Bounceable(
+          onTap: () =>
+              setState(() => _selectedGrade = isSelected ? null : grade),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
+            decoration: BoxDecoration(
+              gradient: isSelected
+                  ? const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF059669)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    )
+                  : null,
+              color: isSelected ? null : Colors.white.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isSelected ? Colors.transparent : Colors.grey.shade200,
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isSelected
+                      ? color.withValues(alpha: 0.25)
+                      : Colors.black.withValues(alpha: 0.03),
+                  blurRadius: isSelected ? 12 : 6,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (isSelected) ...[
+                  const Icon(
+                    Icons.school_rounded,
+                    color: Colors.white,
+                    size: 14,
+                  ),
+                  const SizedBox(width: 6),
+                ],
+                Text(
+                  grade,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: isSelected ? Colors.white : const Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final subjectStyle = _selectedSubject != null
-        ? _subjectStyles[_selectedSubject]
-        : null;
-
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -259,57 +642,27 @@ class _AddCourseState extends State<AddCourse>
                           validator: (v) =>
                               v?.trim().isEmpty ?? true ? 'Required' : null,
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 28),
 
-                        _buildModernDropdown(
-                          label: 'Subject',
-                          value: _selectedSubject,
-                          items: _effectiveSubjects,
-                          selectedIcon: subjectStyle?['icon'],
-                          selectedColor: subjectStyle?['color'],
-                          onChanged: (v) {
-                            setState(() => _selectedSubject = v);
-                            _animController.reset();
-                            _animController.forward();
-                          },
-                          validator: (v) => v == null ? 'Required' : null,
+                        // ── Subject Cards ───────────────────────────────
+                        _buildFieldLabel(
+                          Icons.auto_stories_rounded,
+                          'Select Subject',
+                          const Color(0xFF6366F1),
                         ),
+                        const SizedBox(height: 14),
+                        _buildSubjectCards(),
+                        const SizedBox(height: 28),
 
-                        if (_selectedSubject != null) ...[
-                          const SizedBox(height: 16),
-                          _buildSelectedChip(
-                            label: _selectedSubject!,
-                            icon: subjectStyle?['icon'],
-                            color: subjectStyle?['color'],
-                          ),
-                        ],
-
-                        const SizedBox(height: 24),
-
-                        _buildModernDropdown(
-                          label: 'Grade',
-                          value: _selectedGrade,
-                          items: _grades,
-                          selectedIcon: Icons.school_rounded,
-                          selectedColor: const Color(0xFF10B981),
-                          onChanged: (v) {
-                            setState(() => _selectedGrade = v);
-                            _animController.reset();
-                            _animController.forward();
-                          },
-                          validator: (v) => v == null ? 'Required' : null,
+                        // ── Grade Chips ─────────────────────────────────
+                        _buildFieldLabel(
+                          Icons.school_rounded,
+                          'Select Grade',
+                          const Color(0xFF10B981),
                         ),
-
-                        if (_selectedGrade != null) ...[
-                          const SizedBox(height: 16),
-                          _buildSelectedChip(
-                            label: _selectedGrade!,
-                            icon: Icons.school_rounded,
-                            color: const Color(0xFF10B981),
-                          ),
-                        ],
-
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 14),
+                        _buildGradeChips(),
+                        const SizedBox(height: 28),
 
                         _buildModernTextField(
                           controller: _priceController,
@@ -479,102 +832,6 @@ class _AddCourseState extends State<AddCourse>
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 24,
           vertical: 18,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildModernDropdown({
-    required String label,
-    required String? value,
-    required List<String> items,
-    IconData? selectedIcon,
-    Color? selectedColor,
-    required void Function(String?) onChanged,
-    String? Function(String?)? validator,
-  }) {
-    final isSelected = value != null;
-
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      items: items
-          .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-          .toList(),
-      onChanged: onChanged,
-      validator: validator,
-      icon: Icon(
-        Icons.arrow_drop_down_rounded,
-        color: isSelected
-            ? (selectedColor ?? const Color(0xFF6366F1))
-            : Colors.grey,
-      ),
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: isSelected && selectedIcon != null
-            ? Icon(
-                selectedIcon,
-                color: selectedColor ?? const Color(0xFF6366F1),
-              )
-            : null,
-        filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.8),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(
-            color: selectedColor ?? const Color(0xFF6366F1),
-            width: 2.5,
-          ),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 18,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSelectedChip({
-    required String label,
-    IconData? icon,
-    Color? color,
-  }) {
-    return ScaleTransition(
-      scale: Tween<double>(begin: 0.9, end: 1.0).animate(
-        CurvedAnimation(parent: _animController, curve: Curves.easeOutBack),
-      ),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: (color ?? const Color(0xFF6366F1)).withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: (color ?? const Color(0xFF6366F1)).withValues(alpha: 0.3),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) ...[
-              Icon(icon, size: 20, color: color ?? const Color(0xFF6366F1)),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                color: color ?? const Color(0xFF1F2937),
-              ),
-            ),
-          ],
         ),
       ),
     );

@@ -17,8 +17,8 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   final Color backgroundColor = const Color(0xFFF3F6F8);
 
   // --- Selection State Variables ---
-  String? selectedGradeNumber;   // '7' .. '12'
-  String? selectedSection;       // 'A' .. 'E'
+  String? selectedGradeNumber; // '7' .. '12'
+  String? selectedSection; // 'A' .. 'E'
   String? selectedSubjectId;
   String? selectedAcademicYear;
   String? _myTeacherId;
@@ -26,8 +26,8 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   // Computed class name from grade + section
   String get _computedName =>
       (selectedGradeNumber != null && selectedSection != null)
-          ? 'Class $selectedGradeNumber-$selectedSection'
-          : '';
+      ? 'Class $selectedGradeNumber-$selectedSection'
+      : '';
 
   // --- Data from API ---
   List<SubjectDto> _subjects = [];
@@ -50,10 +50,7 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   Future<void> _loadData() async {
     try {
       final api = ApiService();
-      final results = await Future.wait([
-        api.getSubjects(),
-        api.getStudents(),
-      ]);
+      final results = await Future.wait([api.getSubjects(), api.getStudents()]);
       final entityId = await api.getEntityId();
       if (mounted) {
         setState(() {
@@ -101,176 +98,196 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 1. Class Information
-            _buildSectionLabel(Icons.school_rounded, 'Class Information'),
-            _buildFormCard([
-              // Grade + Section row → auto-generates class name
-              Row(
+              physics: const BouncingScrollPhysics(),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 16,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  // 1. Class Information
+                  _buildSectionLabel(Icons.school_rounded, 'Class Information'),
+                  _buildFormCard([
+                    // Grade + Section row → auto-generates class name
+                    Row(
                       children: [
-                        _buildInputLabel('Grade'),
-                        _buildModernDropdown(
-                          hint: 'Grade',
-                          value: selectedGradeNumber,
-                          items: gradeNumbers,
-                          itemLabels: gradeNumbers.map((g) => 'Grade $g').toList(),
-                          onChanged: (val) =>
-                              setState(() => selectedGradeNumber = val),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildInputLabel('Grade'),
+                              _buildModernDropdown(
+                                hint: 'Grade',
+                                value: selectedGradeNumber,
+                                items: gradeNumbers,
+                                itemLabels: gradeNumbers
+                                    .map((g) => 'Grade $g')
+                                    .toList(),
+                                onChanged: (val) =>
+                                    setState(() => selectedGradeNumber = val),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildInputLabel('Section'),
+                              _buildModernDropdown(
+                                hint: 'Section',
+                                value: selectedSection,
+                                items: sections,
+                                onChanged: (val) =>
+                                    setState(() => selectedSection = val),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _buildInputLabel('Section'),
-                        _buildModernDropdown(
-                          hint: 'Section',
-                          value: selectedSection,
-                          items: sections,
-                          onChanged: (val) =>
-                              setState(() => selectedSection = val),
+
+                    // Live preview of generated name
+                    if (_computedName.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
                         ),
-                      ],
+                        decoration: BoxDecoration(
+                          color: primaryTeal.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: primaryTeal.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.label_rounded,
+                              size: 16,
+                              color: primaryTeal,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Class name: ',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                            Text(
+                              _computedName,
+                              style: GoogleFonts.outfit(
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                color: primaryTeal,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+
+                    const SizedBox(height: 24),
+                    _buildInputLabel('Academic Year'),
+                    _buildModernDropdown(
+                      hint: 'Select year',
+                      value: selectedAcademicYear,
+                      items: academicYears,
+                      onChanged: (val) =>
+                          setState(() => selectedAcademicYear = val),
+                    ),
+                  ]),
+
+                  const SizedBox(height: 32),
+
+                  // 2. Select Subject
+                  _buildSectionLabel(Icons.menu_book_rounded, 'Assign Subject'),
+                  _buildFormCard([
+                    _buildInputLabel('Select Subject'),
+                    _buildModernDropdown(
+                      hint: 'Choose a subject',
+                      value: selectedSubjectId,
+                      items: _subjects.map((s) => s.id).toList(),
+                      itemLabels: _subjects.map((s) => s.subjectName).toList(),
+                      onChanged: (val) =>
+                          setState(() => selectedSubjectId = val),
+                    ),
+                  ]),
+
+                  const SizedBox(height: 32),
+
+                  // 3. Add Students
+                  _buildSectionLabel(Icons.person_add_rounded, 'Add Students'),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildCreativeActionCard(
+                          Icons.group_add_rounded,
+                          'Select Students (${_selectedStudentIds.length})',
+                          () => _showStudentListDialog(),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 48),
+
+                  // CREATE BUTTON
+                  Bounceable(
+                    onTap: _isSubmitting ? null : _handleCreateClass,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            primaryTeal,
+                            primaryTeal.withValues(alpha: 0.8),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primaryTeal.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.add_circle_outline_rounded,
+                              color: Colors.white,
+                              size: 22,
+                            ),
+                            const SizedBox(width: 12),
+                            Text(
+                              'Create New Class',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 40),
                 ],
               ),
-
-              // Live preview of generated name
-              if (_computedName.isNotEmpty) ...
-              [
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: primaryTeal.withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: primaryTeal.withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.label_rounded, size: 16, color: primaryTeal),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Class name: ',
-                        style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade600),
-                      ),
-                      Text(
-                        _computedName,
-                        style: GoogleFonts.outfit(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: primaryTeal,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 24),
-              _buildInputLabel('Academic Year'),
-              _buildModernDropdown(
-                hint: 'Select year',
-                value: selectedAcademicYear,
-                items: academicYears,
-                onChanged: (val) =>
-                    setState(() => selectedAcademicYear = val),
-              ),
-            ]),
-
-            const SizedBox(height: 32),
-
-            // 2. Select Subject
-            _buildSectionLabel(Icons.menu_book_rounded, 'Assign Subject'),
-            _buildFormCard([
-              _buildInputLabel('Select Subject'),
-              _buildModernDropdown(
-                hint: 'Choose a subject',
-                value: selectedSubjectId,
-                items: _subjects.map((s) => s.id).toList(),
-                itemLabels: _subjects.map((s) => s.subjectName).toList(),
-                onChanged: (val) => setState(() => selectedSubjectId = val),
-              ),
-            ]),
-
-            const SizedBox(height: 32),
-
-            // 3. Add Students
-            _buildSectionLabel(Icons.person_add_rounded, 'Add Students'),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildCreativeActionCard(
-                    Icons.group_add_rounded,
-                    'Select Students (${_selectedStudentIds.length})',
-                    () => _showStudentListDialog(),
-                  ),
-                ),
-              ],
             ),
-
-            const SizedBox(height: 48),
-
-            // CREATE BUTTON
-            Bounceable(
-              onTap: _isSubmitting ? null : _handleCreateClass,
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [primaryTeal, primaryTeal.withValues(alpha: 0.8)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: primaryTeal.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.add_circle_outline_rounded,
-                        color: Colors.white,
-                        size: 22,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'Create New Class',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
     );
   }
 
@@ -434,10 +451,15 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
     if (selectedGradeNumber == null || selectedSection == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Please select a grade and section', style: GoogleFonts.inter()),
+          content: Text(
+            'Please select a grade and section',
+            style: GoogleFonts.inter(),
+          ),
           backgroundColor: Colors.redAccent,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
       return;
@@ -469,10 +491,15 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${created.name} created successfully!', style: GoogleFonts.inter()),
+            content: Text(
+              '${created.name} created successfully!',
+              style: GoogleFonts.inter(),
+            ),
             backgroundColor: primaryTeal,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         Navigator.pop(context, true);
@@ -481,10 +508,15 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to create class: $e', style: GoogleFonts.inter()),
+            content: Text(
+              'Failed to create class: $e',
+              style: GoogleFonts.inter(),
+            ),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -504,9 +536,14 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
           backgroundColor: Colors.white,
           title: Text(
             'Select Students (${localSelected.length}/${_allStudents.length})',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: deepBlue),
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              color: deepBlue,
+            ),
           ),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
           content: SizedBox(
             width: double.maxFinite,
             child: _allStudents.isEmpty
@@ -529,11 +566,17 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
                         ),
                         title: Text(
                           s.fullName,
-                          style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: deepBlue),
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w500,
+                            color: deepBlue,
+                          ),
                         ),
                         subtitle: Text(
                           s.gender ?? '',
-                          style: GoogleFonts.inter(fontSize: 12, color: Colors.grey),
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
                         ),
                         value: localSelected.contains(s.id),
                         onChanged: (val) {
@@ -552,12 +595,17 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey)),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(color: Colors.grey),
+              ),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: primaryTeal,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
               onPressed: () {
                 setState(() => _selectedStudentIds = localSelected);
@@ -565,7 +613,10 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
               },
               child: Text(
                 'Add (${localSelected.length})',
-                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],
