@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:tamdansers/routes/app_routes.dart';
 import 'package:tamdansers/services/api_service.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -163,17 +164,17 @@ class _SplashScreenState extends State<SplashScreen>
       String route;
       switch (role) {
         case 'teacher':
-          route = '/TeacherDashboard';
+          route = AppRoutes.teacherDashboard;
           break;
         case 'student':
-          route = '/StudentDashboard';
+          route = AppRoutes.studentDashboard;
           break;
         default:
-          route = '/RoleSelection';
+          route = AppRoutes.roleSelection;
       }
       Navigator.pushNamedAndRemoveUntil(context, route, (r) => false);
     } else {
-      Navigator.pushReplacementNamed(context, '/RoleSelection');
+      Navigator.pushReplacementNamed(context, AppRoutes.roleSelection);
     }
   }
 
@@ -218,7 +219,7 @@ class _SplashScreenState extends State<SplashScreen>
               alignment: const Alignment(0, -0.12),
               child: AnimatedBuilder(
                 animation: _pulseController,
-                builder: (_, __) => Container(
+                builder: (_, _) => Container(
                   width: 320,
                   height: 320,
                   decoration: BoxDecoration(
@@ -239,7 +240,7 @@ class _SplashScreenState extends State<SplashScreen>
           // ── Floating particles ───────────────────────────────
           AnimatedBuilder(
             animation: _particleController,
-            builder: (_, __) {
+            builder: (_, _) {
               return CustomPaint(
                 size: size,
                 painter: _ParticlePainter(
@@ -256,7 +257,7 @@ class _SplashScreenState extends State<SplashScreen>
             right: -100,
             child: AnimatedBuilder(
               animation: _orbitController,
-              builder: (_, __) => Transform.rotate(
+              builder: (_, _) => Transform.rotate(
                 angle: _orbitController.value * 2 * math.pi * 0.08,
                 child: Container(
                   width: 300,
@@ -294,7 +295,7 @@ class _SplashScreenState extends State<SplashScreen>
             left: -80,
             child: AnimatedBuilder(
               animation: _orbitController,
-              builder: (_, __) => Transform.rotate(
+              builder: (_, _) => Transform.rotate(
                 angle: -_orbitController.value * 2 * math.pi * 0.06,
                 child: Container(
                   width: 260,
@@ -323,7 +324,7 @@ class _SplashScreenState extends State<SplashScreen>
                     _pulseController,
                     _orbitController,
                   ]),
-                  builder: (_, __) {
+                  builder: (_, _) {
                     return FadeTransition(
                       opacity: _logoFade,
                       child: ScaleTransition(
@@ -470,7 +471,7 @@ class _SplashScreenState extends State<SplashScreen>
                     _entranceController,
                     _shimmerController,
                   ]),
-                  builder: (_, __) {
+                  builder: (_, _) {
                     return FadeTransition(
                       opacity: _titleFade,
                       child: Transform.translate(
@@ -593,7 +594,7 @@ class _SplashScreenState extends State<SplashScreen>
                     children: [
                       AnimatedBuilder(
                         animation: _dotsController,
-                        builder: (_, __) {
+                        builder: (_, _) {
                           return Row(
                             mainAxisSize: MainAxisSize.min,
                             children: List.generate(4, (i) {

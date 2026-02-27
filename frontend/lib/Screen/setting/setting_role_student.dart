@@ -3,6 +3,7 @@ import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/notification_student_role.dart';
+import 'package:tamdansers/routes/app_routes.dart';
 import 'package:tamdansers/services/api_service.dart';
 
 class StudentSettingsScreen extends StatefulWidget {
@@ -288,7 +289,7 @@ class _StudentSettingsScreenState extends State<StudentSettingsScreen> {
           if (context.mounted) {
             Navigator.pushNamedAndRemoveUntil(
               context,
-              '/RoleSelection',
+              AppRoutes.roleSelection,
               (route) => false,
             );
           }

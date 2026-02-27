@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/Screen/Edit-Profile/teacher_edit_profile.dart';
-import 'package:tamdansers/Screen/Role_TEACHER/add_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/announce_to_parents_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/check_attendance_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/course_learn_role.dart';
@@ -18,6 +17,7 @@ import 'package:tamdansers/Screen/Role_TEACHER/schedule_student_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/student_list_screen.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/teacher_list_screen.dart';
 import 'package:tamdansers/constants/app_image.dart';
+import 'package:tamdansers/routes/app_routes.dart';
 import 'package:tamdansers/services/api_models.dart';
 import 'package:tamdansers/services/api_service.dart';
 
@@ -1938,7 +1938,7 @@ class _TeacherSettingsScreenState extends State<TeacherSettingsScreen> {
           if (context.mounted) {
             Navigator.pushNamedAndRemoveUntil(
               context,
-              '/RoleSelection',
+              AppRoutes.roleSelection,
               (route) => false,
             );
           }
@@ -5197,9 +5197,9 @@ class TeacherAllClassesScreen extends StatelessWidget {
                   onTap: () => Navigator.push(
                     context,
                     PageRouteBuilder(
-                      pageBuilder: (_, a, __) =>
+                      pageBuilder: (_, a, _) =>
                           TeacherScheduleDetailScreen(classData: c),
-                      transitionsBuilder: (_, animation, __, child) =>
+                      transitionsBuilder: (_, animation, _, child) =>
                           SlideTransition(
                             position:
                                 Tween<Offset>(
