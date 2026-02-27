@@ -15,5 +15,9 @@ public interface IAuthenticationService
     Task<bool> ResetPasswordAsync(string email, string code, string newPassword);
     Task<AuthResponseDto?> AuthenticateGoogleAsync(string idToken);
     Task<AuthResponseDto?> AuthenticateFacebookAsync(string accessToken);
+    Task<UserResponseDto> AdminCreateUserAsync(AdminCreateUserDto dto);
+    Task<IEnumerable<UserResponseDto>> GetAllUsersAsync();
+    Task DeleteUserAsync(Guid userId);
+    Task UpdateUserRoleAsync(Guid userId, Domain.Enums.UserRole newRole);
 }
 

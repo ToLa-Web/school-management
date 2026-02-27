@@ -81,14 +81,14 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
       if (response != null) {
         await _apiService.saveUserRole('teacher');
         await _apiService.saveUserData(
-          username: response.username,
+          username: response.fullName,
           email: response.email,
         );
         // Look up the school-service teacher record by matching email
         try {
           final teachers = await _apiService.getTeachers();
           final emailLower = response.email.toLowerCase();
-          final nameLower = response.username.toLowerCase();
+          final nameLower = response.fullName.toLowerCase();
           final match = teachers.firstWhere(
             (t) =>
                 (t.email ?? '').toLowerCase() == emailLower ||
@@ -136,13 +136,13 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
       if (response != null) {
         await _apiService.saveUserRole('teacher');
         await _apiService.saveUserData(
-          username: response.username,
+          username: response.fullName,
           email: response.email,
         );
         try {
           final teachers = await _apiService.getTeachers();
           final emailLower = response.email.toLowerCase();
-          final nameLower = response.username.toLowerCase();
+          final nameLower = response.fullName.toLowerCase();
           final match = teachers.firstWhere(
             (t) =>
                 (t.email ?? '').toLowerCase() == emailLower ||
@@ -187,13 +187,13 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
       if (response != null) {
         await _apiService.saveUserRole('teacher');
         await _apiService.saveUserData(
-          username: response.username,
+          username: response.fullName,
           email: response.email,
         );
         try {
           final teachers = await _apiService.getTeachers();
           final emailLower = response.email.toLowerCase();
-          final nameLower = response.username.toLowerCase();
+          final nameLower = response.fullName.toLowerCase();
           final match = teachers.firstWhere(
             (t) =>
                 (t.email ?? '').toLowerCase() == emailLower ||

@@ -28,6 +28,9 @@ public class TeacherRepository : ITeacherRepository
     public async Task<Teacher?> GetByIdAsync(Guid id)
         => await _context.Teachers.FindAsync(id);
 
+    public async Task<Teacher?> GetByAuthUserIdAsync(Guid authUserId)
+        => await _context.Teachers.FirstOrDefaultAsync(t => t.AuthUserId == authUserId);
+
     public async Task AddAsync(Teacher teacher)
     {
         await _context.Teachers.AddAsync(teacher);

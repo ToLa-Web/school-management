@@ -4,18 +4,21 @@
 class UserCreateDto {
   final String email;
   final String password;
-  final String username;
+  final String firstName;
+  final String lastName;
 
   UserCreateDto({
     required this.email,
     required this.password,
-    required this.username,
+    required this.firstName,
+    required this.lastName,
   });
 
   Map<String, dynamic> toJson() => {
     'email': email,
     'password': password,
-    'username': username,
+    'firstName': firstName,
+    'lastName': lastName,
   };
 }
 
@@ -139,11 +142,12 @@ class FacebookAuthRequestDto {
 // what we get BACK from the server
 
 /// Registration response: backend returns UserResponseDto (no tokens)
-/// {id, email, username, role (int), userRole (string), isEmailVerified}
+/// {id, email, firstName, lastName, role (int), userRole (string), isEmailVerified}
 class UserResponseDto {
   final String id;
   final String email;
-  final String username;
+  final String firstName;
+  final String lastName;
   final int role;
   final String userRole;
   final bool isEmailVerified;
@@ -151,17 +155,21 @@ class UserResponseDto {
   UserResponseDto({
     required this.id,
     required this.email,
-    required this.username,
+    required this.firstName,
+    required this.lastName,
     required this.role,
     required this.userRole,
     required this.isEmailVerified,
   });
 
+  String get fullName => '$firstName $lastName'.trim();
+
   factory UserResponseDto.fromJson(Map<String, dynamic> json) {
     return UserResponseDto(
       id: json['id']?.toString() ?? '',
       email: json['email'] as String? ?? '',
-      username: json['username'] as String? ?? '',
+      firstName: json['firstName'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
       role: json['role'] is int ? json['role'] : 0,
       userRole: json['userRole'] as String? ?? '',
       isEmailVerified: json['isEmailVerified'] as bool? ?? false,
@@ -170,10 +178,11 @@ class UserResponseDto {
 }
 
 /// Login/Authenticate response: backend returns AuthResponseDto (with tokens)
-/// {userId, username, email, role (int), userRole (string), isActive, isEmailVerified, token, refreshToken, lastLoginAt}
+/// {userId, firstName, lastName, email, role (int), userRole (string), isActive, isEmailVerified, token, refreshToken, lastLoginAt}
 class AuthResponseDto {
   final String userId;
-  final String username;
+  final String firstName;
+  final String lastName;
   final String email;
   final int role;
   final String userRole;
@@ -185,7 +194,8 @@ class AuthResponseDto {
 
   AuthResponseDto({
     required this.userId,
-    required this.username,
+    required this.firstName,
+    required this.lastName,
     required this.email,
     required this.role,
     required this.userRole,
@@ -196,10 +206,13 @@ class AuthResponseDto {
     this.lastLoginAt,
   });
 
+  String get fullName => '$firstName $lastName'.trim();
+
   factory AuthResponseDto.fromJson(Map<String, dynamic> json) {
     return AuthResponseDto(
       userId: json['userId']?.toString() ?? '',
-      username: json['username'] as String? ?? '',
+      firstName: json['firstName'] as String? ?? '',
+      lastName: json['lastName'] as String? ?? '',
       email: json['email'] as String? ?? '',
       role: json['role'] is int ? json['role'] : 0,
       userRole: json['userRole'] as String? ?? '',

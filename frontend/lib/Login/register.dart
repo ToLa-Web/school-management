@@ -19,24 +19,23 @@ class _RegisterScreenState extends State<RegisterScreen>
   final _oauthService = OAuthService();
 
   // Controllers per tab (Teacher=0, Student=1)
-  final List<TextEditingController> _fullNameControllers = List.generate(
-    2,
-    (_) => TextEditingController(),
-  );
-  final List<TextEditingController> _emailControllers = List.generate(
-    2,
-    (_) => TextEditingController(),
-  );
-  final List<TextEditingController> _passwordControllers = List.generate(
-    2,
-    (_) => TextEditingController(),
-  );
+  final List<TextEditingController> _firstNameControllers =
+      List.generate(2, (_) => TextEditingController());
+  final List<TextEditingController> _lastNameControllers =
+      List.generate(2, (_) => TextEditingController());
+  final List<TextEditingController> _emailControllers =
+      List.generate(2, (_) => TextEditingController());
+  final List<TextEditingController> _passwordControllers =
+      List.generate(2, (_) => TextEditingController());
+  final List<TextEditingController> _confirmPasswordControllers =
+      List.generate(2, (_) => TextEditingController());
 
   bool _isLoading = false;
   bool _isGoogleLoading = false;
   bool _isFacebookLoading = false;
   String? _errorMessage;
   bool _isObscured = true;
+  bool _isConfirmObscured = true;
 
   bool get _anyLoading => _isLoading || _isGoogleLoading || _isFacebookLoading;
 
@@ -61,9 +60,11 @@ class _RegisterScreenState extends State<RegisterScreen>
   void dispose() {
     _tabController.dispose();
     for (var list in [
-      _fullNameControllers,
+      _firstNameControllers,
+      _lastNameControllers,
       _emailControllers,
       _passwordControllers,
+      _confirmPasswordControllers,
     ]) {
       for (var c in list) {
         c.dispose();
@@ -74,16 +75,22 @@ class _RegisterScreenState extends State<RegisterScreen>
 
   Future<void> _handleRegister() async {
     final tabIndex = _tabController.index;
-    final fullName = _fullNameControllers[tabIndex].text.trim();
+    final firstName = _firstNameControllers[tabIndex].text.trim();
+    final lastName = _lastNameControllers[tabIndex].text.trim();
     final email = _emailControllers[tabIndex].text.trim();
     final password = _passwordControllers[tabIndex].text;
+    final confirmPassword = _confirmPasswordControllers[tabIndex].text;
 
-    if (fullName.isEmpty || email.isEmpty || password.isEmpty) {
+    if (firstName.isEmpty || lastName.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
       setState(() => _errorMessage = 'Please fill in all required fields');
       return;
     }
     if (password.length < 6) {
       setState(() => _errorMessage = 'Password must be at least 6 characters');
+      return;
+    }
+    if (password != confirmPassword) {
+      setState(() => _errorMessage = 'Passwords do not match');
       return;
     }
 
@@ -94,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen>
 
     try {
       final result = await _apiService.register(
-        UserCreateDto(email: email, password: password, username: fullName),
+        UserCreateDto(email: email, password: password, firstName: firstName, lastName: lastName),
       );
       if (!mounted) return;
       if (result != null) {
@@ -540,12 +547,13 @@ class _RegisterScreenState extends State<RegisterScreen>
                         final idx = _tabController.index;
                         return Column(
                           children: [
-                            _buildField(
-                              "Full Name",
-                              Icons.person_outline,
-                              "Enter your full name",
-                              _fullNameControllers[idx],
-                            ),
+                            _buildField("First Name", Icons.person_outline,
+                                "Enter your first name",
+                                _firstNameControllers[idx]),
+                            const SizedBox(height: 14),
+                            _buildField("Last Name", Icons.person_outline,
+                                "Enter your last name",
+                                _lastNameControllers[idx]),
                             const SizedBox(height: 14),
                             _buildField(
                               "Email",
@@ -556,6 +564,8 @@ class _RegisterScreenState extends State<RegisterScreen>
                             ),
                             const SizedBox(height: 14),
                             _buildPasswordField(idx),
+                            const SizedBox(height: 14),
+                            _buildConfirmPasswordField(idx),
                           ],
                         );
                       },
@@ -799,6 +809,58 @@ class _RegisterScreenState extends State<RegisterScreen>
                 color: Color(0xFF007A8C),
                 width: 1.5,
               ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildConfirmPasswordField(int tabIndex) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Confirm Password",
+            style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF344054),
+                fontSize: 14)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _confirmPasswordControllers[tabIndex],
+          obscureText: _isConfirmObscured,
+          decoration: InputDecoration(
+            prefixIcon: const Icon(Icons.lock_outline,
+                color: Color(0xFF98A2B3), size: 20),
+            hintText: "Re-enter your password",
+            hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+            suffixIcon: IconButton(
+              icon: Icon(
+                _isConfirmObscured
+                    ? Icons.visibility_outlined
+                    : Icons.visibility_off_outlined,
+                color: const Color(0xFF98A2B3),
+                size: 20,
+              ),
+              onPressed: () =>
+                  setState(() => _isConfirmObscured = !_isConfirmObscured),
+            ),
+            filled: true,
+            fillColor: Colors.white,
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE4E7EC)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: Color(0xFFE4E7EC)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(
+                  color: Color(0xFF007A8C), width: 1.5),
             ),
           ),
         ),

@@ -32,6 +32,8 @@ public class SchoolDbContext : DbContext
         student.Property(s => s.Gender).HasMaxLength(20);
         student.Property(s => s.Phone).HasMaxLength(30);
         student.Property(s => s.Address).HasMaxLength(250);
+        student.Property(s => s.AuthUserId).IsRequired(false);
+        student.HasIndex(s => s.AuthUserId).IsUnique().HasFilter("\"AuthUserId\" IS NOT NULL");
 
         // ── Teacher ──
         var teacher = modelBuilder.Entity<Teacher>();
@@ -42,6 +44,8 @@ public class SchoolDbContext : DbContext
         teacher.Property(t => t.Phone).HasMaxLength(30);
         teacher.Property(t => t.Email).HasMaxLength(200);
         teacher.Property(t => t.Specialization).HasMaxLength(150);
+        teacher.Property(t => t.AuthUserId).IsRequired(false);
+        teacher.HasIndex(t => t.AuthUserId).IsUnique().HasFilter("\"AuthUserId\" IS NOT NULL");
 
         // ── Classroom ──
         var classroom = modelBuilder.Entity<Classroom>();
