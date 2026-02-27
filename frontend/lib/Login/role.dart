@@ -192,7 +192,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                               child: Text(
                                 'EduPortal',
                                 style: GoogleFonts.outfit(
-                                  fontSize: 42,
+                                  fontSize: size.width * 0.10,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                   height: 1.1,

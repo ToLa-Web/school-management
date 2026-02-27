@@ -192,6 +192,9 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
+    final short = size.shortestSide;
+    // Scale factor: 1.0 at 393px, smaller on tiny screens
+    final s = (short / 393).clamp(0.65, 1.3);
 
     return Scaffold(
       body: Stack(
@@ -220,8 +223,8 @@ class _SplashScreenState extends State<SplashScreen>
               child: AnimatedBuilder(
                 animation: _pulseController,
                 builder: (_, _) => Container(
-                  width: 320,
-                  height: 320,
+                  width: 320 * s,
+                  height: 320 * s,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
@@ -260,8 +263,8 @@ class _SplashScreenState extends State<SplashScreen>
               builder: (_, _) => Transform.rotate(
                 angle: _orbitController.value * 2 * math.pi * 0.08,
                 child: Container(
-                  width: 300,
-                  height: 300,
+                  width: 300 * s,
+                  height: 300 * s,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -277,8 +280,8 @@ class _SplashScreenState extends State<SplashScreen>
             top: -140,
             right: -140,
             child: Container(
-              width: 380,
-              height: 380,
+              width: 380 * s,
+              height: 380 * s,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -298,8 +301,8 @@ class _SplashScreenState extends State<SplashScreen>
               builder: (_, _) => Transform.rotate(
                 angle: -_orbitController.value * 2 * math.pi * 0.06,
                 child: Container(
-                  width: 260,
-                  height: 260,
+                  width: 260 * s,
+                  height: 260 * s,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
@@ -330,8 +333,8 @@ class _SplashScreenState extends State<SplashScreen>
                       child: ScaleTransition(
                         scale: _logoScale,
                         child: SizedBox(
-                          width: 160,
-                          height: 160,
+                          width: 160 * s,
+                          height: 160 * s,
                           child: Stack(
                             alignment: Alignment.center,
                             children: [
@@ -341,8 +344,8 @@ class _SplashScreenState extends State<SplashScreen>
                                 child: Opacity(
                                   opacity: _pulseOpacity.value,
                                   child: Container(
-                                    width: 148,
-                                    height: 148,
+                                    width: 148 * s,
+                                    height: 148 * s,
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       border: Border.all(
@@ -357,7 +360,7 @@ class _SplashScreenState extends State<SplashScreen>
                               Transform.rotate(
                                 angle: _orbitController.value * 2 * math.pi,
                                 child: CustomPaint(
-                                  size: const Size(140, 140),
+                                  size: Size(140 * s, 140 * s),
                                   painter: _DashedCirclePainter(
                                     color: const Color(
                                       0xFF38BDF8,
@@ -374,8 +377,8 @@ class _SplashScreenState extends State<SplashScreen>
                                     (i * 2 * math.pi / 3);
                                 return Transform.translate(
                                   offset: Offset(
-                                    56 * math.cos(angle),
-                                    56 * math.sin(angle),
+                                    56 * s * math.cos(angle),
+                                    56 * s * math.sin(angle),
                                   ),
                                   child: Container(
                                     width: i == 0 ? 10 : 7,
@@ -402,8 +405,8 @@ class _SplashScreenState extends State<SplashScreen>
                               }),
                               // Inner glow ring
                               Container(
-                                width: 108,
-                                height: 108,
+                                width: 108 * s,
+                                height: 108 * s,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: RadialGradient(
@@ -418,8 +421,8 @@ class _SplashScreenState extends State<SplashScreen>
                               ),
                               // Logo circle
                               Container(
-                                width: 96,
-                                height: 96,
+                                width: 96 * s,
+                                height: 96 * s,
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
                                   gradient: const LinearGradient(
@@ -449,9 +452,9 @@ class _SplashScreenState extends State<SplashScreen>
                                     ),
                                   ],
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.school_rounded,
-                                  size: 52,
+                                  size: 52 * s,
                                   color: Colors.white,
                                 ),
                               ),
@@ -463,7 +466,7 @@ class _SplashScreenState extends State<SplashScreen>
                   },
                 ),
 
-                const SizedBox(height: 44),
+                SizedBox(height: 44 * s),
 
                 // ── Title with shimmer ───────────────────────
                 AnimatedBuilder(
@@ -497,10 +500,10 @@ class _SplashScreenState extends State<SplashScreen>
                               ],
                             ).createShader(bounds);
                           },
-                          child: const Text(
+                          child: Text(
                             'EduManage',
                             style: TextStyle(
-                              fontSize: 42,
+                              fontSize: 42 * s,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               letterSpacing: 2.5,
@@ -585,7 +588,7 @@ class _SplashScreenState extends State<SplashScreen>
                   ),
                 ),
 
-                const SizedBox(height: 64),
+                SizedBox(height: 64 * s),
 
                 // ── Animated dots loader ─────────────────────
                 FadeTransition(

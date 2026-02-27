@@ -59,7 +59,7 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
         slivers: [
           // Sleek, floating-style AppBar
           SliverAppBar(
-            expandedHeight: 140,
+            expandedHeight: MediaQuery.of(context).size.height * 0.17,
             pinned: true,
             elevation: 0,
             stretch: true,
@@ -89,22 +89,22 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
           // Course List
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 120),
-            sliver: _loadingSubjects && _apiSubjects.isEmpty && globalCourses.isEmpty
+            sliver:
+                _loadingSubjects &&
+                    _apiSubjects.isEmpty &&
+                    globalCourses.isEmpty
                 ? const SliverFillRemaining(
                     child: Center(child: CircularProgressIndicator()),
                   )
                 : SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        // Show globalCourses first, then API subjects
-                        if (index < globalCourses.length) {
-                          return _buildModernCourseCard(globalCourses[index]);
-                        }
-                        final apiIndex = index - globalCourses.length;
-                        return _buildSubjectCard(_apiSubjects[apiIndex]);
-                      },
-                      childCount: globalCourses.length + _apiSubjects.length,
-                    ),
+                    delegate: SliverChildBuilderDelegate((context, index) {
+                      // Show globalCourses first, then API subjects
+                      if (index < globalCourses.length) {
+                        return _buildModernCourseCard(globalCourses[index]);
+                      }
+                      final apiIndex = index - globalCourses.length;
+                      return _buildSubjectCard(_apiSubjects[apiIndex]);
+                    }, childCount: globalCourses.length + _apiSubjects.length),
                   ),
           ),
         ],
@@ -166,22 +166,26 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    subject.subjectName.toUpperCase(),
-                    style: GoogleFonts.plusJakartaSans(
-                      color: color,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      subject.subjectName.toUpperCase(),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: color,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
@@ -262,22 +266,26 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
             Row(
               children: [
                 // Mini Subject Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _darkBlue.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Text(
-                    course.subject.toUpperCase(),
-                    style: GoogleFonts.plusJakartaSans(
-                      color: _darkBlue,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: _darkBlue.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      course.subject.toUpperCase(),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: GoogleFonts.plusJakartaSans(
+                        color: _darkBlue,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),
@@ -437,6 +445,7 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
     );
   }
 }
+
 // =============================================================================
 // COURSE DETAIL SCREEN
 // =============================================================================
@@ -510,8 +519,7 @@ class CourseDetailScreen extends StatelessWidget {
           'and managed by the assigned teaching staff.',
       grade: 'All Levels',
       price: null,
-      startDate: subject.createdAt.isNotEmpty &&
-              subject.createdAt.length >= 10
+      startDate: subject.createdAt.isNotEmpty && subject.createdAt.length >= 10
           ? subject.createdAt.substring(0, 10)
           : null,
       teachers: subject.teacherNames,
@@ -668,17 +676,15 @@ class CourseDetailScreen extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               // Subject tag + rating-style badge
-                              Row(
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 6,
                                 children: [
                                   _heroBadge(
                                     subject.toUpperCase(),
                                     Icons.auto_stories_rounded,
                                   ),
-                                  const SizedBox(width: 8),
-                                  _heroBadge(
-                                    grade,
-                                    Icons.school_rounded,
-                                  ),
+                                  _heroBadge(grade, Icons.school_rounded),
                                 ],
                               ),
                               const SizedBox(height: 14),
@@ -703,8 +709,7 @@ class CourseDetailScreen extends StatelessWidget {
                                   color: Colors.white.withValues(alpha: 0.13),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color:
-                                        Colors.white.withValues(alpha: 0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                   ),
                                 ),
                                 child: Row(
@@ -902,11 +907,13 @@ class CourseDetailScreen extends StatelessWidget {
                                     ),
                                   ),
                                   const SizedBox(width: 12),
-                                  Text(
-                                    'No teachers assigned yet',
-                                    style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 14,
-                                      color: Colors.grey.shade500,
+                                  Expanded(
+                                    child: Text(
+                                      'No teachers assigned yet',
+                                      style: GoogleFonts.plusJakartaSans(
+                                        fontSize: 14,
+                                        color: Colors.grey.shade500,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -920,19 +927,18 @@ class CourseDetailScreen extends StatelessWidget {
                                     const Color(0xFFF59E0B),
                                     const Color(0xFFEC4899),
                                   ];
-                                  final tc =
-                                      tColors[e.key % tColors.length];
+                                  final tc = tColors[e.key % tColors.length];
                                   return Padding(
                                     padding: EdgeInsets.only(
-                                      bottom:
-                                          e.key < teachers.length - 1 ? 12 : 0,
+                                      bottom: e.key < teachers.length - 1
+                                          ? 12
+                                          : 0,
                                     ),
                                     child: Container(
                                       padding: const EdgeInsets.all(14),
                                       decoration: BoxDecoration(
                                         color: tc.withValues(alpha: 0.04),
-                                        borderRadius:
-                                            BorderRadius.circular(16),
+                                        borderRadius: BorderRadius.circular(16),
                                         border: Border.all(
                                           color: tc.withValues(alpha: 0.12),
                                         ),
@@ -969,10 +975,11 @@ class CourseDetailScreen extends StatelessWidget {
                                                     : '?',
                                                 style:
                                                     GoogleFonts.plusJakartaSans(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 16,
-                                                ),
+                                                      color: Colors.white,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      fontSize: 16,
+                                                    ),
                                               ),
                                             ),
                                           ),
@@ -984,24 +991,25 @@ class CourseDetailScreen extends StatelessWidget {
                                               children: [
                                                 Text(
                                                   e.value,
-                                                  style: GoogleFonts
-                                                      .plusJakartaSans(
-                                                    fontSize: 15,
-                                                    fontWeight:
-                                                        FontWeight.w700,
-                                                    color: const Color(
-                                                      0xFF0F172A,
-                                                    ),
-                                                  ),
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w700,
+                                                        color: const Color(
+                                                          0xFF0F172A,
+                                                        ),
+                                                      ),
                                                 ),
                                                 Text(
                                                   'Course Instructor',
-                                                  style: GoogleFonts
-                                                      .plusJakartaSans(
-                                                    fontSize: 12,
-                                                    color:
-                                                        Colors.grey.shade500,
-                                                  ),
+                                                  style:
+                                                      GoogleFonts.plusJakartaSans(
+                                                        fontSize: 12,
+                                                        color: Colors
+                                                            .grey
+                                                            .shade500,
+                                                      ),
                                                 ),
                                               ],
                                             ),
@@ -1153,8 +1161,7 @@ class CourseDetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _quickStat(
-      IconData icon, String value, String label, Color color) {
+  Widget _quickStat(IconData icon, String value, String label, Color color) {
     return Expanded(
       child: Column(
         children: [
@@ -1191,11 +1198,7 @@ class CourseDetailScreen extends StatelessWidget {
   }
 
   Widget _vLine() {
-    return Container(
-      width: 1,
-      height: 48,
-      color: Colors.grey.shade100,
-    );
+    return Container(width: 1, height: 48, color: Colors.grey.shade100);
   }
 
   Widget _sectionCard({
@@ -1232,12 +1235,16 @@ class CourseDetailScreen extends StatelessWidget {
                 child: Icon(icon, size: 17, color: color),
               ),
               const SizedBox(width: 12),
-              Text(
-                label,
-                style: GoogleFonts.plusJakartaSans(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: const Color(0xFF0F172A),
+              Expanded(
+                child: Text(
+                  label,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: GoogleFonts.plusJakartaSans(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                    color: const Color(0xFF0F172A),
+                  ),
                 ),
               ),
             ],
@@ -1269,4 +1276,3 @@ class _DotGridPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
-
