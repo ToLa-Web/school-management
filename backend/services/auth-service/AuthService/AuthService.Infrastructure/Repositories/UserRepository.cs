@@ -44,4 +44,25 @@ public class UserRepository(AuthDbContext context) : IUserRepository
             .FirstOrDefaultAsync(u => u.ExternalLogins.Any(el =>
                 el.Provider == provider &&
                 el.ProviderUserId == providerUserId));
+
+    public async Task<IEnumerable<User>> GetAllAsync()
+        => await context.Users.OrderBy(u => u.Username).ToListAsync();
+
+    public async Task<bool> DeleteAsync(Guid userId)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null) return false;
+        context.Users.Remove(user);
+        await context.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> UpdateRoleAsync(Guid userId, UserRole newRole)
+    {
+        var user = await context.Users.FindAsync(userId);
+        if (user == null) return false;
+        user.ChangeRole(newRole);
+        await context.SaveChangesAsync();
+        return true;
+    }
 }

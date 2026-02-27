@@ -150,6 +150,16 @@ using (var scope = app.Services.CreateScope())
 
             db.Database.EnsureCreated();
 
+            // Apply schema additions that aren't tracked by migrations (EnsureCreated doesn't run migrations)
+            await db.Database.ExecuteSqlRawAsync(@"
+                ALTER TABLE ""Teachers"" ADD COLUMN IF NOT EXISTS ""AuthUserId"" uuid;
+                ALTER TABLE ""Students"" ADD COLUMN IF NOT EXISTS ""AuthUserId"" uuid;
+                CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Teachers_AuthUserId""
+                    ON ""Teachers""(""AuthUserId"") WHERE ""AuthUserId"" IS NOT NULL;
+                CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Students_AuthUserId""
+                    ON ""Students""(""AuthUserId"") WHERE ""AuthUserId"" IS NOT NULL;
+            ");
+
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();
             await seeder.SeedDataAsync();
 

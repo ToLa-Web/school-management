@@ -12,6 +12,7 @@ public class Teacher
     public string? Specialization { get; private set; }
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public Guid? AuthUserId { get; private set; }
 
     private readonly List<Classroom> _classrooms = new();
     public IReadOnlyCollection<Classroom> Classrooms => _classrooms;
@@ -26,6 +27,14 @@ public class Teacher
     {
         UpdateBasicInfo(firstName, lastName, null, null, null, null, null);
     }
+
+    public Teacher(string firstName, string lastName, Guid authUserId)
+    {
+        UpdateBasicInfo(firstName, lastName, null, null, null, null, null);
+        AuthUserId = authUserId;
+    }
+
+    public void SetAuthUserId(Guid authUserId) => AuthUserId = authUserId;
 
     public void UpdateBasicInfo(
         string firstName,

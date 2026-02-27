@@ -256,7 +256,9 @@ class ApiService {
         ApiConfig.verifyEmailEndpoint,
         data: VerifyEmailRequestDto(email: email, code: code).toJson(),
       );
-      return response.statusCode == 200 && response.data == true;
+      // Backend returns HTTP 200 with { success: true, ... } on success
+      // and HTTP 400 on failure — so just check the status code.
+      return response.statusCode == 200;
     } on DioException catch (e) {
       _logger.warning('Verify email error: ${e.message}');
     }

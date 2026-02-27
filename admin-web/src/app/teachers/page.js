@@ -112,8 +112,8 @@ export default function TeachersPage() {
                       <span className="font-medium text-slate-900">{t.firstName} {t.lastName}</span>
                     </div>
                   </td>
-                  <td className="px-5 py-4 text-slate-600">{t.subject ?? '—'}</td>
-                  <td className="px-5 py-4 text-slate-600">{t.phoneNumber ?? '—'}</td>
+                  <td className="px-5 py-4 text-slate-600">{t.specialization ?? '—'}</td>
+                  <td className="px-5 py-4 text-slate-600">{t.phone ?? '—'}</td>
                   <td className="px-5 py-4 text-slate-500">
                     {t.dateOfBirth ? new Date(t.dateOfBirth).toLocaleDateString() : '—'}
                   </td>

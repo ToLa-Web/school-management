@@ -88,9 +88,15 @@ export async function createClassroom(data) {
 }
 
 export async function updateClassroom(id, data) {
+  const payload = {
+    name: data.className,
+    grade: data.grade,
+    academicYear: data.academicYear,
+    teacherId: data.teacherId,
+  };
   return request(`/api/school/classrooms/${id}`, {
     method: 'PUT',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 }
 
@@ -257,4 +263,36 @@ export async function createSchedule(data) {
 
 export async function deleteSchedule(id) {
   return request(`/api/school/schedules/${id}`, { method: 'DELETE' });
+}
+
+// ── Admin — Auth Accounts ─────────────────────────────────────────────────────
+
+export async function adminGetUsers() {
+  const res = await request('/api/auth/admin/users');
+  return res?.ok ? res.json() : null;
+}
+
+export async function adminCreateUser(data) {
+  return request('/api/auth/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminDeleteUser(id) {
+  return request(`/api/auth/admin/users/${id}`, { method: 'DELETE' });
+}
+
+export async function adminUpdateUserRole(id, role) {
+  return request(`/api/auth/admin/users/${id}/role`, {
+    method: 'PATCH',
+    body: JSON.stringify({ role }),
+  });
+}
+
+export async function adminSyncProfile(authUserId, firstName, lastName, role) {
+  return request('/api/school/admin/sync-profile', {
+    method: 'POST',
+    body: JSON.stringify({ authUserId, firstName, lastName, role }),
+  });
 }

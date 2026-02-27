@@ -108,6 +108,9 @@ public class User : BaseEntity
 
     public void RecordLogin()
         => LastLoginAt = DateTime.UtcNow;
+
+    public void ChangeRole(UserRole newRole)
+        => Role = newRole;
     
     public void SetPasswordHash(string hash) => PasswordHash = hash;
     
