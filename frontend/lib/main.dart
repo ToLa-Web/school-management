@@ -33,7 +33,6 @@ import 'package:tamdansers/widgets/line_graph_component.dart';
 void main() {
   runApp(const MyApp());
 }
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   @override
@@ -100,8 +99,6 @@ class MyApp extends StatelessWidget {
         //graph screen
         '/graph_screen': (context) =>
             const LineGraphComponent(dataPoints: [], labels: []),
-
-
       },
     );
   }
