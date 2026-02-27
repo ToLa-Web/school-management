@@ -8,7 +8,7 @@ import {
   getTeachers, getStudents,
   enrollStudent, unenrollStudent,
 } from '@/lib/api';
-import { School, ArrowLeft, AlertCircle, Save, Bookmark, User, Users, UserPlus, Trash2 } from 'lucide-react';
+import { School, ArrowLeft, AlertCircle, Save, Bookmark, User, Users, UserPlus, Trash2, CheckCircle } from 'lucide-react';
 
 const inputCls =
   'w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-slate-50 placeholder:text-slate-400';
@@ -23,6 +23,7 @@ export default function ClassroomDetailPage() {
   const [allStudents, setAllStudents] = useState([]);
   const [form,       setForm]       = useState(null);
   const [error,      setError]      = useState('');
+  const [success,    setSuccess]    = useState('');
   const [saving,     setSaving]     = useState(false);
   const [loading,    setLoading]    = useState(true);
   const [enrollId,   setEnrollId]   = useState('');
@@ -55,11 +56,14 @@ export default function ClassroomDetailPage() {
   async function handleSave(e) {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setSaving(true);
     try {
       const res = await updateClassroom(id, { ...form, teacherId: form.teacherId || null });
       if (res?.ok) {
         setError('');
+        setSuccess('Classroom updated successfully!');
+        setTimeout(() => setSuccess(''), 4000);
       } else {
         const data = await res.json().catch(() => ({}));
         setError(data?.message ?? 'Failed to save.');
@@ -72,14 +76,25 @@ export default function ClassroomDetailPage() {
   async function handleEnroll() {
     if (!enrollId) return;
     const res = await enrollStudent(id, enrollId);
-    if (res?.ok) { setEnrollId(''); load(); }
-    else setError('Failed to enroll student.');
+    if (res?.ok) { 
+      setEnrollId(''); 
+      setSuccess('Student enrolled successfully!');
+      setTimeout(() => setSuccess(''), 4000);
+      load(); 
+    }
+    else {
+      setError('Failed to enroll student.');
+    }
   }
 
   async function handleUnenroll(studentId, name) {
     if (!confirm(`Remove ${name} from this classroom?`)) return;
     const res = await unenrollStudent(id, studentId);
-    if (res?.ok) load();
+    if (res?.ok) {
+      setSuccess('Student removed successfully!');
+      setTimeout(() => setSuccess(''), 4000);
+      load();
+    }
     else setError('Failed to remove student.');
   }
 
@@ -123,6 +138,13 @@ export default function ClassroomDetailPage() {
           <p className="text-sm text-slate-500">Manage classroom details and enrollment</p>
         </div>
       </div>
+
+      {success && (
+        <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-xl p-4">
+          <CheckCircle className="w-5 h-5 shrink-0" />
+          {success}
+        </div>
+      )}
 
       {error && (
         <div className="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 text-sm rounded-xl p-4">
@@ -223,8 +245,8 @@ export default function ClassroomDetailPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {(classroom.students ?? []).map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-50/50 transition-colors">
+                {(classroom.students ?? []).map((s, i) => (
+                  <tr key={s.id ?? i} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center text-white font-semibold text-xs">

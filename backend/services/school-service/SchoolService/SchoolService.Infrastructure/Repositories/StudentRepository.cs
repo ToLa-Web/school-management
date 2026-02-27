@@ -28,6 +28,9 @@ public class StudentRepository : IStudentRepository
     public async Task<Student?> GetByIdAsync(Guid id)
         => await _context.Students.FindAsync(id);
 
+    public async Task<Student?> GetByAuthUserIdAsync(Guid authUserId)
+        => await _context.Students.FirstOrDefaultAsync(s => s.AuthUserId == authUserId);
+
     public async Task AddAsync(Student student)
     {
         await _context.Students.AddAsync(student);

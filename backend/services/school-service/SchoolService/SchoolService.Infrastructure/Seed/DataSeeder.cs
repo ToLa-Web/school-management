@@ -4,6 +4,22 @@ using SchoolService.Infrastructure.Data;
 
 namespace SchoolService.Infrastructure.Seed;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// School structure
+// ─────────────────────────────────────────────────────────────────────────────
+//  5 teachers (Cambodian names), each owns exactly 1 subject:
+//    teacher1  Sopheak Meas    Mathematics
+//    teacher2  Dara Chan       Science
+//    teacher3  Bopha Sok       English
+//    teacher4  Rithy Phal      History
+//    teacher5  Sreyla Noun     Physical Education
+//
+//  3 classrooms, each with its own homeroom teacher and 5-subject weekly schedule:
+//    Class 10-A  homeroom = Sopheak   15 students  (student1–15)
+//    Class 11-A  homeroom = Dara      10 students  (student16–25)
+//    Class 12-A  homeroom = Bopha      7 students  (student26–32)
+// ─────────────────────────────────────────────────────────────────────────────
+
 public class DataSeeder
 {
     private readonly SchoolDbContext _context;
@@ -17,8 +33,8 @@ public class DataSeeder
     {
         await SeedTeachersAsync();
         await SeedStudentsAsync();
+        await SeedSubjectsAsync();        // must come before classrooms (needs subject IDs)
         await SeedClassroomsAsync();
-        await SeedSubjectsAsync();
         await SeedSchedulesAsync();
         await SeedGradesAsync();
         await SeedAttendanceAsync();
@@ -28,16 +44,24 @@ public class DataSeeder
     {
         if (await _context.Teachers.AnyAsync()) return;
 
-        var t1 = new Teacher("John", "Smith");
-        t1.UpdateBasicInfo("John", "Smith", "Male", null, "012-111-001", "teacher1@school.com", "Mathematics");
+        // One teacher per subject — Cambodian names
+        var teacherData = new[]
+        {
+            (First: "Sopheak", Last: "Meas",  Gender: "Male",   Phone: "012-201-0001", Email: "teacher1@school.com", Subject: "Mathematics"),
+            (First: "Dara",    Last: "Chan",  Gender: "Male",   Phone: "012-201-0002", Email: "teacher2@school.com", Subject: "Science"),
+            (First: "Bopha",   Last: "Sok",   Gender: "Female", Phone: "012-201-0003", Email: "teacher3@school.com", Subject: "English"),
+            (First: "Rithy",   Last: "Phal",  Gender: "Male",   Phone: "012-201-0004", Email: "teacher4@school.com", Subject: "History"),
+            (First: "Sreyla",  Last: "Noun",  Gender: "Female", Phone: "012-201-0005", Email: "teacher5@school.com", Subject: "Physical Education"),
+        };
 
-        var t2 = new Teacher("Sarah", "Lee");
-        t2.UpdateBasicInfo("Sarah", "Lee", "Female", null, "012-111-002", "teacher2@school.com", "Science");
+        var teachers = teacherData.Select(d =>
+        {
+            var t = new Teacher(d.First, d.Last);
+            t.UpdateBasicInfo(d.First, d.Last, d.Gender, null, d.Phone, d.Email, d.Subject);
+            return t;
+        }).ToList();
 
-        var t3 = new Teacher("Mike", "Chen");
-        t3.UpdateBasicInfo("Mike", "Chen", "Male", null, "012-111-003", "teacher3@school.com", "English");
-
-        await _context.Teachers.AddRangeAsync(t1, t2, t3);
+        await _context.Teachers.AddRangeAsync(teachers);
         await _context.SaveChangesAsync();
     }
 
@@ -45,46 +69,76 @@ public class DataSeeder
     {
         if (await _context.Students.AnyAsync()) return;
 
-        // 45 students — 3 groups of 15 (one group per grade: 10, 11, 12)
-        // Emails match auth service: student1@school.com … student45@school.com
-        var names = new (string First, string Last, string Email)[]
+        // 47 Cambodian students
+        // Class 10-A: student1–15  (15 students)
+        // Class 11-A: student16–25 (10 students)
+        // Class 12-A: student26–32 ( 7 students)
+        // Class 10-B: student33–41 ( 9 students)
+        // Class 12-B: student42–47 ( 6 students)
+        var students = new (string First, string Last, string Email, string Gender, string Phone)[]
         {
-            // Grade 10 group (students 1-15)
-            ("Alice",   "Johnson",  "student1@school.com"),  ("Bob",     "Smith",     "student2@school.com"),
-            ("Chenda",  "Tola",     "student3@school.com"),  ("Diana",   "Green",     "student4@school.com"),
-            ("Edward",  "Park",     "student5@school.com"),  ("Fiona",   "Brown",     "student6@school.com"),
-            ("George",  "Wilson",   "student7@school.com"),  ("Hannah",  "Moore",     "student8@school.com"),
-            ("Ivan",    "Taylor",   "student9@school.com"),  ("Jasmine", "Anderson",  "student10@school.com"),
-            ("Kevin",   "Thomas",   "student11@school.com"), ("Linda",   "Jackson",   "student12@school.com"),
-            ("Marcus",  "White",    "student13@school.com"), ("Nina",    "Harris",    "student14@school.com"),
-            ("Oscar",   "Martin",   "student15@school.com"),
-            // Grade 11 group (students 16-30)
-            ("Paula",   "Garcia",   "student16@school.com"), ("Quinn",   "Martinez",  "student17@school.com"),
-            ("Rachel",  "Robinson", "student18@school.com"), ("Samuel",  "Clark",     "student19@school.com"),
-            ("Tina",    "Rodriguez","student20@school.com"), ("Uma",     "Lewis",     "student21@school.com"),
-            ("Victor",  "Lee",      "student22@school.com"), ("Wendy",   "Walker",    "student23@school.com"),
-            ("Xander",  "Hall",     "student24@school.com"), ("Yara",    "Allen",     "student25@school.com"),
-            ("Zach",    "Young",    "student26@school.com"), ("Ava",     "Hernandez", "student27@school.com"),
-            ("Brian",   "King",     "student28@school.com"), ("Cara",    "Wright",    "student29@school.com"),
-            ("Derek",   "Lopez",    "student30@school.com"),
-            // Grade 12 group (students 31-45)
-            ("Ella",    "Hill",     "student31@school.com"), ("Felix",   "Scott",     "student32@school.com"),
-            ("Grace",   "Green",    "student33@school.com"), ("Henry",   "Adams",     "student34@school.com"),
-            ("Isabelle","Baker",    "student35@school.com"), ("Jake",    "Gonzalez",  "student36@school.com"),
-            ("Karen",   "Nelson",   "student37@school.com"), ("Liam",    "Carter",    "student38@school.com"),
-            ("Mia",     "Mitchell", "student39@school.com"), ("Nathan",  "Perez",     "student40@school.com"),
-            ("Olivia",  "Roberts",  "student41@school.com"), ("Peter",   "Turner",    "student42@school.com"),
-            ("Queenie", "Phillips", "student43@school.com"), ("Ryan",    "Campbell",  "student44@school.com"),
-            ("Sofia",   "Parker",   "student45@school.com"),
+            // ── Class 10-A ─────────────────────────────────────────────────────
+            ("Sokha",      "Chea",   "student1@school.com",  "Male",   "012-301-0001"),
+            ("Sreymom",    "Keo",    "student2@school.com",  "Female", "012-301-0002"),
+            ("Visal",      "Heng",   "student3@school.com",  "Male",   "012-301-0003"),
+            ("Channary",   "Pov",    "student4@school.com",  "Female", "012-301-0004"),
+            ("Dara",       "Lim",    "student5@school.com",  "Male",   "012-301-0005"),
+            ("Pisey",      "Nget",   "student6@school.com",  "Female", "012-301-0006"),
+            ("Raksmey",    "Sar",    "student7@school.com",  "Male",   "012-301-0007"),
+            ("Sokunthea",  "Im",     "student8@school.com",  "Female", "012-301-0008"),
+            ("Makara",     "Tep",    "student9@school.com",  "Male",   "012-301-0009"),
+            ("Chanlina",   "Ros",    "student10@school.com", "Female", "012-301-0010"),
+            ("Bunthan",    "Mok",    "student11@school.com", "Male",   "012-301-0011"),
+            ("Socheata",   "Yem",    "student12@school.com", "Female", "012-301-0012"),
+            ("Vutha",      "Kang",   "student13@school.com", "Male",   "012-301-0013"),
+            ("Leakena",    "Suon",   "student14@school.com", "Female", "012-301-0014"),
+            ("Piseth",     "Ouk",    "student15@school.com", "Male",   "012-301-0015"),
+            // ── Class 11-A ─────────────────────────────────────────────────────
+            ("Kosal",      "Prum",   "student16@school.com", "Male",   "012-301-0016"),
+            ("Sreyroth",   "Pen",    "student17@school.com", "Female", "012-301-0017"),
+            ("Bunna",      "Chhim",  "student18@school.com", "Male",   "012-301-0018"),
+            ("Chanpov",    "Khiev",  "student19@school.com", "Female", "012-301-0019"),
+            ("Sovann",     "Nhem",   "student20@school.com", "Male",   "012-301-0020"),
+            ("Reaksmey",   "Tith",   "student21@school.com", "Female", "012-301-0021"),
+            ("Kimlong",    "Srey",   "student22@school.com", "Male",   "012-301-0022"),
+            ("Daravy",     "Hout",   "student23@school.com", "Female", "012-301-0023"),
+            ("Mengly",     "Chan",   "student24@school.com", "Male",   "012-301-0024"),
+            ("Sonika",     "Ung",    "student25@school.com", "Female", "012-301-0025"),
+            // ── Class 12-A ─────────────────────────────────────────────────────
+            ("Ratana",     "Khem",   "student26@school.com", "Male",   "012-301-0026"),
+            ("Sophany",    "Loch",   "student27@school.com", "Female", "012-301-0027"),
+            ("Bunthoeun",  "Meas",   "student28@school.com", "Male",   "012-301-0028"),
+            ("Chanthy",    "Kem",    "student29@school.com", "Female", "012-301-0029"),
+            ("Sovannara",  "Nou",    "student30@school.com", "Male",   "012-301-0030"),
+            ("Kunthea",    "Sim",    "student31@school.com", "Female", "012-301-0031"),
+            ("Phearak",    "Yun",    "student32@school.com", "Male",   "012-301-0032"),
+            // ── Class 10-B ─────────────────────────────────────────────────────
+            ("Thida",      "Kong",   "student33@school.com", "Female", "012-301-0033"),
+            ("Sambo",      "Pich",   "student34@school.com", "Male",   "012-301-0034"),
+            ("Sovannak",   "Eav",    "student35@school.com", "Male",   "012-301-0035"),
+            ("Chhorvy",    "Mam",    "student36@school.com", "Female", "012-301-0036"),
+            ("Davan",      "Som",    "student37@school.com", "Male",   "012-301-0037"),
+            ("Sreyleak",   "Hak",    "student38@school.com", "Female", "012-301-0038"),
+            ("Naro",       "Tan",    "student39@school.com", "Male",   "012-301-0039"),
+            ("Phally",     "Din",    "student40@school.com", "Female", "012-301-0040"),
+            ("Sothea",     "Vong",   "student41@school.com", "Male",   "012-301-0041"),
+            // ── Class 12-B ─────────────────────────────────────────────────────
+            ("Botum",      "Ly",     "student42@school.com", "Female", "012-301-0042"),
+            ("Vicheka",    "Nop",    "student43@school.com", "Male",   "012-301-0043"),
+            ("Sreynich",   "San",    "student44@school.com", "Female", "012-301-0044"),
+            ("Kimsan",     "Koy",    "student45@school.com", "Male",   "012-301-0045"),
+            ("Chanmoly",   "Tong",   "student46@school.com", "Female", "012-301-0046"),
+            ("Rithy",      "Sorn",   "student47@school.com", "Male",   "012-301-0047"),
         };
 
-        var students = names.Select(n =>
+        var entities = students.Select(n =>
         {
             var s = new Student(n.First, n.Last);
-            s.UpdateBasicInfo(n.First, n.Last, null, null, null, null, n.Email);
+            s.UpdateBasicInfo(n.First, n.Last, n.Gender, null, n.Phone, null, n.Email);
             return s;
         }).ToList();
-        await _context.Students.AddRangeAsync(students);
+
+        await _context.Students.AddRangeAsync(entities);
         await _context.SaveChangesAsync();
     }
 
@@ -93,48 +147,40 @@ public class DataSeeder
         if (await _context.Classrooms.AnyAsync()) return;
 
         var teachers = await _context.Teachers.OrderBy(t => t.Email).ToListAsync();
-        var students = await _context.Students.ToListAsync();
+        var students = await _context.Students.OrderBy(s => s.Email).ToListAsync();
 
-        if (teachers.Count < 3) return;
+        if (teachers.Count < 5 || students.Count < 47) return;
 
-        // teacher1 → Grade 10 (A, B, C)
-        // teacher2 → Grade 11 (A, B, C)
-        // teacher3 → Grade 12 (A, B, C)
+        // Homeroom teacher assignment:
+        //   Class 10-A → Sopheak Meas  (teacher[0])
+        //   Class 11-A → Dara Chan     (teacher[1])
+        //   Class 12-A → Bopha Sok     (teacher[2])
+        //   Class 10-B → Rithy Phal    (teacher[3])
+        //   Class 12-B → Sreyla Noun   (teacher[4])
         var classData = new[]
         {
-            (Name: "Class 10-A", Grade: "10",  TeacherIdx: 0),
-            (Name: "Class 10-B", Grade: "10",  TeacherIdx: 0),
-            (Name: "Class 10-C", Grade: "10",  TeacherIdx: 0),
-            (Name: "Class 11-A", Grade: "11",  TeacherIdx: 1),
-            (Name: "Class 11-B", Grade: "11",  TeacherIdx: 1),
-            (Name: "Class 11-C", Grade: "11",  TeacherIdx: 1),
-            (Name: "Class 12-A", Grade: "12",  TeacherIdx: 2),
-            (Name: "Class 12-B", Grade: "12",  TeacherIdx: 2),
-            (Name: "Class 12-C", Grade: "12",  TeacherIdx: 2),
+            (Name: "Class 10-A", Grade: "10", TeacherIdx: 0, StudentStart:  0, StudentCount: 15),
+            (Name: "Class 11-A", Grade: "11", TeacherIdx: 1, StudentStart: 15, StudentCount: 10),
+            (Name: "Class 12-A", Grade: "12", TeacherIdx: 2, StudentStart: 25, StudentCount:  7),
+            (Name: "Class 10-B", Grade: "10", TeacherIdx: 3, StudentStart: 32, StudentCount:  9),
+            (Name: "Class 12-B", Grade: "12", TeacherIdx: 4, StudentStart: 41, StudentCount:  6),
         };
 
-        // 45 students split into 3 groups of 15 (one group per grade)
-        const int studentsPerClass = 15;
-        const int classesPerGrade  = 3;
         var enrollments = new List<StudentClassroom>();
 
-        for (int ci = 0; ci < classData.Length; ci++)
+        foreach (var cd in classData)
         {
-            var cd  = classData[ci];
             var cls = new Classroom(cd.Name);
             cls.UpdateInfo(cd.Name, cd.Grade, "2025-2026");
             cls.AssignTeacher(teachers[cd.TeacherIdx].Id);
             await _context.Classrooms.AddAsync(cls);
             await _context.SaveChangesAsync();
 
-            // Each grade group of 15 students is shared across its 3 classes
-            // Grade group index: 0 = students 0-14, 1 = students 15-29, 2 = students 30-44
-            int gradeGroupStart = cd.TeacherIdx * studentsPerClass;
-            for (int si = 0; si < studentsPerClass; si++)
+            for (int si = 0; si < cd.StudentCount; si++)
             {
-                int studentIdx = gradeGroupStart + si;
-                if (studentIdx < students.Count)
-                    enrollments.Add(new StudentClassroom(students[studentIdx].Id, cls.Id));
+                int idx = cd.StudentStart + si;
+                if (idx < students.Count)
+                    enrollments.Add(new StudentClassroom(students[idx].Id, cls.Id));
             }
         }
 
@@ -146,30 +192,24 @@ public class DataSeeder
     {
         if (await _context.Subjects.AnyAsync()) return;
 
+        // 5 subjects — one per teacher (order matches teacher email order)
+        // Index 0 = Mathematics → teacher1 (Sopheak)
+        // Index 1 = Science     → teacher2 (Dara)
+        // Index 2 = English     → teacher3 (Bopha)
+        // Index 3 = History     → teacher4 (Rithy)
+        // Index 4 = Phys. Ed.   → teacher5 (Sreyla)
         var subjectNames = new[] { "Mathematics", "Science", "English", "History", "Physical Education" };
         var subjects = subjectNames.Select(n => new Subject(n)).ToList();
 
         await _context.Subjects.AddRangeAsync(subjects);
         await _context.SaveChangesAsync();
 
-        // Assign teachers to subjects
         var teachers = await _context.Teachers.OrderBy(t => t.Email).ToListAsync();
-        if (teachers.Count >= 3)
+        if (teachers.Count >= 5)
         {
-            // teacher1 (John)  → Mathematics, Physics
-            // teacher2 (Sarah) → Science, Biology
-            // teacher3 (Mike)  → English, History
-            var pairs = new List<(Guid TeacherId, Guid SubjectId)>
-            {
-                (teachers[0].Id, subjects[0].Id), // John  → Mathematics
-                (teachers[0].Id, subjects[1].Id), // John  → Science
-                (teachers[1].Id, subjects[2].Id), // Sarah → English
-                (teachers[1].Id, subjects[3].Id), // Sarah → History
-                (teachers[2].Id, subjects[4].Id), // Mike  → Physical Education
-            };
-
-            foreach (var (tid, sid) in pairs)
-                await _context.TeacherSubjects.AddAsync(new TeacherSubject(tid, sid));
+            // Each teacher owns exactly one subject
+            for (int i = 0; i < 5; i++)
+                await _context.TeacherSubjects.AddAsync(new TeacherSubject(teachers[i].Id, subjects[i].Id));
 
             await _context.SaveChangesAsync();
         }
@@ -179,27 +219,46 @@ public class DataSeeder
     {
         if (await _context.Schedules.AnyAsync()) return;
 
-        var classroom = await _context.Classrooms.FirstOrDefaultAsync();
-        var subjects = await _context.Subjects.ToListAsync();
-        var teacher = await _context.Teachers.FirstOrDefaultAsync();
+        var classrooms = await _context.Classrooms.OrderBy(c => c.Name).ToListAsync();
+        var subjects   = await _context.Subjects.OrderBy(s => s.SubjectName).ToListAsync();
+        var teachers   = await _context.Teachers.OrderBy(t => t.Email).ToListAsync();
 
-        if (classroom == null || subjects.Count < 3) return;
+        if (classrooms.Count < 3 || subjects.Count < 5 || teachers.Count < 5) return;
 
-        var slots = new List<(string Day, string Time, int SubjectIdx)>
+        // Weekly timetable: 5 subjects × 5 days, each taught by its own subject teacher
+        // subjects are sorted alphabetically so map by SubjectName
+        var byName = subjects.ToDictionary(s => s.SubjectName);
+        var byTeacher = teachers; // ordered by email: [0]=teacher1…[4]=teacher5
+
+        // (Day, Time, SubjectName, TeacherIdx)
+        var slots = new[]
         {
-            ("Monday",    "08:00-09:30", 0),
-            ("Monday",    "10:00-11:30", 1),
-            ("Tuesday",   "08:00-09:30", 2),
-            ("Wednesday", "08:00-09:30", 0),
-            ("Thursday",  "08:00-09:30", 3),
-            ("Friday",    "08:00-09:30", 4),
+            ("Monday",    "07:00-08:30", "Mathematics",        0),
+            ("Monday",    "08:45-10:15", "Science",            1),
+            ("Tuesday",   "07:00-08:30", "English",            2),
+            ("Tuesday",   "08:45-10:15", "History",            3),
+            ("Wednesday", "07:00-08:30", "Physical Education", 4),
+            ("Wednesday", "08:45-10:15", "Mathematics",        0),
+            ("Thursday",  "07:00-08:30", "Science",            1),
+            ("Thursday",  "08:45-10:15", "English",            2),
+            ("Friday",    "07:00-08:30", "History",            3),
+            ("Friday",    "08:45-10:15", "Physical Education", 4),
         };
 
-        foreach (var (day, time, idx) in slots)
+        // Create the same timetable for EVERY classroom
+        foreach (var classroom in classrooms)
         {
-            if (idx >= subjects.Count) continue;
-            var schedule = new Schedule(classroom.Id, subjects[idx].Id, teacher?.Id, day, time);
-            await _context.Schedules.AddAsync(schedule);
+            foreach (var (day, time, subjectName, teacherIdx) in slots)
+            {
+                if (!byName.TryGetValue(subjectName, out var subject)) continue;
+                var schedule = new Schedule(
+                    classroom.Id,
+                    subject.Id,
+                    byTeacher[teacherIdx].Id,
+                    day,
+                    time);
+                await _context.Schedules.AddAsync(schedule);
+            }
         }
 
         await _context.SaveChangesAsync();
@@ -217,7 +276,8 @@ public class DataSeeder
         var rng = new Random(42);
         foreach (var student in students)
         {
-            foreach (var subject in subjects.Take(3))
+            // Give every student a grade for every subject
+            foreach (var subject in subjects)
             {
                 var score = Math.Round((decimal)(rng.NextDouble() * 40 + 60), 2); // 60–100
                 var grade = new StudentGrade(student.Id, subject.Id, score, "Semester 1");
@@ -232,21 +292,32 @@ public class DataSeeder
     {
         if (await _context.Attendances.AnyAsync()) return;
 
-        var students = await _context.Students.ToListAsync();
-        var classroom = await _context.Classrooms.FirstOrDefaultAsync();
+        // Load each classroom with its enrolled students
+        var classrooms = await _context.Classrooms.ToListAsync();
+        var enrollments = await _context.StudentClassrooms.ToListAsync();
 
-        if (students.Count == 0 || classroom == null) return;
+        if (classrooms.Count == 0 || enrollments.Count == 0) return;
 
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
         var statuses = new[] { AttendanceStatus.Present, AttendanceStatus.Present, AttendanceStatus.Late, AttendanceStatus.Absent };
+        var rng = new Random(99);
 
-        for (var i = 0; i < 5; i++)
+        foreach (var classroom in classrooms)
         {
-            var date = today.AddDays(-i);
-            foreach (var student in students)
+            var studentIds = enrollments
+                .Where(e => e.ClassroomId == classroom.Id)
+                .Select(e => e.StudentId)
+                .ToList();
+
+            for (int day = 0; day < 5; day++)
             {
-                var status = statuses[(i + students.IndexOf(student)) % statuses.Length];
-                await _context.Attendances.AddAsync(new Attendance(student.Id, classroom.Id, date, status));
+                var date = today.AddDays(-day);
+                for (int si = 0; si < studentIds.Count; si++)
+                {
+                    var status = statuses[(day + si) % statuses.Length];
+                    await _context.Attendances.AddAsync(
+                        new Attendance(studentIds[si], classroom.Id, date, status));
+                }
             }
         }
 

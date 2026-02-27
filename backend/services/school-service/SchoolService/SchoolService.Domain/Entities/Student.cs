@@ -12,6 +12,7 @@ public class Student
     public string? Email { get; private set; }
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public Guid? AuthUserId { get; private set; }
 
     private readonly List<StudentClassroom> _studentClassrooms = new();
     public IReadOnlyCollection<StudentClassroom> StudentClassrooms => _studentClassrooms;
@@ -29,6 +30,14 @@ public class Student
     {
         UpdateBasicInfo(firstName, lastName, null, null, null, null, null);
     }
+
+    public Student(string firstName, string lastName, Guid authUserId)
+    {
+        UpdateBasicInfo(firstName, lastName, null, null, null, null, null);
+        AuthUserId = authUserId;
+    }
+
+    public void SetAuthUserId(Guid authUserId) => AuthUserId = authUserId;
 
     public void UpdateBasicInfo(
         string firstName,

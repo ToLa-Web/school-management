@@ -1,7 +1,7 @@
 ﻿using AuthService.Application.DTOs.Auth.Request;
 using AuthService.Application.DTOs.User;
 using AuthService.Application.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+using AuthService.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -161,7 +161,6 @@ public async Task<IActionResult> OAuthFacebook([FromBody] FacebookAuthRequestDto
 
 // Validates a JWT token - mainly called by other services like school-service
 [HttpPost("validate")]
-[AllowAnonymous]
 public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
 {
     if (string.IsNullOrEmpty(request?.Token))
@@ -220,7 +219,6 @@ public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
 
 // Returns user info for a given ID - other microservices call this to look up users
 [HttpGet("user/{userId}")]
-[AllowAnonymous]
 public async Task<IActionResult> GetUser(string userId)
 {
     if (string.IsNullOrEmpty(userId))
@@ -250,6 +248,60 @@ public async Task<IActionResult> GetUser(string userId)
         return BadRequest(new { error = ex.Message });
     }
 }
+// ── Admin endpoints (internal use by admin-web) ──────────────────────────────
+
+    // List all users in auth_db
+    [HttpGet("admin/users")]
+    public async Task<IActionResult> AdminGetUsers()
+    {
+        var users = await _authService.GetAllUsersAsync();
+        return Ok(users);
+    }
+
+    // Create a user account with a specific role
+    [HttpPost("admin/users")]
+    public async Task<IActionResult> AdminCreateUser([FromBody] AdminCreateUserDto dto)
+    {
+        try
+        {
+            var user = await _authService.AdminCreateUserAsync(dto);
+            return Ok(new { success = true, user });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, error = ex.Message });
+        }
+    }
+
+    // Delete a user account from auth_db
+    [HttpDelete("admin/users/{userId:guid}")]
+    public async Task<IActionResult> AdminDeleteUser(Guid userId)
+    {
+        try
+        {
+            await _authService.DeleteUserAsync(userId);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { success = false, error = ex.Message });
+        }
+    }
+
+    // Update a user's role in auth_db
+    [HttpPatch("admin/users/{userId:guid}/role")]
+    public async Task<IActionResult> AdminUpdateUserRole(Guid userId, [FromBody] UpdateUserRoleDto dto)
+    {
+        try
+        {
+            await _authService.UpdateUserRoleAsync(userId, dto.Role);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return NotFound(new { success = false, error = ex.Message });
+        }
+    }
 }
 
 public class ValidateTokenRequest
