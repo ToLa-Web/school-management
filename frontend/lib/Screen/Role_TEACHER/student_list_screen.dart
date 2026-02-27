@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/api_models.dart';
+import 'package:tamdansers/services/api_service.dart';
 
 // screen that lists all students — lets the teacher search, edit, or delete them
 class StudentListScreen extends StatefulWidget {
@@ -30,7 +30,12 @@ class _StudentListScreenState extends State<StudentListScreen> {
   Future<void> _load() async {
     try {
       final list = await _api.getStudents();
-      if (mounted) setState(() { _students = list; _isLoading = false; });
+      if (mounted) {
+        setState(() {
+          _students = list;
+          _isLoading = false;
+        });
+      }
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -39,9 +44,13 @@ class _StudentListScreenState extends State<StudentListScreen> {
   List<StudentDto> get _filtered {
     if (_search.isEmpty) return _students;
     final q = _search.toLowerCase();
-    return _students.where((s) =>
-        s.fullName.toLowerCase().contains(q) ||
-        (s.gender ?? '').toLowerCase().contains(q)).toList();
+    return _students
+        .where(
+          (s) =>
+              s.fullName.toLowerCase().contains(q) ||
+              (s.gender ?? '').toLowerCase().contains(q),
+        )
+        .toList();
   }
 
   // ─── Delete ───
@@ -50,20 +59,37 @@ class _StudentListScreenState extends State<StudentListScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Student', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: _deepBlue)),
-        content: Text('Delete ${s.fullName}? This cannot be undone.',
-            style: GoogleFonts.inter(color: Colors.grey.shade700)),
+        title: Text(
+          'Delete Student',
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            color: _deepBlue,
+          ),
+        ),
+        content: Text(
+          'Delete ${s.fullName}? This cannot be undone.',
+          style: GoogleFonts.inter(color: Colors.grey.shade700),
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey))),
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey)),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+              backgroundColor: Colors.redAccent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Delete',
-                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold)),
+            child: Text(
+              'Delete',
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -72,20 +98,24 @@ class _StudentListScreenState extends State<StudentListScreen> {
     try {
       await _api.deleteStudent(s.id);
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('${s.fullName} deleted', style: GoogleFonts.inter()),
-          backgroundColor: _teal,
-          behavior: SnackBarBehavior.floating,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${s.fullName} deleted', style: GoogleFonts.inter()),
+            backgroundColor: _teal,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
         _load();
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Failed: $e', style: GoogleFonts.inter()),
-          backgroundColor: Colors.redAccent,
-          behavior: SnackBarBehavior.floating,
-        ));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed: $e', style: GoogleFonts.inter()),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
       }
     }
   }
@@ -102,50 +132,75 @@ class _StudentListScreenState extends State<StudentListScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDlg) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-          title: Text('Edit Student',
-              style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: _deepBlue)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          title: Text(
+            'Edit Student',
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              color: _deepBlue,
+            ),
+          ),
           content: SingleChildScrollView(
-            child: Column(mainAxisSize: MainAxisSize.min, children: [
-              _field('First Name', firstCtrl),
-              const SizedBox(height: 10),
-              _field('Last Name', lastCtrl),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                decoration: BoxDecoration(
-                    color: _bg, borderRadius: BorderRadius.circular(14)),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    isExpanded: true,
-                    value: gender,
-                    hint: Text('Gender',
-                        style: GoogleFonts.inter(color: Colors.grey.shade400)),
-                    items: ['Male', 'Female', 'Other']
-                        .map((g) => DropdownMenuItem(
-                            value: g,
-                            child: Text(g,
-                                style: GoogleFonts.inter(color: _deepBlue))))
-                        .toList(),
-                    onChanged: (v) => setDlg(() => gender = v),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _field('First Name', firstCtrl),
+                const SizedBox(height: 10),
+                _field('Last Name', lastCtrl),
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  decoration: BoxDecoration(
+                    color: _bg,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: gender,
+                      hint: Text(
+                        'Gender',
+                        style: GoogleFonts.inter(color: Colors.grey.shade400),
+                      ),
+                      items: ['Male', 'Female', 'Other']
+                          .map(
+                            (g) => DropdownMenuItem(
+                              value: g,
+                              child: Text(
+                                g,
+                                style: GoogleFonts.inter(color: _deepBlue),
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (v) => setDlg(() => gender = v),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              _field('Phone', phoneCtrl),
-              const SizedBox(height: 10),
-              _field('Address', addressCtrl),
-            ]),
+                const SizedBox(height: 10),
+                _field('Phone', phoneCtrl),
+                const SizedBox(height: 10),
+                _field('Address', addressCtrl),
+              ],
+            ),
           ),
           actions: [
             TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey))),
+              onPressed: () => Navigator.pop(ctx, false),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(color: Colors.grey),
+              ),
+            ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: _teal,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10))),
+                backgroundColor: _teal,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
               onPressed: () async {
                 final updated = StudentDto(
                   id: s.id,
@@ -167,15 +222,22 @@ class _StudentListScreenState extends State<StudentListScreen> {
                   if (ctx.mounted) Navigator.pop(ctx, true);
                 } catch (e) {
                   if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(SnackBar(
+                    ScaffoldMessenger.of(ctx).showSnackBar(
+                      SnackBar(
                         content: Text('Error: $e'),
-                        backgroundColor: Colors.redAccent));
+                        backgroundColor: Colors.redAccent,
+                      ),
+                    );
                   }
                 }
               },
-              child: Text('Save',
-                  style: GoogleFonts.inter(
-                      color: Colors.white, fontWeight: FontWeight.bold)),
+              child: Text(
+                'Save',
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
             ),
           ],
         ),
@@ -192,71 +254,112 @@ class _StudentListScreenState extends State<StudentListScreen> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Text('All Students',
-                    style: GoogleFonts.outfit(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: _deepBlue)),
-                const SizedBox(height: 6),
-                Text('${_students.length} students total',
-                    style: GoogleFonts.inter(
-                        fontSize: 14, color: Colors.grey.shade500)),
-                const SizedBox(height: 20),
-
-                // Search
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.04),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4))
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.06),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                        color: _deepBlue,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'All Students',
+                        style: GoogleFonts.outfit(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: _deepBlue,
+                        ),
+                      ),
+                      Text(
+                        '${_students.length} students total',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: Colors.grey.shade500,
+                        ),
+                      ),
                     ],
                   ),
-                  child: TextField(
-                    onChanged: (v) => setState(() => _search = v),
-                    style: GoogleFonts.inter(fontSize: 15, color: _deepBlue),
-                    decoration: InputDecoration(
-                      hintText: 'Search students...',
-                      hintStyle:
-                          GoogleFonts.inter(color: Colors.grey.shade400),
-                      border: InputBorder.none,
-                      icon: Icon(Icons.search_rounded,
-                          color: Colors.grey.shade400),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Search
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.04),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  onChanged: (v) => setState(() => _search = v),
+                  style: GoogleFonts.inter(fontSize: 15, color: _deepBlue),
+                  decoration: InputDecoration(
+                    hintText: 'Search students...',
+                    hintStyle: GoogleFonts.inter(color: Colors.grey.shade400),
+                    border: InputBorder.none,
+                    icon: Icon(
+                      Icons.search_rounded,
+                      color: Colors.grey.shade400,
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 20),
 
-                // List
-                Expanded(
-                  child: _isLoading
-                      ? const Center(child: CircularProgressIndicator())
-                      : _filtered.isEmpty
-                          ? Center(
-                              child: Text('No students found',
-                                  style: GoogleFonts.inter(
-                                      color: Colors.grey)))
-                          : RefreshIndicator(
-                              onRefresh: _load,
-                              child: ListView.builder(
-                                physics:
-                                    const AlwaysScrollableScrollPhysics(
-                                        parent:
-                                            BouncingScrollPhysics()),
-                                itemCount: _filtered.length,
-                                itemBuilder: (_, i) =>
-                                    _studentCard(_filtered[i]),
-                              ),
-                            ),
-                ),
-              ]),
+              // List
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _filtered.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No students found',
+                          style: GoogleFonts.inter(color: Colors.grey),
+                        ),
+                      )
+                    : RefreshIndicator(
+                        onRefresh: _load,
+                        child: ListView.builder(
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
+                          itemCount: _filtered.length,
+                          itemBuilder: (_, i) => _studentCard(_filtered[i]),
+                        ),
+                      ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -272,52 +375,69 @@ class _StudentListScreenState extends State<StudentListScreen> {
         border: Border.all(color: Colors.grey.shade100),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withValues(alpha: 0.03),
-              blurRadius: 10,
-              offset: const Offset(0, 5))
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
+          ),
         ],
       ),
-      child: Row(children: [
-        CircleAvatar(
-          radius: 24,
-          backgroundColor: _teal.withValues(alpha: 0.1),
-          child: Text(
-            s.firstName.isNotEmpty ? s.firstName[0].toUpperCase() : '?',
-            style: GoogleFonts.outfit(
-                color: _teal, fontWeight: FontWeight.bold, fontSize: 20),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: _teal.withValues(alpha: 0.1),
+            child: Text(
+              s.firstName.isNotEmpty ? s.firstName[0].toUpperCase() : '?',
+              style: GoogleFonts.outfit(
+                color: _teal,
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(s.fullName,
-                    style: GoogleFonts.outfit(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                        color: _deepBlue)),
+                Text(
+                  s.fullName,
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: _deepBlue,
+                  ),
+                ),
                 const SizedBox(height: 2),
                 Text(
-                    [s.gender, s.phone]
-                        .where((e) => e != null && e.isNotEmpty)
-                        .join(' • '),
-                    style: GoogleFonts.inter(
-                        fontSize: 12, color: Colors.grey.shade500)),
-              ]),
-        ),
-        IconButton(
-          icon: const Icon(Icons.edit_rounded, color: _teal, size: 20),
-          tooltip: 'Edit',
-          onPressed: () => _showEditDialog(s),
-        ),
-        IconButton(
-          icon: const Icon(Icons.delete_outline_rounded,
-              color: Colors.redAccent, size: 20),
-          tooltip: 'Delete',
-          onPressed: () => _confirmDelete(s),
-        ),
-      ]),
+                  [
+                    s.gender,
+                    s.phone,
+                  ].where((e) => e != null && e.isNotEmpty).join(' • '),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    color: Colors.grey.shade500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit_rounded, color: _teal, size: 20),
+            tooltip: 'Edit',
+            onPressed: () => _showEditDialog(s),
+          ),
+          IconButton(
+            icon: const Icon(
+              Icons.delete_outline_rounded,
+              color: Colors.redAccent,
+              size: 20,
+            ),
+            tooltip: 'Delete',
+            onPressed: () => _confirmDelete(s),
+          ),
+        ],
+      ),
     );
   }
 
@@ -325,18 +445,26 @@ class _StudentListScreenState extends State<StudentListScreen> {
     return TextField(
       controller: ctrl,
       style: GoogleFonts.inter(
-          fontSize: 15, color: _deepBlue, fontWeight: FontWeight.w500),
+        fontSize: 15,
+        color: _deepBlue,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle:
-            GoogleFonts.inter(color: Colors.grey.shade500, fontSize: 13),
+        labelStyle: GoogleFonts.inter(
+          color: Colors.grey.shade500,
+          fontSize: 13,
+        ),
         filled: true,
         fillColor: _bg,
         border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: BorderSide.none),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }

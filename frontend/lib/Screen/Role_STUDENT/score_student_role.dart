@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart'; // Adjust path if needed
+import 'package:tamdansers/services/api_service.dart';
 
 class StudentScoreScreen extends StatefulWidget {
   const StudentScoreScreen({super.key});
@@ -90,7 +90,8 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
       final grades = await _api.getGrades(studentId: entityId);
       final Map<int, List<Map<String, dynamic>>> data = {0: [], 1: []};
       for (final grade in grades) {
-        final semIndex = (grade.semester == '1' || grade.semester == 'Semester 1') ? 0 : 1;
+        final semIndex =
+            (grade.semester == '1' || grade.semester == 'Semester 1') ? 0 : 1;
         final colorIdx = data[semIndex]!.length % _subjectColors.length;
         data[semIndex]!.add({
           'name': grade.subjectName,
@@ -136,13 +137,19 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
           Center(
             child: Text(
               "Library",
-              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           Center(
             child: Text(
               "Messages",
-              style: GoogleFonts.outfit(fontSize: 20, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const StudentEditProfileScreen(),
@@ -177,7 +184,9 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
         final isSelected = selectedSemesterIndex == index;
         return Expanded(
           child: Padding(
-            padding: EdgeInsets.only(right: index < _semesters.length - 1 ? 12 : 0),
+            padding: EdgeInsets.only(
+              right: index < _semesters.length - 1 ? 12 : 0,
+            ),
             child: Bounceable(
               onTap: () => setState(() => selectedSemesterIndex = index),
               child: AnimatedContainer(
@@ -207,7 +216,9 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
                     _semesters[index],
                     style: GoogleFonts.inter(
                       color: isSelected ? Colors.white : Colors.grey.shade600,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                      fontWeight: isSelected
+                          ? FontWeight.bold
+                          : FontWeight.w600,
                       fontSize: 14,
                     ),
                   ),
@@ -280,7 +291,7 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
               avg.toStringAsFixed(2),
               style: GoogleFonts.outfit(
                 color: Colors.white,
-                fontSize: 56,
+                fontSize: 48,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -1,
               ),
@@ -443,7 +454,15 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
     final subjects = _currentSubjects;
     final subjectNames = subjects.isNotEmpty
         ? subjects.map((s) => s['name'] as String).toList()
-        : ['Mathematics', 'Physics', 'Khmer Literature', 'English', 'Chemistry', 'History', 'ICT'];
+        : [
+            'Mathematics',
+            'Physics',
+            'Khmer Literature',
+            'English',
+            'Chemistry',
+            'History',
+            'ICT',
+          ];
     final count = subjectNames.length.clamp(1, _calcControllers.length);
     // Sync calculator count if needed
     return Container(

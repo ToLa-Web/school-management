@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:tamdansers/routes/app_routes.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
@@ -23,7 +24,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       'icon': Icons.school_rounded,
       'color': const Color(0xFF4A90E2),
       'gradient': [const Color(0xFF4A90E2), const Color(0xFF6FB1FC)],
-      'route': '/login-student',
+      'route': AppRoutes.loginStudent,
     },
     {
       'title': 'Teacher',
@@ -31,7 +32,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
       'icon': Icons.co_present_rounded,
       'color': const Color(0xFF50E3C2),
       'gradient': [const Color(0xFF50E3C2), const Color(0xFF7EECD4)],
-      'route': '/login-teacher',
+      'route': AppRoutes.loginTeacher,
     },
   ];
 
@@ -191,7 +192,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen>
                               child: Text(
                                 'EduPortal',
                                 style: GoogleFonts.outfit(
-                                  fontSize: 42,
+                                  fontSize: size.width * 0.10,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                   height: 1.1,

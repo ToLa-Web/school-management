@@ -27,10 +27,20 @@ import 'package:tamdansers/Screen/Role_TEACHER/notifications_role.dart';
 import 'package:tamdansers/Screen/Role_TEACHER/schedule_student_role.dart';
 import 'package:tamdansers/constants/app_colors.dart';
 import 'package:tamdansers/constants/app_text_style.dart';
-import 'package:tamdansers/constants/main_wrapper.dart';
-import 'package:tamdansers/widgets/line_graph_component.dart';
+import 'package:tamdansers/routes/app_routes.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.dark,
+    ),
+  );
   runApp(const MyApp());
 }
 
@@ -39,11 +49,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const MainWrapper(),
       debugShowCheckedModeBanner: false,
       title: 'EduPortal',
+      builder: (context, child) {
+        // Prevent system font scaling from breaking layouts
+        final mediaQuery = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQuery.copyWith(
+            textScaler: TextScaler.linear(
+              mediaQuery.textScaler.scale(1.0).clamp(0.85, 1.15),
+            ),
+          ),
+          child: child!,
+        );
+      },
       theme: ThemeData(
-        primaryColor: AppColors.primaryText, 
+        primaryColor: AppColors.primaryText,
         textTheme: TextTheme(
           displayLarge: AppTextStyle.title32,
           headlineMedium: AppTextStyle.screenTitle28,
@@ -51,58 +72,15 @@ class MyApp extends StatelessWidget {
           bodyLarge: AppTextStyle.fontsize18,
           bodyMedium: AppTextStyle.body,
         ),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+            TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          },
+        ),
       ),
-      initialRoute: '/SplashScreen',
-      routes: {
-        //splash screen
-        '/SplashScreen': (context) => const SplashScreen(),
-        //login as roles
-        '/RoleSelection': (context) => const RoleSelectionScreen(),
-        '/login-teacher': (context) => const TeacherLoginScreen(),
-        '/login-student': (context) => const StudentLoginScreen(),
-        //Register Screen
-        '/RegisterScreen': (context) => const RegisterScreen(),
-        //Forgot Password
-        '/ForgotPassword': (context) => const ForgotPasswordScreen(),
-        //Dashboards
-        '/StudentDashboard': (context) => const StudentDashboard(),
-        '/TeacherDashboard': (context) => const TeacherDashboard(),
-        //Edit Profile Screens can be added here
-        '/StudentEditProfileScreen': (context) =>
-            const StudentEditProfileScreen(),
-        '/TeacherEditProfileScreen': (context) =>
-            const TeacherEditProfileScreen(),
-        // Role student
-        '/StudentAttendanceScreen': (context) => const AttendanceDashboard(),
-        '/StudentScheduleScreen': (context) => const StudentScheduleScreen(),
-        '/StudentPermissionScreen': (context) =>
-            const StudentPermissionScreen(),
-        '/StudentHomeworkScreen': (context) => const StudentHomeworkScreen(),
-        '/StudentScoreScreen': (context) => const StudentScoreScreen(),
-        '/ClassCourseStudentScreen': (context) =>
-            const ClassCourseStudentScreen(),
-        '/NotificationStudentScreen': (context) => const NotificationScreen(),
-        //Role Teacher
-        // '/CreateClassScreen': (context) => const CreateClassScreen(),
-        '/AddStudentScreen': (context) => const AddStudentScreen(),
-        '/TeacherScheduleScreen': (context) => const TeacherScheduleScreen(),
-        '/AttendanceScreen': (context) => const AttendanceScreen(),
-        // '/TeacherCourseScreen': (context) => const TeacherCourseScreen(),
-        '/TeacherManagementClassScreen': (context) =>
-            const TeacherManagementClassScreen(),
-        '/ScoreInputScreen': (context) => const ScoreInputScreen(),
-        '/AddCourseScreen': (context) => const AddCourse(),
-        '/announce_to_parents': (context) => const AnnounceToParentsScreen(),
-        '/teacher_notifications': (context) =>
-            const TeacherNotificationScreen(),
-        '/attendance_analysis': (context) => const AttendanceAnalysisScreen(),
-        //detail screen
-        //graph screen
-        '/graph_screen': (context) =>
-            const LineGraphComponent(dataPoints: [], labels: []),
-
-
-      },
+      initialRoute: AppRoutes.splash,
+      routes: AppRoutes.routes,
     );
   }
 }

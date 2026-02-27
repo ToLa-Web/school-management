@@ -178,7 +178,7 @@ class _TeacherScheduleDetailScreenState
   // ─── HERO HEADER ──────────────────────────────────────────────────────
   Widget _buildHeroHeader(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 320,
+      expandedHeight: MediaQuery.of(context).size.height * 0.38,
       backgroundColor: const Color(0xFF0D3B66),
       elevation: 0,
       pinned: true,
@@ -306,12 +306,12 @@ class _TeacherScheduleDetailScreenState
                     ),
                     const SizedBox(height: 20),
                     // Info chips
-                    Row(
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
                       children: [
                         _infoChip(Icons.access_time_rounded, time),
-                        const SizedBox(width: 12),
                         _infoChip(Icons.meeting_room_rounded, 'Room $room'),
-                        const SizedBox(width: 12),
                         _infoChip(Icons.people_rounded, '$studentCount'),
                       ],
                     ),
@@ -452,8 +452,11 @@ class _TeacherScheduleDetailScreenState
     );
   }
 
-  Widget _vDivider() =>
-      Container(width: 1, height: 32, color: Colors.white.withValues(alpha: 0.15));
+  Widget _vDivider() => Container(
+    width: 1,
+    height: 32,
+    color: Colors.white.withValues(alpha: 0.15),
+  );
 
   // ─── TAB BAR ──────────────────────────────────────────────────────────
   Widget _buildTabBar() {
@@ -748,15 +751,19 @@ class _TeacherScheduleDetailScreenState
                 child: Icon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0D3B66),
+              Expanded(
+                child: Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0D3B66),
+                  ),
                 ),
               ),
-              if (trailing != null) ...[const Spacer(), trailing],
+              if (trailing != null) ...[trailing],
             ],
           ),
           const SizedBox(height: 16),
@@ -806,14 +813,14 @@ class _TeacherScheduleDetailScreenState
         Container(
           color: Colors.white,
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-          child: Row(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
             children: [
               _statPill('Present', presentCount, const Color(0xFF50E3C2)),
-              const SizedBox(width: 8),
               _statPill('Late', lateCount, const Color(0xFFFFB75E)),
-              const SizedBox(width: 8),
               _statPill('Absent', absentCount, const Color(0xFFFF6B6B)),
-              const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -971,11 +978,14 @@ class _TeacherScheduleDetailScreenState
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text(
-                        student['id'],
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: Colors.grey.shade400,
+                      Flexible(
+                        child: Text(
+                          student['id'],
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Colors.grey.shade400,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
