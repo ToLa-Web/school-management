@@ -3,10 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/services/api_models.dart';
 import 'package:tamdansers/services/api_service.dart';
 
-/// Screen that lists all teachers — read-only view for the teacher dashboard.
 class TeacherListScreen extends StatefulWidget {
   const TeacherListScreen({super.key});
-
   @override
   State<TeacherListScreen> createState() => _TeacherListScreenState();
 }
@@ -15,12 +13,10 @@ class _TeacherListScreenState extends State<TeacherListScreen> {
   static const _orange = Color(0xFFF95738);
   static const _deepBlue = Color(0xFF0D3B66);
   static const _bg = Color(0xFFF3F6F8);
-
   final _api = ApiService();
   List<TeacherDto> _teachers = [];
   bool _isLoading = true;
   String _search = '';
-
   @override
   void initState() {
     super.initState();
@@ -30,11 +26,12 @@ class _TeacherListScreenState extends State<TeacherListScreen> {
   Future<void> _load() async {
     try {
       final list = await _api.getTeachers();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _teachers = list;
           _isLoading = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }

@@ -30,11 +30,12 @@ class _StudentListScreenState extends State<StudentListScreen> {
   Future<void> _load() async {
     try {
       final list = await _api.getStudents();
-      if (mounted)
+      if (mounted) {
         setState(() {
           _students = list;
           _isLoading = false;
         });
+      }
     } catch (_) {
       if (mounted) setState(() => _isLoading = false);
     }

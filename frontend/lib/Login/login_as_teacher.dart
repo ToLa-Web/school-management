@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tamdansers/constants/app_image.dart';
+import 'package:tamdansers/routes/app_routes.dart';
 import 'package:tamdansers/services/api_models.dart';
 import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/oauth_service.dart';
@@ -91,9 +92,12 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           final match = teachers.firstWhere(
             (t) =>
                 (t.email ?? '').toLowerCase() == emailLower ||
-                '${t.firstName} ${t.lastName}'.toLowerCase().contains(nameLower) ||
+                '${t.firstName} ${t.lastName}'.toLowerCase().contains(
+                  nameLower,
+                ) ||
                 nameLower.contains(t.firstName.toLowerCase()),
-            orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
+            orElse: () =>
+                teachers.isEmpty ? throw Exception('none') : teachers.first,
           );
           await _apiService.saveEntityId(match.id);
           // Update display name with actual teacher name instead of auth username
@@ -105,7 +109,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/TeacherDashboard',
+          AppRoutes.teacherDashboard,
           (route) => false,
         );
       } else {
@@ -142,9 +146,12 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           final match = teachers.firstWhere(
             (t) =>
                 (t.email ?? '').toLowerCase() == emailLower ||
-                '${t.firstName} ${t.lastName}'.toLowerCase().contains(nameLower) ||
+                '${t.firstName} ${t.lastName}'.toLowerCase().contains(
+                  nameLower,
+                ) ||
                 nameLower.contains(t.firstName.toLowerCase()),
-            orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
+            orElse: () =>
+                teachers.isEmpty ? throw Exception('none') : teachers.first,
           );
           await _apiService.saveEntityId(match.id);
           await _apiService.saveUserData(
@@ -155,7 +162,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/TeacherDashboard',
+          AppRoutes.teacherDashboard,
           (route) => false,
         );
       }
@@ -190,9 +197,12 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           final match = teachers.firstWhere(
             (t) =>
                 (t.email ?? '').toLowerCase() == emailLower ||
-                '${t.firstName} ${t.lastName}'.toLowerCase().contains(nameLower) ||
+                '${t.firstName} ${t.lastName}'.toLowerCase().contains(
+                  nameLower,
+                ) ||
                 nameLower.contains(t.firstName.toLowerCase()),
-            orElse: () => teachers.isEmpty ? throw Exception('none') : teachers.first,
+            orElse: () =>
+                teachers.isEmpty ? throw Exception('none') : teachers.first,
           );
           await _apiService.saveEntityId(match.id);
           await _apiService.saveUserData(
@@ -203,7 +213,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/TeacherDashboard',
+          AppRoutes.teacherDashboard,
           (route) => false,
         );
       }
@@ -341,8 +351,10 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () =>
-                                Navigator.pushNamed(context, '/ForgotPassword'),
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.forgotPassword,
+                            ),
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 4),
                             ),
@@ -599,7 +611,7 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/RegisterScreen'),
+          onTap: () => Navigator.pushNamed(context, AppRoutes.register),
           child: Text(
             "Sign up",
             style: TextStyle(
