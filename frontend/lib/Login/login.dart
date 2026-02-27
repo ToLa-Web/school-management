@@ -11,75 +11,80 @@ class LoginScreen extends StatelessWidget {
       initialIndex: initialTab, // Set automatically from role selection
       child: Scaffold(
         backgroundColor: Colors.white,
-        body: Column(
-          children: [
-            const SizedBox(height: 60),
-            // Fixed Logo Section
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: const Icon(
-                Icons.school,
-                size: 60,
-                color: Color(0xFF0D47A1),
-              ),
-            ),
-            const SizedBox(height: 24),
-            const Text(
-              "Welcome Back",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 30),
-
-            // Fixed TabBar Selector
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF5F7F9),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: TabBar(
-                indicator: BoxDecoration(
-                  color: const Color(0xFF0D47A1),
-                  borderRadius: BorderRadius.circular(8),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).size.height * 0.02,
                 ),
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.grey,
-                tabs: const [
-                  Tab(text: "Teacher"),
-                  Tab(text: "Student"),
-                  Tab(text: "Parent"),
-                ],
+                child: Container(
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE3F2FD),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: const Icon(
+                    Icons.school,
+                    size: 48,
+                    color: Color(0xFF0D47A1),
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 16),
+              const Text(
+                "Welcome Back",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 20),
 
-            // Dynamic Content Area: Only this part changes
-            Expanded(
-              child: TabBarView(
-                children: [
-                  _buildLoginForm(
-                    context,
-                    "Teacher",
-                    Icons.badge_outlined,
-                  ), // Teacher
-                  _buildLoginForm(
-                    context,
-                    "Student",
-                    Icons.school_outlined,
-                  ), // Student
-                  _buildLoginForm(
-                    context,
-                    "Parent",
-                    Icons.family_restroom,
-                  ), // Parent
-                ],
+              // Fixed TabBar Selector
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF5F7F9),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: TabBar(
+                  indicator: BoxDecoration(
+                    color: const Color(0xFF0D47A1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: const [
+                    Tab(text: "Teacher"),
+                    Tab(text: "Student"),
+                    Tab(text: "Parent"),
+                  ],
+                ),
               ),
-            ),
-          ],
+
+              // Dynamic Content Area: Only this part changes
+              Expanded(
+                child: TabBarView(
+                  children: [
+                    _buildLoginForm(
+                      context,
+                      "Teacher",
+                      Icons.badge_outlined,
+                    ), // Teacher
+                    _buildLoginForm(
+                      context,
+                      "Student",
+                      Icons.school_outlined,
+                    ), // Student
+                    _buildLoginForm(
+                      context,
+                      "Parent",
+                      Icons.family_restroom,
+                    ), // Parent
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -692,7 +692,7 @@ class _TeacherHomeContentState extends State<TeacherHomeContent> {
             );
           },
           options: CarouselOptions(
-            height: 320,
+            height: MediaQuery.of(context).size.height * 0.38,
             enlargeCenterPage: true,
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 4),
@@ -4048,7 +4048,7 @@ class TeacherEventDetailScreen extends StatelessWidget {
               children: [
                 Image.asset(
                   event["img"],
-                  height: 280,
+                  height: MediaQuery.of(context).size.height * 0.32,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
@@ -4357,7 +4357,7 @@ class TeacherScheduleDetailScreen extends StatelessWidget {
         slivers: [
           // ── Hero header ──────────────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 220,
+            expandedHeight: MediaQuery.of(context).size.height * 0.26,
             pinned: true,
             backgroundColor: accent,
             foregroundColor: Colors.white,
@@ -4961,7 +4961,7 @@ class TeacherEventsListScreen extends StatelessWidget {
                       ),
                       child: Image.asset(
                         _events[index]["img"],
-                        height: 180,
+                        height: MediaQuery.of(context).size.height * 0.2,
                         width: double.infinity,
                         fit: BoxFit.cover,
                       ),

@@ -17,6 +17,7 @@ import 'package:tamdansers/Screen/Role_STUDENT/score_student_role.dart';
 import 'package:tamdansers/Screen/setting/setting_role_student.dart';
 import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_service.dart';
+
 // MAIN DASHBOARD
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -777,7 +778,7 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
             );
           },
           options: CarouselOptions(
-            height: 320,
+            height: MediaQuery.of(context).size.height * 0.38,
             enlargeCenterPage: true,
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 4),

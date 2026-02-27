@@ -761,7 +761,7 @@ class ClassDetailScreen extends StatelessWidget {
                                   Text(
                                     '$students',
                                     style: GoogleFonts.plusJakartaSans(
-                                      fontSize: 40,
+                                      fontSize: 32,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
                                       height: 1,

@@ -114,9 +114,13 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
           }
         } catch (_) {}
         // Classroom-level breakdown
-        final cName = (r.classroomName?.isNotEmpty == true) ? r.classroomName! : 'Class';
+        final cName = (r.classroomName?.isNotEmpty == true)
+            ? r.classroomName!
+            : 'Class';
         classBreakdown.putIfAbsent(
-          cName, () => {'present': 0, 'absent': 0, 'late': 0, 'permission': 0});
+          cName,
+          () => {'present': 0, 'absent': 0, 'late': 0, 'permission': 0},
+        );
         final bucket = classBreakdown[cName]!;
         if (r.status == 'Present') {
           bucket['present'] = bucket['present']! + 1;
@@ -133,20 +137,20 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
       int colorIdx = 0;
       for (final entry in classBreakdown.entries) {
         final counts = entry.value;
-        final p  = counts['present']!;
-        final a  = counts['absent']!;
-        final l  = counts['late']!;
+        final p = counts['present']!;
+        final a = counts['absent']!;
+        final l = counts['late']!;
         final pe = counts['permission']!;
         final total = p + a + l + pe;
         newSubjects.add({
-          'name':       entry.key,
-          'progress':   total > 0 ? p / total : 0.0,
-          'color':      _classroomColors[colorIdx % _classroomColors.length],
-          'present':    p,
-          'absent':     a,
-          'late':       l,
+          'name': entry.key,
+          'progress': total > 0 ? p / total : 0.0,
+          'color': _classroomColors[colorIdx % _classroomColors.length],
+          'present': p,
+          'absent': a,
+          'late': l,
           'permission': pe,
-          'total':      total,
+          'total': total,
         });
         colorIdx++;
       }
@@ -317,31 +321,35 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
                   SizedBox(
                     width: 65,
                     height: 65,
-                    child: Builder(builder: (context) {
+                    child: Builder(
+                      builder: (context) {
+                        final total = _totalPresent + _totalAbsent + _totalLate;
+                        final rate = total > 0 ? _totalPresent / total : 0.95;
+                        return CircularProgressIndicator(
+                          value: rate,
+                          strokeWidth: 6,
+                          backgroundColor: Colors.white12,
+                          valueColor: const AlwaysStoppedAnimation<Color>(
+                            Color(0xFF50E3C2),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  Builder(
+                    builder: (context) {
                       final total = _totalPresent + _totalAbsent + _totalLate;
                       final rate = total > 0 ? _totalPresent / total : 0.95;
-                      return CircularProgressIndicator(
-                        value: rate,
-                        strokeWidth: 6,
-                        backgroundColor: Colors.white12,
-                        valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF50E3C2),
+                      return Text(
+                        '${(rate * 100).toStringAsFixed(0)}%',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
                         ),
                       );
-                    }),
+                    },
                   ),
-                  Builder(builder: (context) {
-                    final total = _totalPresent + _totalAbsent + _totalLate;
-                    final rate = total > 0 ? _totalPresent / total : 0.95;
-                    return Text(
-                      '${(rate * 100).toStringAsFixed(0)}%',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    );
-                  }),
                 ],
               ),
             ),
@@ -361,14 +369,19 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: GoogleFonts.outfit(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF0D3B66),
+          Flexible(
+            child: Text(
+              title,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: GoogleFonts.outfit(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0D3B66),
+              ),
             ),
           ),
+          const SizedBox(width: 8),
           Bounceable(
             onTap: onTrailingTap,
             child: Container(
@@ -427,223 +440,223 @@ class _AttendanceDashboardState extends State<AttendanceDashboard> {
             child: SizedBox(
               height: 200,
               child: LineChart(
-              LineChartData(
-                gridData: FlGridData(
-                  show: true,
-                  drawVerticalLine: false,
-                  horizontalInterval: 20,
-                  getDrawingHorizontalLine: (value) =>
-                      FlLine(color: const Color(0xFFF3F6F8), strokeWidth: 1),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 22,
-                      getTitlesWidget: (value, meta) {
-                        int index = value.toInt();
-                        if (index < 0 || index >= currentData.length) {
-                          return const Text('');
-                        }
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 4),
-                          child: Text(
-                            currentData[index]["day"],
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: Colors.grey.shade500,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: 20,
+                    getDrawingHorizontalLine: (value) =>
+                        FlLine(color: const Color(0xFFF3F6F8), strokeWidth: 1),
                   ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      reservedSize: 30,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          '${value.toInt()}%',
-                          style: GoogleFonts.inter(
-                            fontSize: 9,
-                            color: Colors.grey.shade400,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  // Present line
-                  LineChartBarData(
-                    spots: currentData.asMap().entries.map((e) {
-                      return FlSpot(
-                        e.key.toDouble(),
-                        (e.value["present"] as num).toDouble(),
-                      );
-                    }).toList(),
-                    isCurved: true,
-                    color: const Color(0xFF50E3C2),
-                    barWidth: 3,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, barData, index) {
-                        return FlDotCirclePainter(
-                          radius: 4,
-                          color: Colors.white,
-                          strokeWidth: 2,
-                          strokeColor: const Color(0xFF50E3C2),
-                        );
-                      },
-                    ),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                  // Late line
-                  LineChartBarData(
-                    spots: currentData.asMap().entries.map((e) {
-                      return FlSpot(
-                        e.key.toDouble(),
-                        (e.value["late"] as num).toDouble(),
-                      );
-                    }).toList(),
-                    isCurved: true,
-                    color: const Color(0xFFFFB75E),
-                    barWidth: 2,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, barData, index) {
-                        return FlDotCirclePainter(
-                          radius: 3,
-                          color: Colors.white,
-                          strokeWidth: 2,
-                          strokeColor: const Color(0xFFFFB75E),
-                        );
-                      },
-                    ),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                  // Permission line
-                  LineChartBarData(
-                    spots: currentData.asMap().entries.map((e) {
-                      return FlSpot(
-                        e.key.toDouble(),
-                        (e.value["permission"] as num).toDouble(),
-                      );
-                    }).toList(),
-                    isCurved: true,
-                    color: const Color(0xFF4A90E2),
-                    barWidth: 2,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(
-                      show: true,
-                      getDotPainter: (spot, percent, barData, index) {
-                        return FlDotCirclePainter(
-                          radius: 3,
-                          color: Colors.white,
-                          strokeWidth: 2,
-                          strokeColor: const Color(0xFF4A90E2),
-                        );
-                      },
-                    ),
-                    belowBarData: BarAreaData(show: false),
-                  ),
-                ],
-                lineTouchData: LineTouchData(
-                  touchTooltipData: LineTouchTooltipData(
-                    getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                      return touchedSpots.map((touchedSpot) {
-                        int index = touchedSpot.spotIndex;
-                        String type = "";
-                        Color tooltipColor = Colors.white;
-
-                        if (touchedSpot.barIndex == 0) {
-                          type = "Present";
-                          tooltipColor = const Color(0xFF50E3C2);
-                        } else if (touchedSpot.barIndex == 1) {
-                          type = "Late";
-                          tooltipColor = const Color(0xFFFFB75E);
-                        } else {
-                          type = "Permission";
-                          tooltipColor = const Color(0xFF4A90E2);
-                        }
-
-                        return LineTooltipItem(
-                          "${currentData[index]["day"]}\n$type: ${touchedSpot.y.toInt()}%",
-                          TextStyle(
-                            color: tooltipColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                            fontFamily: 'Inter',
-                          ),
-                          children: [
-                            TextSpan(
-                              text: "\nTap for details",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 9,
-                                fontFamily: 'Inter',
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 22,
+                        getTitlesWidget: (value, meta) {
+                          int index = value.toInt();
+                          if (index < 0 || index >= currentData.length) {
+                            return const Text('');
+                          }
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              currentData[index]["day"],
+                              style: GoogleFonts.inter(
+                                fontSize: 10,
+                                color: Colors.grey.shade500,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
-                          ],
-                        );
-                      }).toList();
-                    },
+                          );
+                        },
+                      ),
+                    ),
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 30,
+                        getTitlesWidget: (value, meta) {
+                          return Text(
+                            '${value.toInt()}%',
+                            style: GoogleFonts.inter(
+                              fontSize: 9,
+                              color: Colors.grey.shade400,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
                   ),
-                  handleBuiltInTouches: true,
-                  touchCallback:
-                      (FlTouchEvent event, LineTouchResponse? response) {
-                        if (event is FlTapUpEvent &&
-                            response != null &&
-                            response.lineBarSpots != null &&
-                            response.lineBarSpots!.isNotEmpty) {
-                          final spot = response.lineBarSpots!.first;
-                          int index = spot.spotIndex;
-                          if (index >= 0 && index < currentData.length) {
-                            String type = spot.barIndex == 0
-                                ? "Present"
-                                : spot.barIndex == 1
-                                ? "Late"
-                                : "Permission";
+                  borderData: FlBorderData(show: false),
+                  lineBarsData: [
+                    // Present line
+                    LineChartBarData(
+                      spots: currentData.asMap().entries.map((e) {
+                        return FlSpot(
+                          e.key.toDouble(),
+                          (e.value["present"] as num).toDouble(),
+                        );
+                      }).toList(),
+                      isCurved: true,
+                      color: const Color(0xFF50E3C2),
+                      barWidth: 3,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) {
+                          return FlDotCirclePainter(
+                            radius: 4,
+                            color: Colors.white,
+                            strokeWidth: 2,
+                            strokeColor: const Color(0xFF50E3C2),
+                          );
+                        },
+                      ),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                    // Late line
+                    LineChartBarData(
+                      spots: currentData.asMap().entries.map((e) {
+                        return FlSpot(
+                          e.key.toDouble(),
+                          (e.value["late"] as num).toDouble(),
+                        );
+                      }).toList(),
+                      isCurved: true,
+                      color: const Color(0xFFFFB75E),
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) {
+                          return FlDotCirclePainter(
+                            radius: 3,
+                            color: Colors.white,
+                            strokeWidth: 2,
+                            strokeColor: const Color(0xFFFFB75E),
+                          );
+                        },
+                      ),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                    // Permission line
+                    LineChartBarData(
+                      spots: currentData.asMap().entries.map((e) {
+                        return FlSpot(
+                          e.key.toDouble(),
+                          (e.value["permission"] as num).toDouble(),
+                        );
+                      }).toList(),
+                      isCurved: true,
+                      color: const Color(0xFF4A90E2),
+                      barWidth: 2,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, percent, barData, index) {
+                          return FlDotCirclePainter(
+                            radius: 3,
+                            color: Colors.white,
+                            strokeWidth: 2,
+                            strokeColor: const Color(0xFF4A90E2),
+                          );
+                        },
+                      ),
+                      belowBarData: BarAreaData(show: false),
+                    ),
+                  ],
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                        return touchedSpots.map((touchedSpot) {
+                          int index = touchedSpot.spotIndex;
+                          String type = "";
+                          Color tooltipColor = Colors.white;
 
-                            _showAttendanceDetailDialog(
-                              context,
-                              currentData[index]['day'] ?? '',
-                              type,
-                              spot.y.toInt(),
-                              currentData[index],
-                            );
+                          if (touchedSpot.barIndex == 0) {
+                            type = "Present";
+                            tooltipColor = const Color(0xFF50E3C2);
+                          } else if (touchedSpot.barIndex == 1) {
+                            type = "Late";
+                            tooltipColor = const Color(0xFFFFB75E);
+                          } else {
+                            type = "Permission";
+                            tooltipColor = const Color(0xFF4A90E2);
                           }
-                        }
+
+                          return LineTooltipItem(
+                            "${currentData[index]["day"]}\n$type: ${touchedSpot.y.toInt()}%",
+                            TextStyle(
+                              color: tooltipColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              fontFamily: 'Inter',
+                            ),
+                            children: [
+                              TextSpan(
+                                text: "\nTap for details",
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 9,
+                                  fontFamily: 'Inter',
+                                ),
+                              ),
+                            ],
+                          );
+                        }).toList();
                       },
+                    ),
+                    handleBuiltInTouches: true,
+                    touchCallback:
+                        (FlTouchEvent event, LineTouchResponse? response) {
+                          if (event is FlTapUpEvent &&
+                              response != null &&
+                              response.lineBarSpots != null &&
+                              response.lineBarSpots!.isNotEmpty) {
+                            final spot = response.lineBarSpots!.first;
+                            int index = spot.spotIndex;
+                            if (index >= 0 && index < currentData.length) {
+                              String type = spot.barIndex == 0
+                                  ? "Present"
+                                  : spot.barIndex == 1
+                                  ? "Late"
+                                  : "Permission";
+
+                              _showAttendanceDetailDialog(
+                                context,
+                                currentData[index]['day'] ?? '',
+                                type,
+                                spot.y.toInt(),
+                                currentData[index],
+                              );
+                            }
+                          }
+                        },
+                  ),
                 ),
               ),
             ),
-          ),
           ),
 
           const SizedBox(height: 16),
 
           // Legend
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 16,
+            runSpacing: 8,
             children: [
               _buildLegendItem("Present", const Color(0xFF50E3C2)),
-              const SizedBox(width: 16),
               _buildLegendItem("Late", const Color(0xFFFFB75E)),
-              const SizedBox(width: 16),
               _buildLegendItem("Permission", const Color(0xFF4A90E2)),
             ],
           ),
@@ -1701,204 +1714,206 @@ class AttendanceDetailPage extends StatelessWidget {
               ),
               child: RepaintBoundary(
                 child: LineChart(
-                LineChartData(
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    horizontalInterval: 20,
-                    getDrawingHorizontalLine: (value) =>
-                        FlLine(color: const Color(0xFFF3F6F8), strokeWidth: 1),
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 22,
-                        getTitlesWidget: (value, meta) {
-                          int index = value.toInt();
-                          if (index < 0 ||
-                              index >= weeklyData["Week"]!.length) {
-                            return const Text('');
-                          }
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 4),
-                            child: Text(
-                              weeklyData["Week"]![index]["day"],
+                  LineChartData(
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: 20,
+                      getDrawingHorizontalLine: (value) => FlLine(
+                        color: const Color(0xFFF3F6F8),
+                        strokeWidth: 1,
+                      ),
+                    ),
+                    titlesData: FlTitlesData(
+                      show: true,
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 22,
+                          getTitlesWidget: (value, meta) {
+                            int index = value.toInt();
+                            if (index < 0 ||
+                                index >= weeklyData["Week"]!.length) {
+                              return const Text('');
+                            }
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                weeklyData["Week"]![index]["day"],
+                                style: GoogleFonts.inter(
+                                  fontSize: 10,
+                                  color: Colors.grey.shade500,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 30,
+                          getTitlesWidget: (value, meta) {
+                            return Text(
+                              '${value.toInt()}%',
                               style: GoogleFonts.inter(
-                                fontSize: 10,
-                                color: Colors.grey.shade500,
+                                fontSize: 9,
+                                color: Colors.grey.shade400,
                                 fontWeight: FontWeight.w500,
                               ),
-                            ),
-                          );
-                        },
+                            );
+                          },
+                        ),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
                       ),
                     ),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 30,
-                        getTitlesWidget: (value, meta) {
-                          return Text(
-                            '${value.toInt()}%',
-                            style: GoogleFonts.inter(
-                              fontSize: 9,
-                              color: Colors.grey.shade400,
-                              fontWeight: FontWeight.w500,
-                            ),
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      // Present line
+                      LineChartBarData(
+                        spots: weeklyData["Week"]!.asMap().entries.map((e) {
+                          return FlSpot(
+                            e.key.toDouble(),
+                            (e.value["present"] as num).toDouble(),
                           );
-                        },
+                        }).toList(),
+                        isCurved: true,
+                        color: const Color(0xFF50E3C2),
+                        barWidth: 3,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, percent, barData, index) {
+                            return FlDotCirclePainter(
+                              radius: 4,
+                              color: Colors.white,
+                              strokeWidth: 2,
+                              strokeColor: const Color(0xFF50E3C2),
+                            );
+                          },
+                        ),
+                        belowBarData: BarAreaData(show: false),
                       ),
-                    ),
-                    rightTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                    topTitles: const AxisTitles(
-                      sideTitles: SideTitles(showTitles: false),
-                    ),
-                  ),
-                  borderData: FlBorderData(show: false),
-                  lineBarsData: [
-                    // Present line
-                    LineChartBarData(
-                      spots: weeklyData["Week"]!.asMap().entries.map((e) {
-                        return FlSpot(
-                          e.key.toDouble(),
-                          (e.value["present"] as num).toDouble(),
-                        );
-                      }).toList(),
-                      isCurved: true,
-                      color: const Color(0xFF50E3C2),
-                      barWidth: 3,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(
-                        show: true,
-                        getDotPainter: (spot, percent, barData, index) {
-                          return FlDotCirclePainter(
-                            radius: 4,
-                            color: Colors.white,
-                            strokeWidth: 2,
-                            strokeColor: const Color(0xFF50E3C2),
+                      // Late line
+                      LineChartBarData(
+                        spots: weeklyData["Week"]!.asMap().entries.map((e) {
+                          return FlSpot(
+                            e.key.toDouble(),
+                            (e.value["late"] as num).toDouble(),
                           );
-                        },
+                        }).toList(),
+                        isCurved: true,
+                        color: const Color(0xFFFFB75E),
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, percent, barData, index) {
+                            return FlDotCirclePainter(
+                              radius: 3,
+                              color: Colors.white,
+                              strokeWidth: 2,
+                              strokeColor: const Color(0xFFFFB75E),
+                            );
+                          },
+                        ),
+                        belowBarData: BarAreaData(show: false),
                       ),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                    // Late line
-                    LineChartBarData(
-                      spots: weeklyData["Week"]!.asMap().entries.map((e) {
-                        return FlSpot(
-                          e.key.toDouble(),
-                          (e.value["late"] as num).toDouble(),
-                        );
-                      }).toList(),
-                      isCurved: true,
-                      color: const Color(0xFFFFB75E),
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(
-                        show: true,
-                        getDotPainter: (spot, percent, barData, index) {
-                          return FlDotCirclePainter(
-                            radius: 3,
-                            color: Colors.white,
-                            strokeWidth: 2,
-                            strokeColor: const Color(0xFFFFB75E),
+                      // Permission line
+                      LineChartBarData(
+                        spots: weeklyData["Week"]!.asMap().entries.map((e) {
+                          return FlSpot(
+                            e.key.toDouble(),
+                            (e.value["permission"] as num).toDouble(),
                           );
-                        },
+                        }).toList(),
+                        isCurved: true,
+                        color: const Color(0xFF4A90E2),
+                        barWidth: 2,
+                        isStrokeCapRound: true,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, percent, barData, index) {
+                            return FlDotCirclePainter(
+                              radius: 3,
+                              color: Colors.white,
+                              strokeWidth: 2,
+                              strokeColor: const Color(0xFF4A90E2),
+                            );
+                          },
+                        ),
+                        belowBarData: BarAreaData(show: false),
                       ),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                    // Permission line
-                    LineChartBarData(
-                      spots: weeklyData["Week"]!.asMap().entries.map((e) {
-                        return FlSpot(
-                          e.key.toDouble(),
-                          (e.value["permission"] as num).toDouble(),
-                        );
-                      }).toList(),
-                      isCurved: true,
-                      color: const Color(0xFF4A90E2),
-                      barWidth: 2,
-                      isStrokeCapRound: true,
-                      dotData: FlDotData(
-                        show: true,
-                        getDotPainter: (spot, percent, barData, index) {
-                          return FlDotCirclePainter(
-                            radius: 3,
-                            color: Colors.white,
-                            strokeWidth: 2,
-                            strokeColor: const Color(0xFF4A90E2),
-                          );
-                        },
-                      ),
-                      belowBarData: BarAreaData(show: false),
-                    ),
-                  ],
-                  lineTouchData: LineTouchData(
-                    touchTooltipData: LineTouchTooltipData(
-                      getTooltipItems: (List<LineBarSpot> touchedSpots) {
-                        return touchedSpots.map((touchedSpot) {
-                          int index = touchedSpot.spotIndex;
-                          String type = "";
-                          Color tooltipColor = Colors.white;
+                    ],
+                    lineTouchData: LineTouchData(
+                      touchTooltipData: LineTouchTooltipData(
+                        getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                          return touchedSpots.map((touchedSpot) {
+                            int index = touchedSpot.spotIndex;
+                            String type = "";
+                            Color tooltipColor = Colors.white;
 
-                          if (touchedSpot.barIndex == 0) {
-                            type = "Present";
-                            tooltipColor = const Color(0xFF50E3C2);
-                          } else if (touchedSpot.barIndex == 1) {
-                            type = "Late";
-                            tooltipColor = const Color(0xFFFFB75E);
-                          } else {
-                            type = "Permission";
-                            tooltipColor = const Color(0xFF4A90E2);
-                          }
-
-                          return LineTooltipItem(
-                            "${weeklyData["Week"]![index]["day"]}\n$type: ${touchedSpot.y.toInt()}%",
-                            TextStyle(
-                              color: tooltipColor,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 11,
-                              fontFamily: 'Inter',
-                            ),
-                          );
-                        }).toList();
-                      },
-                    ),
-                    handleBuiltInTouches: true,
-                    touchCallback:
-                        (FlTouchEvent event, LineTouchResponse? response) {
-                          if (event is FlTapUpEvent &&
-                              response != null &&
-                              response.lineBarSpots != null &&
-                              response.lineBarSpots!.isNotEmpty) {
-                            final spot = response.lineBarSpots!.first;
-                            int index = spot.spotIndex;
-                            if (index >= 0 &&
-                                index < weeklyData["Week"]!.length) {
-                              final dayData = weeklyData["Week"]![index];
-                              String type = spot.barIndex == 0
-                                  ? "Present"
-                                  : spot.barIndex == 1
-                                  ? "Late"
-                                  : "Permission";
-
-                              _showAttendanceDetailDialog(
-                                context,
-                                dayData["day"],
-                                type,
-                                spot.y.toInt(),
-                                dayData,
-                              );
+                            if (touchedSpot.barIndex == 0) {
+                              type = "Present";
+                              tooltipColor = const Color(0xFF50E3C2);
+                            } else if (touchedSpot.barIndex == 1) {
+                              type = "Late";
+                              tooltipColor = const Color(0xFFFFB75E);
+                            } else {
+                              type = "Permission";
+                              tooltipColor = const Color(0xFF4A90E2);
                             }
-                          }
+
+                            return LineTooltipItem(
+                              "${weeklyData["Week"]![index]["day"]}\n$type: ${touchedSpot.y.toInt()}%",
+                              TextStyle(
+                                color: tooltipColor,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                                fontFamily: 'Inter',
+                              ),
+                            );
+                          }).toList();
                         },
+                      ),
+                      handleBuiltInTouches: true,
+                      touchCallback:
+                          (FlTouchEvent event, LineTouchResponse? response) {
+                            if (event is FlTapUpEvent &&
+                                response != null &&
+                                response.lineBarSpots != null &&
+                                response.lineBarSpots!.isNotEmpty) {
+                              final spot = response.lineBarSpots!.first;
+                              int index = spot.spotIndex;
+                              if (index >= 0 &&
+                                  index < weeklyData["Week"]!.length) {
+                                final dayData = weeklyData["Week"]![index];
+                                String type = spot.barIndex == 0
+                                    ? "Present"
+                                    : spot.barIndex == 1
+                                    ? "Late"
+                                    : "Permission";
+
+                                _showAttendanceDetailDialog(
+                                  context,
+                                  dayData["day"],
+                                  type,
+                                  spot.y.toInt(),
+                                  dayData,
+                                );
+                              }
+                            }
+                          },
+                    ),
                   ),
                 ),
               ),
-            ),
             ),
             const SizedBox(height: 24),
             Text(
