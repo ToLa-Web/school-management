@@ -29,7 +29,6 @@ import 'package:tamdansers/constants/app_colors.dart';
 import 'package:tamdansers/constants/app_text_style.dart';
 import 'package:tamdansers/constants/main_wrapper.dart';
 import 'package:tamdansers/widgets/line_graph_component.dart';
-
 void main() {
   runApp(const MyApp());
 }

@@ -82,7 +82,6 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
