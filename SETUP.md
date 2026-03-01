@@ -1,14 +1,18 @@
 ﻿# Setup Guide
 
+Step-by-step instructions to get the entire School Management System running locally.
+
+---
+
 ## Prerequisites
 
-| Tool | Required for | Download |
-|------|-------------|----------|
-| Docker Desktop | Backend | https://www.docker.com/products/docker-desktop |
-| Flutter SDK | Frontend | https://docs.flutter.dev/get-started/install |
-| Git | Both | https://git-scm.com |
+| Tool           | Required for        | Download                                             |
+| -------------- | ------------------- | ---------------------------------------------------- |
+| Docker Desktop | Backend & Admin Web | https://www.docker.com/products/docker-desktop        |
+| Flutter SDK    | Mobile app          | https://docs.flutter.dev/get-started/install           |
+| Git            | Cloning the repo    | https://git-scm.com                                    |
 
-Minimum specs: 8 GB RAM, 20 GB free disk.
+**Minimum specs:** 8 GB RAM, 20 GB free disk space.
 
 ---
 
@@ -23,15 +27,16 @@ cd school-management
 
 ## 2. Environment variables
 
-The `.env` file inside `backend/` is already committed with development defaults — **no action needed**.
+The `.env` file inside `backend/` is already committed with development defaults — **no action needed** for local development.
 
 It contains:
-```
-JWT_SECRET=...                  ← signs all JWT tokens
-EMAILSETTINGS_APP_PASSWORD=...  ← Gmail app password for sending emails
-```
 
-> If you want to use your own Gmail for email sending, open `backend/.env` and replace `EMAILSETTINGS_APP_PASSWORD` with your own [Gmail App Password](https://support.google.com/accounts/answer/185833).
+| Variable                     | Purpose                              |
+| ---------------------------- | ------------------------------------ |
+| `JWT_SECRET`                 | Signs all JWT tokens                 |
+| `EMAILSETTINGS_APP_PASSWORD` | Gmail App Password for sending emails |
+
+> **Optional:** To use your own Gmail for email sending, open `backend/.env` and replace `EMAILSETTINGS_APP_PASSWORD` with your own [Gmail App Password](https://support.google.com/accounts/answer/185833).
 
 ---
 
@@ -42,53 +47,100 @@ cd backend
 docker compose up --build
 ```
 
-First run takes 3-5 minutes to pull images and build.
-Wait until you see `Application started` in the logs for all services.
+- First run takes **3–5 minutes** to pull images and build.
+- Wait until you see `Application started` in the logs for all three services.
+- Seed data (accounts, classrooms, students) is created automatically on first run.
 
 Verify everything is running:
+
 ```bash
 docker compose ps
 ```
 
-All containers should show status `running` or `healthy`.
+All 8 containers should show status `running` or `healthy`:
+
+| Container      | Port | Expected status |
+| -------------- | ---- | --------------- |
+| api-gateway    | 5001 | Running         |
+| auth-service   | 5002 | Running         |
+| school-service | 5003 | Running         |
+| auth-db        | 5433 | Running         |
+| school-db      | 5434 | Running         |
+| consul         | 8500 | Running         |
+| pgadmin        | 5050 | Running         |
+| admin-web      | 3000 | Running         |
 
 ---
 
 ## 4. Run the Flutter app
 
-### Android emulator
+### Option A: Android emulator
+
 ```bash
 cd frontend
 flutter pub get
 flutter run
 ```
-The emulator uses `10.0.2.2` to reach your localhost — already handled in `api_config.dart`.
 
-### Physical phone (most common)
+The emulator uses `10.0.2.2` to reach your localhost — already configured in `api_config.dart`.
+
+### Option B: Physical phone (most common)
+
 Your phone and computer must be on the **same Wi-Fi network**.
 
-1. Find your computer's local IP:
-   - Windows: run `ipconfig`, look for `IPv4 Address` under Wi-Fi
-   - Mac/Linux: run `ifconfig | grep inet`
+1. **Find your computer's local IP:**
+   - **Windows:** run `ipconfig`, look for `IPv4 Address` under your Wi-Fi adapter
+   - **Mac/Linux:** run `ifconfig | grep inet` or `ip addr`
 
-2. Open `frontend/lib/services/api_config.dart` and update the `baseUrl` line:
+2. **Update the base URL** in `frontend/lib/services/api_config.dart`:
    ```dart
    static const String baseUrl = 'http://YOUR_LAN_IP:5001';
    ```
+   Example: `http://10.0.2.2:5001`
 
-3. Run the app:
+3. **Run the app:**
    ```bash
+   cd frontend
+   flutter pub get
    flutter run
    ```
 
+### Option C: Chrome (web)
+
+```bash
+cd frontend
+flutter pub get
+flutter run -d chrome
+```
+
 ---
 
-## 5. Verify it works
+## 5. Verify everything works
 
-- Swagger UI: http://localhost:5001/swagger
-- Try logging in: `admin@school.com` / `Password123!`
-- Consul dashboard: http://localhost:8500 (all 3 services should appear green)
-- Admin web panel: http://localhost:3000 — log in with `admin@school.com` / `Password123!`
+| Check                          | URL / Action                                              | Expected result                          |
+| ------------------------------ | --------------------------------------------------------- | ---------------------------------------- |
+| API docs                       | http://localhost:5001/swagger                              | Swagger UI loads                         |
+| Login (API)                    | Use Swagger to POST `/api/auth/authenticate` with `admin@school.com` / `Password123!` | Returns JWT token |
+| Consul dashboard               | http://localhost:8500                                     | All 3 services appear green              |
+| Admin panel                    | http://localhost:3000                                     | Login page loads                         |
+| Admin login                    | `admin@school.com` / `Password123!`                       | Dashboard with stats                     |
+| PgAdmin                        | http://localhost:5050                                     | Login: `admin@school.com` / `admin123`   |
+| Flutter app                    | Open on device/emulator                                   | Splash screen → role selection           |
+| Flutter login                  | Teacher: `teacher1@school.com` / `Password123!`           | Teacher dashboard                        |
+
+---
+
+## 6. Admin Web (standalone, optional)
+
+The admin panel runs automatically inside Docker. If you want to run it outside Docker for development:
+
+```bash
+cd admin-web
+npm install
+npm run dev
+```
+
+This starts a dev server at http://localhost:3000. API requests are proxied to `http://localhost:5001` via Next.js rewrites configured in `next.config.mjs`.
 
 ---
 
@@ -100,18 +152,23 @@ Your phone and computer must be on the **same Wi-Fi network**.
    ```
    This creates `school-management-for-teacher.zip` with all build artifacts excluded.
 
-2. Send the zip. The recipient unzips it, then follows steps 2-5 above.
-   The **only** line they need to change is `baseUrl` in `api_config.dart`.
+2. Send the zip. The recipient:
+   - Installs Docker Desktop and Flutter SDK
+   - Unzips and follows steps 2–5 above
+   - The **only** line they may need to change is `baseUrl` in `api_config.dart` (for physical phone testing)
 
 ---
 
 ## Troubleshooting
 
-| Symptom | Fix |
-|---------|-----|
-| `docker compose up` errors immediately | Make sure Docker Desktop is open and running |
-| Port 5001 already in use | `docker compose down` first, or change the port in `docker-compose.yml` |
-| App says "Connection refused" on phone | Wrong IP in `api_config.dart`, or phone not on same Wi-Fi |
-| App says 401 Unauthorized | Backend is fine — register a new account or use seed credentials |
-| Emails not sending | Check `EMAILSETTINGS_APP_PASSWORD` in `.env` is a valid Gmail App Password |
-| Want to wipe all data and start fresh | `docker compose down -v && docker compose up --build` |
+| Symptom                                   | Fix                                                                 |
+| ----------------------------------------- | ------------------------------------------------------------------- |
+| `docker compose up` errors immediately    | Make sure Docker Desktop is open and running                        |
+| Port 5001 already in use                  | Run `docker compose down` first, or change the port in `docker-compose.yml` |
+| App shows "Connection refused" on phone   | Wrong IP in `api_config.dart`, or phone not on same Wi-Fi           |
+| App shows 401 Unauthorized                | Use seed credentials or register a new account                      |
+| Emails not sending                        | Check `EMAILSETTINGS_APP_PASSWORD` in `.env` is a valid Gmail App Password |
+| Consul shows unhealthy service            | Check `docker compose logs -f <service-name>` for errors            |
+| Admin panel won't load on port 3000       | Run `docker compose logs -f admin-web` — may need `npm install` inside container |
+| Want to wipe all data and start fresh     | `docker compose down -v && docker compose up --build`               |
+| Flutter build errors                      | Run `flutter clean && flutter pub get` then try again               |
