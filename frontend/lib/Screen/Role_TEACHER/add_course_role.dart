@@ -244,7 +244,6 @@ class _AddCourseState extends State<AddCourse>
     );
   }
 
-  // ── Selectable Subject Cards (mirrors TeacherCourseScreen) ──────────────
   Widget _buildSubjectCards() {
     // Source 1: API subjects
     if (_apiSubjects.isNotEmpty) {
@@ -518,7 +517,6 @@ class _AddCourseState extends State<AddCourse>
     );
   }
 
-  // ── Selectable Grade Chips ─────────────────────────────────────────
   Widget _buildGradeChips() {
     return Wrap(
       spacing: 10,
@@ -644,7 +642,6 @@ class _AddCourseState extends State<AddCourse>
                         ),
                         const SizedBox(height: 28),
 
-                        // ── Subject Cards ───────────────────────────────
                         _buildFieldLabel(
                           Icons.auto_stories_rounded,
                           'Select Subject',
@@ -654,7 +651,6 @@ class _AddCourseState extends State<AddCourse>
                         _buildSubjectCards(),
                         const SizedBox(height: 28),
 
-                        // ── Grade Chips ─────────────────────────────────
                         _buildFieldLabel(
                           Icons.school_rounded,
                           'Select Grade',

@@ -25,13 +25,6 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
   // semesterIndex → list of grade data
   final Map<int, List<Map<String, dynamic>>> _semesterData = {};
 
-  // Calculator
-  final List<TextEditingController> _calcControllers = List.generate(
-    7,
-    (index) => TextEditingController(text: '0'),
-  );
-  double _calculatedAverage = 0.0;
-
   static const List<String> _semesters = ['Semester 1', 'Semester 2'];
   static const List<Color> _subjectColors = [
     Color(0xFFFFB75E),
@@ -55,28 +48,7 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
   @override
   void initState() {
     super.initState();
-    for (var ctrl in _calcControllers) {
-      ctrl.addListener(_updateCalculation);
-    }
     _loadGrades();
-  }
-
-  @override
-  void dispose() {
-    for (var ctrl in _calcControllers) {
-      ctrl.dispose();
-    }
-    super.dispose();
-  }
-
-  void _updateCalculation() {
-    double total = 0;
-    for (var ctrl in _calcControllers) {
-      total += double.tryParse(ctrl.text) ?? 0;
-    }
-    setState(() {
-      _calculatedAverage = total / _calcControllers.length;
-    });
   }
 
   Future<void> _loadGrades() async {
@@ -454,139 +426,11 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
     final subjects = _currentSubjects;
     final subjectNames = subjects.isNotEmpty
         ? subjects.map((s) => s['name'] as String).toList()
-        : [
-            'Mathematics',
-            'Physics',
-            'Khmer Literature',
-            'English',
-            'Chemistry',
-            'History',
-            'ICT',
+        : const [
+            'Mathematics', 'Physics', 'Khmer Literature',
+            'English', 'Chemistry', 'History', 'ICT',
           ];
-    final count = subjectNames.length.clamp(1, _calcControllers.length);
-    // Sync calculator count if needed
-    return Container(
-      padding: const EdgeInsets.all(30),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 25,
-            offset: const Offset(0, 10),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.calculate_rounded, color: primaryTeal, size: 24),
-              const SizedBox(width: 10),
-              Text(
-                "Score Predictor",
-                style: GoogleFonts.outfit(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: primaryTeal,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 25),
-          ...List.generate(
-            count,
-            (index) =>
-                _calcInputField(subjectNames[index], _calcControllers[index]),
-          ),
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 25),
-            child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "ESTIMATED AVG",
-                style: GoogleFonts.inter(
-                  fontWeight: FontWeight.w800,
-                  color: Colors.grey.shade500,
-                  fontSize: 12,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              Text(
-                "${_calculatedAverage.toStringAsFixed(2)}%",
-                style: GoogleFonts.outfit(
-                  color: primaryTeal,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _calcInputField(String label, TextEditingController controller) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      decoration: BoxDecoration(
-        color: scaffoldBg,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 3,
-            child: Text(
-              label,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF0D3B66),
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: controller,
-              keyboardType: TextInputType.number,
-              style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w900,
-                color: primaryTeal,
-                fontSize: 18,
-              ),
-              textAlign: TextAlign.right,
-              decoration: InputDecoration(
-                border: InputBorder.none,
-                hintText: "0",
-                hintStyle: GoogleFonts.outfit(
-                  color: Colors.grey.shade400,
-                  fontWeight: FontWeight.normal,
-                ),
-                contentPadding: EdgeInsets.zero,
-                isDense: true,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            "/ 100",
-            style: GoogleFonts.inter(
-              color: Colors.grey.shade500,
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
+    return _ScorePredictorWidget(subjectNames: subjectNames);
   }
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
@@ -642,6 +486,177 @@ class _StudentScoreScreenState extends State<StudentScoreScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// Isolated calculator widget — its setState only rebuilds itself,
+// not the entire StudentScoreScreen.
+// ─────────────────────────────────────────────────────────────────
+class _ScorePredictorWidget extends StatefulWidget {
+  final List<String> subjectNames;
+  const _ScorePredictorWidget({required this.subjectNames});
+
+  @override
+  State<_ScorePredictorWidget> createState() => _ScorePredictorWidgetState();
+}
+
+class _ScorePredictorWidgetState extends State<_ScorePredictorWidget> {
+  static const Color primaryTeal = Color(0xFF0D3B66);
+  static const Color scaffoldBg = Color(0xFFF3F6F8);
+
+  late final List<TextEditingController> _controllers;
+  double _average = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _controllers = List.generate(
+      widget.subjectNames.length.clamp(1, 7),
+      (_) => TextEditingController(text: '0'),
+    );
+    for (final ctrl in _controllers) {
+      ctrl.addListener(_recalculate);
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final ctrl in _controllers) {
+      ctrl.dispose();
+    }
+    super.dispose();
+  }
+
+  void _recalculate() {
+    double total = 0;
+    for (final ctrl in _controllers) {
+      total += double.tryParse(ctrl.text) ?? 0;
+    }
+    setState(() => _average = total / _controllers.length);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final count = widget.subjectNames.length.clamp(1, _controllers.length);
+    return Container(
+      padding: const EdgeInsets.all(30),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 25,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.calculate_rounded, color: primaryTeal, size: 24),
+              const SizedBox(width: 10),
+              Text(
+                'Score Predictor',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  color: primaryTeal,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 25),
+          ...List.generate(count, (i) => _inputField(widget.subjectNames[i], _controllers[i])),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 25),
+            child: Divider(height: 1, thickness: 1, color: Color(0xFFE2E8F0)),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ESTIMATED AVG',
+                style: GoogleFonts.inter(
+                  fontWeight: FontWeight.w800,
+                  color: Colors.grey.shade500,
+                  fontSize: 12,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              Text(
+                '${_average.toStringAsFixed(2)}%',
+                style: GoogleFonts.outfit(
+                  color: primaryTeal,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _inputField(String label, TextEditingController controller) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      decoration: BoxDecoration(
+        color: scaffoldBg,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 3,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                color: primaryTeal,
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Expanded(
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.number,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                color: primaryTeal,
+                fontSize: 18,
+              ),
+              textAlign: TextAlign.right,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: '0',
+                hintStyle: GoogleFonts.outfit(
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.normal,
+                ),
+                contentPadding: EdgeInsets.zero,
+                isDense: true,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Text(
+            '/ 100',
+            style: GoogleFonts.inter(
+              color: Colors.grey.shade500,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

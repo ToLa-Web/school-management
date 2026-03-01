@@ -139,9 +139,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {
+              onPressed: () async {
                 Navigator.of(ctx).pop();
-                Navigator.of(context).pop();
+                // Wipe the old session so no stale tokens / entity_id
+                // survive into the next login.
+                await _apiService.logout();
+                if (context.mounted) Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF5C6BC0),

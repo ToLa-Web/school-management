@@ -133,7 +133,6 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
     );
   }
 
-  // ─── APP BAR ──────────────────────────────────────────────────────────
   Widget _buildAppBar() {
     return SliverAppBar(
       expandedHeight: 180,
@@ -238,7 +237,6 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
     );
   }
 
-  // ─── STATS ROW ────────────────────────────────────────────────────────
   Widget _buildStatsRow() {
     final active = _homeworks.where((h) => h['status'] == 'Active').length;
     final overdue = _homeworks.where((h) => h['status'] == 'Overdue').length;
@@ -301,7 +299,6 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
     );
   }
 
-  // ─── SEARCH & FILTER ─────────────────────────────────────────────────
   Widget _buildSearchAndFilter() {
     final filters = ['All', 'Active', 'Overdue', 'Completed'];
     return Column(
@@ -388,7 +385,6 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
     );
   }
 
-  // ─── HOMEWORK LIST ────────────────────────────────────────────────────
   Widget _buildHomeworkList() {
     final items = _filteredHomeworks;
     if (items.isEmpty) {
@@ -660,7 +656,6 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
     );
   }
 
-  // ─── FAB ──────────────────────────────────────────────────────────────
   Widget _buildFAB() {
     return FloatingActionButton.extended(
       onPressed: () => _showCreateHomeworkSheet(),
@@ -678,7 +673,6 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
     );
   }
 
-  // ─── HOMEWORK DETAIL BOTTOM SHEET ─────────────────────────────────────
   void _showHomeworkDetail(Map<String, dynamic> hw) {
     final status = hw['status'] as String;
     final submitted = hw['submitted'] as int;
@@ -996,7 +990,6 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
     );
   }
 
-  // ─── CREATE HOMEWORK SHEET ────────────────────────────────────────────
   void _showCreateHomeworkSheet() {
     final titleCtrl = TextEditingController();
     final descCtrl = TextEditingController();
@@ -1245,8 +1238,7 @@ class _TeacherHomeworkScreenState extends State<TeacherHomeworkScreen>
       ),
     );
   }
-
-  // ─── SORT OPTIONS ─────────────────────────────────────────────────────
+  
   void _showSortOptions() {
     showModalBottomSheet(
       context: context,

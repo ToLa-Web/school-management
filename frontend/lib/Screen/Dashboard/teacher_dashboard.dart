@@ -30,12 +30,20 @@ class TeacherDashboard extends StatefulWidget {
 class _TeacherDashboardState extends State<TeacherDashboard> {
   int _pageIndex = 0;
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
-  final List<Widget> _screens = [
-    const TeacherHomeContent(),
-    const TeacherCoursesTab(),
-    const TeacherMessagesTab(),
-    const TeacherSettingsScreen(),
-  ];
+  late final List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    // Build once and cache — IndexedStack keeps state alive between tab switches.
+    _screens = const [
+      TeacherHomeContent(),
+      TeacherCoursesTab(),
+      TeacherMessagesTab(),
+      TeacherSettingsScreen(),
+    ];
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2997,9 +3005,12 @@ class _TeacherMessagesTabState extends State<TeacherMessagesTab>
 
   @override
   Widget build(BuildContext context) {
+    final double listHeight = MediaQuery.of(context).size.height * 0.55;
     return SafeArea(
-      child: Column(
-        children: [
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
           // ── Header ──
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
@@ -3295,7 +3306,8 @@ class _TeacherMessagesTabState extends State<TeacherMessagesTab>
           ),
 
           // ── Conversations List ──
-          Expanded(
+          SizedBox(
+            height: listHeight,
             child: TabBarView(
               controller: _msgTabController,
               children: [
@@ -3306,6 +3318,7 @@ class _TeacherMessagesTabState extends State<TeacherMessagesTab>
             ),
           ),
         ],
+        ),
       ),
     );
   }

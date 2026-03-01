@@ -95,7 +95,6 @@ class AppRoutes {
   static const teacherNotifications = '/teacher/notifications';
   static const teacherLinkParent = '/teacher/link-parent';
 
-  // ── Route map ─────────────────────────────────────────────────────────────
 
   static Map<String, WidgetBuilder> get routes => {
     // Auth

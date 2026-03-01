@@ -3,7 +3,6 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
-// --- CONTROLLER & SERVICE IMPORTS ---
 import 'package:tamdansers/Controller/activity_list_widget.dart';
 import 'package:tamdansers/Controller/course_card_widget.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
@@ -465,7 +464,6 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Header row ──
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Row(
@@ -533,7 +531,6 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
         ),
         const SizedBox(height: 16),
 
-        // ── Carousel ──
         CarouselSlider.builder(
           itemCount: events.length,
           itemBuilder: (context, index, realIndex) {
@@ -564,10 +561,8 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // ── Background image ──
                       Image.asset(event["img"], fit: BoxFit.cover),
 
-                      // ── Deep scrim ──
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -583,7 +578,6 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                         ),
                       ),
 
-                      // ── Decorative glowing circle (top-left) ──
                       Positioned(
                         top: -30,
                         left: -30,
@@ -597,7 +591,6 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                         ),
                       ),
 
-                      // ── Category chip + attendees (top) ──
                       Positioned(
                         top: 18,
                         left: 18,
@@ -676,15 +669,14 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                         ),
                       ),
 
-                      // ── Bottom info card (glassmorphism) ──
                       Positioned(
-                        bottom: 16,
+                        bottom: 12,
                         left: 16,
                         right: 16,
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(22),
                           child: Container(
-                            padding: const EdgeInsets.fromLTRB(18, 16, 18, 16),
+                            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.13),
                               border: Border.all(
@@ -702,13 +694,13 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                                   style: GoogleFonts.outfit(
                                     color: Colors.white,
                                     fontWeight: FontWeight.bold,
-                                    fontSize: 20,
+                                    fontSize: 17,
                                     letterSpacing: -0.3,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                                const SizedBox(height: 10),
+                                const SizedBox(height: 6),
                                 // Date & location chips
                                 Row(
                                   children: [
@@ -716,7 +708,7 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                                       Icons.calendar_today_rounded,
                                       event["date"],
                                     ),
-                                    const SizedBox(width: 8),
+                                    const SizedBox(width: 6),
                                     Expanded(
                                       child: _infoChip(
                                         Icons.location_on_rounded,
@@ -726,15 +718,17 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                                     ),
                                   ],
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 6),
                                 // Time + arrow CTA
                                 Row(
                                   children: [
-                                    _infoChip(
-                                      Icons.access_time_rounded,
-                                      event["time"],
+                                    Expanded(
+                                      child: _infoChip(
+                                        Icons.access_time_rounded,
+                                        event["time"],
+                                      ),
                                     ),
-                                    const Spacer(),
+                                    const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(
                                         horizontal: 14,
@@ -795,7 +789,6 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
           ),
         ),
 
-        // ── Animated pill indicators ──
         const SizedBox(height: 14),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1887,9 +1880,10 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        children: [
-          // ── Header ──
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
             child: Row(
@@ -1963,7 +1957,6 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 20),
 
-          // ── Overall Progress Card ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -2074,7 +2067,6 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 20),
 
-          // ── Search Bar ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -2119,7 +2111,6 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 16),
 
-          // ── Category Chips ──
           SizedBox(
             height: 42,
             child: ListView.builder(
@@ -2182,44 +2173,45 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 16),
 
-          // ── Course List ──
-          Expanded(
-            child: _filteredCourses.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: 64,
-                          color: Colors.grey.shade300,
+          _filteredCourses.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 40, bottom: 40),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.search_off_rounded,
+                        size: 64,
+                        color: Colors.grey.shade300,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No courses found',
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          color: Colors.grey.shade400,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'No courses found',
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            color: Colors.grey.shade400,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 4,
-                    ),
-                    itemCount: _filteredCourses.length,
-                    itemBuilder: (context, index) {
-                      final course = _filteredCourses[index];
-                      return _buildCourseCard(course);
-                    },
+                      ),
+                    ],
                   ),
-          ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 4,
+                  ),
+                  itemCount: _filteredCourses.length,
+                  itemBuilder: (context, index) {
+                    final course = _filteredCourses[index];
+                    return _buildCourseCard(course);
+                  },
+                ),
+          const SizedBox(height: 16),
         ],
+        ),
       ),
     );
   }
@@ -2499,10 +2491,12 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
   @override
   Widget build(BuildContext context) {
+    final double listHeight = MediaQuery.of(context).size.height * 0.55;
     return SafeArea(
-      child: Column(
-        children: [
-          // ── Header ──
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
             child: Row(
@@ -2581,7 +2575,6 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
           const SizedBox(height: 20),
 
-          // ── Tab Bar ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -2662,7 +2655,6 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
           const SizedBox(height: 16),
 
-          // ── Search Bar ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -2707,7 +2699,6 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
           const SizedBox(height: 8),
 
-          // ── Online Now (horizontal list) ──
           SizedBox(
             height: 96,
             child: ListView.builder(
@@ -2796,8 +2787,8 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
             ),
           ),
 
-          // ── Conversations List ──
-          Expanded(
+          SizedBox(
+            height: listHeight,
             child: TabBarView(
               controller: _msgTabController,
               children: [
@@ -2815,7 +2806,9 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
               ],
             ),
           ),
+          const SizedBox(height: 16),
         ],
+        ),
       ),
     );
   }

@@ -84,6 +84,8 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        // Clear any stale entity_id from a previous session BEFORE lookup.
+        await _apiService.saveEntityId('');
         // Look up the school-service student record by matching email
         try {
           final students = await _apiService.getStudents();
@@ -132,6 +134,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        await _apiService.saveEntityId('');
         try {
           final students = await _apiService.getStudents();
           final emailLower = response.email.toLowerCase();
@@ -176,6 +179,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        await _apiService.saveEntityId('');
         try {
           final students = await _apiService.getStudents();
           final emailLower = response.email.toLowerCase();

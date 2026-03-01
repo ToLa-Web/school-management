@@ -84,20 +84,16 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        // Clear any stale entity_id from a previous session BEFORE lookup.
+        // If the lookup fails the empty string is stored instead of a wrong ID.
+        await _apiService.saveEntityId('');
         // Look up the school-service teacher record by matching email
         try {
           final teachers = await _apiService.getTeachers();
           final emailLower = response.email.toLowerCase();
-          final nameLower = response.fullName.toLowerCase();
           final match = teachers.firstWhere(
-            (t) =>
-                (t.email ?? '').toLowerCase() == emailLower ||
-                '${t.firstName} ${t.lastName}'.toLowerCase().contains(
-                  nameLower,
-                ) ||
-                nameLower.contains(t.firstName.toLowerCase()),
-            orElse: () =>
-                teachers.isEmpty ? throw Exception('none') : teachers.first,
+            (t) => (t.email ?? '').toLowerCase() == emailLower,
+            orElse: () => throw Exception('no school record for this teacher'),
           );
           await _apiService.saveEntityId(match.id);
           // Update display name with actual teacher name instead of auth username
@@ -139,19 +135,13 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        await _apiService.saveEntityId('');
         try {
           final teachers = await _apiService.getTeachers();
           final emailLower = response.email.toLowerCase();
-          final nameLower = response.fullName.toLowerCase();
           final match = teachers.firstWhere(
-            (t) =>
-                (t.email ?? '').toLowerCase() == emailLower ||
-                '${t.firstName} ${t.lastName}'.toLowerCase().contains(
-                  nameLower,
-                ) ||
-                nameLower.contains(t.firstName.toLowerCase()),
-            orElse: () =>
-                teachers.isEmpty ? throw Exception('none') : teachers.first,
+            (t) => (t.email ?? '').toLowerCase() == emailLower,
+            orElse: () => throw Exception('no school record for this teacher'),
           );
           await _apiService.saveEntityId(match.id);
           await _apiService.saveUserData(
@@ -190,19 +180,13 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        await _apiService.saveEntityId('');
         try {
           final teachers = await _apiService.getTeachers();
           final emailLower = response.email.toLowerCase();
-          final nameLower = response.fullName.toLowerCase();
           final match = teachers.firstWhere(
-            (t) =>
-                (t.email ?? '').toLowerCase() == emailLower ||
-                '${t.firstName} ${t.lastName}'.toLowerCase().contains(
-                  nameLower,
-                ) ||
-                nameLower.contains(t.firstName.toLowerCase()),
-            orElse: () =>
-                teachers.isEmpty ? throw Exception('none') : teachers.first,
+            (t) => (t.email ?? '').toLowerCase() == emailLower,
+            orElse: () => throw Exception('no school record for this teacher'),
           );
           await _apiService.saveEntityId(match.id);
           await _apiService.saveUserData(

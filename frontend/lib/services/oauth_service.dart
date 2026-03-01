@@ -1,57 +1,3 @@
-// import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
-// import 'package:google_sign_in/google_sign_in.dart';
-// import 'package:tamdansers/services/api_models.dart';
-// import 'package:tamdansers/services/api_service.dart';
-
-// class OAuthService {
-//   static final OAuthService _instance = OAuthService._internal();
-//   factory OAuthService() => _instance;
-//   OAuthService._internal();
-
-//   final _apiService = ApiService();
-//   final _googleSignIn = GoogleSignIn(
-//     scopes: ['email', 'profile'],
-//     serverClientId:
-//         'REMOVED_GOOGLE_CLIENT_ID',
-//   );
-
-//   /// Sign in with Google, send idToken to backend
-//   Future<AuthResponseDto?> signInWithGoogle() async {
-//     try {
-//       final account = await _googleSignIn.signIn();
-//       if (account == null) return null; // User cancelled
-
-//       final auth = await account.authentication;
-//       final idToken = auth.idToken;
-//       if (idToken == null) throw Exception('Failed to get Google ID token');
-
-//       return await _apiService.authenticateWithGoogle(idToken);
-//     } catch (e) {
-//       rethrow;
-//     }
-//   }
-
-//   /// Sign in with Facebook, send accessToken to backend
-//   Future<AuthResponseDto?> signInWithFacebook() async {
-//     try {
-//       final result = await FacebookAuth.instance.login(
-//         permissions: ['email', 'public_profile'],
-//       );
-
-//       if (result.status == LoginStatus.cancelled) return null;
-//       if (result.status != LoginStatus.success) {
-//         throw Exception(result.message ?? 'Facebook login failed');
-//       }
-
-//       final accessToken = result.accessToken?.tokenString;
-//       if (accessToken == null) throw Exception('Failed to get Facebook token');
-
-//       return await _apiService.authenticateWithFacebook(accessToken);
-//     } catch (e) {
-//       rethrow;
-//     }
-//   }
-// }
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:tamdansers/services/api_models.dart';
@@ -112,10 +58,14 @@ class OAuthService {
         throw Exception(result.message ?? 'Facebook login failed');
       }
 
-      final accessToken = result.accessToken?.tokenString;
-      if (accessToken == null) throw Exception('Failed to get Facebook token');
+      final token = result.accessToken;
+      if (token == null) throw Exception('Failed to get Facebook token');
 
-      return await _apiService.authenticateWithFacebook(accessToken);
+      // flutter_facebook_auth v7: tokenString is on classic (non-limited) tokens
+      final tokenString = token.tokenString;
+      if (tokenString.isEmpty) throw Exception('Facebook token is empty');
+
+      return await _apiService.authenticateWithFacebook(tokenString);
     } catch (e) {
       rethrow;
     }

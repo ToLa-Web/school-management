@@ -384,16 +384,11 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
   Widget _buildPremiumFAB() {
     return Bounceable(
       onTap: () async {
-        // 1. Navigate to the Add Course screen and wait for the result
-        // We use 'await' so the code pauses here until the user returns.
         final result = await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => const AddCourse()),
         );
 
-        // 2. The critical check:
-        // If the user clicked the 'Back Arrow', result will be NULL.
-        // If the user clicked 'Save/Publish', result will be a Course object.
         if (result != null && result is Course) {
           setState(() {
             globalCourses.insert(0, result);
@@ -445,10 +440,6 @@ class _TeacherCourseScreenState extends State<TeacherCourseScreen> {
     );
   }
 }
-
-// =============================================================================
-// COURSE DETAIL SCREEN
-// =============================================================================
 class CourseDetailScreen extends StatelessWidget {
   final String title;
   final String subject;
@@ -527,10 +518,8 @@ class CourseDetailScreen extends StatelessWidget {
     );
   }
 
-  // â”€â”€ derived dark shade for gradient â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   Color get _darkAccent => Color.lerp(accentColor, Colors.black, 0.28)!;
 
-  // â”€â”€ topic chips derived from title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   List<String> get _topics {
     final base = [
       'Core Concepts',
@@ -554,7 +543,6 @@ class CourseDetailScreen extends StatelessWidget {
           CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
-              // â”€â”€ Immersive Hero â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
               SliverAppBar(
                 expandedHeight: size.height * 0.42,
                 pinned: true,
@@ -636,7 +624,6 @@ class CourseDetailScreen extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        // Large blurred orb â€” top right
                         Positioned(
                           top: -60,
                           right: -60,
@@ -649,7 +636,6 @@ class CourseDetailScreen extends StatelessWidget {
                             ),
                           ),
                         ),
-                        // Small orb â€” bottom left
                         Positioned(
                           bottom: 80,
                           left: -40,
@@ -749,14 +735,12 @@ class CourseDetailScreen extends StatelessWidget {
                 ),
               ),
 
-              // â”€â”€ Body â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
               SliverToBoxAdapter(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // â”€â”€ Floating overlap card â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Transform.translate(
-                      offset: const Offset(0, -28),
+                      offset: const Offset(0, -15),
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: Container(
@@ -804,7 +788,6 @@ class CourseDetailScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // â”€â”€ About section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                       child: _sectionCard(
@@ -824,7 +807,6 @@ class CourseDetailScreen extends StatelessWidget {
 
                     const SizedBox(height: 20),
 
-                    // â”€â”€ Topics / Curriculum chips â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: _sectionCard(
@@ -883,7 +865,6 @@ class CourseDetailScreen extends StatelessWidget {
                       ),
                     ),
 
-                    // â”€â”€ Teachers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     const SizedBox(height: 20),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1038,7 +1019,6 @@ class CourseDetailScreen extends StatelessWidget {
 
                     const SizedBox(height: 32),
 
-                    // â”€â”€ Bottom CTA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Container(
@@ -1097,8 +1077,6 @@ class CourseDetailScreen extends StatelessWidget {
       ),
     );
   }
-
-  // â”€â”€ Sub-widgets â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   Widget _heroBadge(String label, IconData icon) {
     return Container(
@@ -1257,7 +1235,6 @@ class CourseDetailScreen extends StatelessWidget {
   }
 }
 
-// â”€â”€ Dot-grid painter for hero background texture â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class _DotGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {

@@ -37,6 +37,9 @@ class _RegisterScreenState extends State<RegisterScreen>
   bool _isObscured = true;
   bool _isConfirmObscured = true;
 
+  // Kept as a field so it outlives the dialog exit animation.
+  final TextEditingController _verifyCodeController = TextEditingController();
+
   bool get _anyLoading => _isLoading || _isGoogleLoading || _isFacebookLoading;
 
   static const List<String> _tabLabels = ['Teacher', 'Student'];
@@ -70,6 +73,7 @@ class _RegisterScreenState extends State<RegisterScreen>
         c.dispose();
       }
     }
+    _verifyCodeController.dispose();
     super.dispose();
   }
 
@@ -168,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen>
   }
 
   void _showVerificationDialog(String email) {
-    final codeController = TextEditingController();
+    _verifyCodeController.clear();
     bool isVerifying = false;
     String? verifyError;
 
@@ -178,10 +182,7 @@ class _RegisterScreenState extends State<RegisterScreen>
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setDialogState) {
-            return PopScope(
-              onPopInvokedWithResult: (didPop, result) =>
-                  codeController.dispose(),
-              child: AlertDialog(
+            return AlertDialog(
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -216,7 +217,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                     const SizedBox(height: 24),
                     TextField(
-                      controller: codeController,
+                      controller: _verifyCodeController,
                       keyboardType: TextInputType.number,
                       maxLength: 6,
                       textAlign: TextAlign.center,
@@ -291,10 +292,14 @@ class _RegisterScreenState extends State<RegisterScreen>
                   TextButton(
                     onPressed: () {
                       Navigator.of(ctx).pop();
-                      Navigator.pushReplacementNamed(
-                        context,
-                        _loginRoutes[_tabController.index],
-                      );
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (mounted) {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            _loginRoutes[_tabController.index],
+                          );
+                        }
+                      });
                     },
                     child: const Text(
                       'Skip',
@@ -315,7 +320,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                       onPressed: isVerifying
                           ? null
                           : () async {
-                              final code = codeController.text.trim();
+                              final code = _verifyCodeController.text.trim();
                               if (code.length != 6) {
                                 setDialogState(
                                   () => verifyError =
@@ -335,20 +340,22 @@ class _RegisterScreenState extends State<RegisterScreen>
                                 if (!ctx.mounted) return;
                                 if (success) {
                                   Navigator.of(ctx).pop();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          'Verified successfully! Please log in',
+                                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text(
+                                            'Verified successfully! Please log in',
+                                          ),
+                                          backgroundColor: Colors.green,
                                         ),
-                                        backgroundColor: Colors.green,
-                                      ),
-                                    );
-                                    Navigator.pushReplacementNamed(
-                                      context,
-                                      _loginRoutes[_tabController.index],
-                                    );
-                                  }
+                                      );
+                                      Navigator.pushReplacementNamed(
+                                        context,
+                                        _loginRoutes[_tabController.index],
+                                      );
+                                    }
+                                  });
                                 } else {
                                   setDialogState(
                                     () => verifyError =
@@ -385,8 +392,7 @@ class _RegisterScreenState extends State<RegisterScreen>
                     ),
                   ),
                 ],
-              ),
-            );
+              );
           },
         );
       },
@@ -540,33 +546,39 @@ class _RegisterScreenState extends State<RegisterScreen>
                         ),
                       ),
 
-                    // Form fields
+                    // Form fields — IndexedStack keeps both sets of
+                    // controllers always attached so there is no
+                    // controller/TextField detachment on tab animation.
                     AnimatedBuilder(
                       animation: _tabController,
                       builder: (context, _) {
-                        final idx = _tabController.index;
-                        return Column(
-                          children: [
-                            _buildField("First Name", Icons.person_outline,
-                                "Enter your first name",
-                                _firstNameControllers[idx]),
-                            const SizedBox(height: 14),
-                            _buildField("Last Name", Icons.person_outline,
-                                "Enter your last name",
-                                _lastNameControllers[idx]),
-                            const SizedBox(height: 14),
-                            _buildField(
-                              "Email",
-                              Icons.email_outlined,
-                              "example@gmail.com",
-                              _emailControllers[idx],
-                              keyboardType: TextInputType.emailAddress,
-                            ),
-                            const SizedBox(height: 14),
-                            _buildPasswordField(idx),
-                            const SizedBox(height: 14),
-                            _buildConfirmPasswordField(idx),
-                          ],
+                        return IndexedStack(
+                          index: _tabController.index,
+                          children: List.generate(2, (idx) {
+                            return Column(
+                              children: [
+                                _buildField("First Name", Icons.person_outline,
+                                    "Enter your first name",
+                                    _firstNameControllers[idx]),
+                                const SizedBox(height: 14),
+                                _buildField("Last Name", Icons.person_outline,
+                                    "Enter your last name",
+                                    _lastNameControllers[idx]),
+                                const SizedBox(height: 14),
+                                _buildField(
+                                  "Email",
+                                  Icons.email_outlined,
+                                  "example@gmail.com",
+                                  _emailControllers[idx],
+                                  keyboardType: TextInputType.emailAddress,
+                                ),
+                                const SizedBox(height: 14),
+                                _buildPasswordField(idx),
+                                const SizedBox(height: 14),
+                                _buildConfirmPasswordField(idx),
+                              ],
+                            );
+                          }),
                         );
                       },
                     ),

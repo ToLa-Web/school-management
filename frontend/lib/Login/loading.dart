@@ -241,35 +241,39 @@ class _SplashScreenState extends State<SplashScreen>
           ),
 
           // ── Floating particles ───────────────────────────────
-          AnimatedBuilder(
-            animation: _particleController,
-            builder: (_, _) {
-              return CustomPaint(
-                size: size,
-                painter: _ParticlePainter(
-                  particles: _particles,
-                  progress: _particleController.value,
-                ),
-              );
-            },
+          RepaintBoundary(
+            child: AnimatedBuilder(
+              animation: _particleController,
+              builder: (_, _) {
+                return CustomPaint(
+                  size: size,
+                  painter: _ParticlePainter(
+                    particles: _particles,
+                    progress: _particleController.value,
+                  ),
+                );
+              },
+            ),
           ),
 
           // ── Top-right decorative arc ─────────────────────────
           Positioned(
             top: -100,
             right: -100,
-            child: AnimatedBuilder(
-              animation: _orbitController,
-              builder: (_, _) => Transform.rotate(
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _orbitController,
+                builder: (_, _) => Transform.rotate(
                 angle: _orbitController.value * 2 * math.pi * 0.08,
-                child: Container(
-                  width: 300 * s,
-                  height: 300 * s,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF4F8EF7).withValues(alpha: 0.12),
-                      width: 1.5,
+                  child: Container(
+                    width: 300 * s,
+                    height: 300 * s,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF4F8EF7).withValues(alpha: 0.12),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),
@@ -296,18 +300,20 @@ class _SplashScreenState extends State<SplashScreen>
           Positioned(
             bottom: -80,
             left: -80,
-            child: AnimatedBuilder(
-              animation: _orbitController,
-              builder: (_, _) => Transform.rotate(
+            child: RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _orbitController,
+                builder: (_, _) => Transform.rotate(
                 angle: -_orbitController.value * 2 * math.pi * 0.06,
-                child: Container(
-                  width: 260 * s,
-                  height: 260 * s,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
-                      width: 1.5,
+                  child: Container(
+                    width: 260 * s,
+                    height: 260 * s,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                        width: 1.5,
+                      ),
                     ),
                   ),
                 ),

@@ -22,9 +22,6 @@ void main() {
   );
 }
 
-// ----------------------------------------------------------------------
-// 1. MAIN NAVIGATION WRAPPER
-// ----------------------------------------------------------------------
 class TeacherManagementClassScreen extends StatefulWidget {
   const TeacherManagementClassScreen({super.key});
 
@@ -76,9 +73,6 @@ class _TeacherManagementClassScreenState
   }
 }
 
-// ----------------------------------------------------------------------
-// 2. HOME CONTENT (With Search and Filter Logic)
-// ----------------------------------------------------------------------
 class TeacherManagementHomeContent extends StatefulWidget {
   const TeacherManagementHomeContent({super.key});
 
@@ -412,9 +406,6 @@ class _TeacherManagementHomeContentState
   }
 }
 
-// =============================================================================
-// CLASS DETAIL SCREEN
-// =============================================================================
 class ClassDetailScreen extends StatelessWidget {
   final ClassroomDto classroom;
   final String teacherName;
@@ -445,7 +436,6 @@ class ClassDetailScreen extends StatelessWidget {
       body: CustomScrollView(
         physics: const BouncingScrollPhysics(),
         slivers: [
-          // ── Hero ───────────────────────────────────────────────────────
           SliverAppBar(
             expandedHeight: MediaQuery.of(context).size.height * 0.40,
             pinned: true,
@@ -627,14 +617,12 @@ class ClassDetailScreen extends StatelessWidget {
             ),
           ),
 
-          // ── Body ──────────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Floating overlap card ─────────────────────────
                 Transform.translate(
-                  offset: const Offset(0, -28),
+                  offset: const Offset(0, -15),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Container(
@@ -680,7 +668,6 @@ class ClassDetailScreen extends StatelessWidget {
                   ),
                 ),
 
-                // ── Class Info card ─────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: _sectionCard(
@@ -721,7 +708,6 @@ class ClassDetailScreen extends StatelessWidget {
                   ),
                 ),
 
-                // ── Student Enrollment card ──────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: _sectionCard(
@@ -833,7 +819,6 @@ class ClassDetailScreen extends StatelessWidget {
                   ),
                 ),
 
-                // ── Teacher card ───────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   child: _sectionCard(
@@ -928,7 +913,6 @@ class ClassDetailScreen extends StatelessWidget {
 
                 const SizedBox(height: 8),
 
-                // ── CTA button ─────────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
                   child: Container(
@@ -985,8 +969,6 @@ class ClassDetailScreen extends StatelessWidget {
       ),
     );
   }
-
-  // ── Sub-widgets ───────────────────────────────────────────────────
 
   Widget _heroBadge(String label, IconData icon) {
     return Container(
@@ -1198,9 +1180,6 @@ class _ClassDotPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// ----------------------------------------------------------------------
-// 3. REUSABLE MODERN CLASS CARD
-// ----------------------------------------------------------------------
 class ModernClassCard extends StatelessWidget {
   final String grade;
   final String teacher;

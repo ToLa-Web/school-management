@@ -53,7 +53,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
         .toList();
   }
 
-  // ─── Delete ───
   Future<void> _confirmDelete(StudentDto s) async {
     final yes = await showDialog<bool>(
       context: context,
@@ -120,7 +119,6 @@ class _StudentListScreenState extends State<StudentListScreen> {
     }
   }
 
-  // ─── Edit ───
   Future<void> _showEditDialog(StudentDto s) async {
     final firstCtrl = TextEditingController(text: s.firstName);
     final lastCtrl = TextEditingController(text: s.lastName);
@@ -131,116 +129,152 @@ class _StudentListScreenState extends State<StudentListScreen> {
     final saved = await showDialog<bool>(
       context: context,
       builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setDlg) => AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          title: Text(
-            'Edit Student',
-            style: GoogleFonts.outfit(
-              fontWeight: FontWeight.bold,
-              color: _deepBlue,
+        builder: (ctx, setDlg) {
+          final mq = MediaQuery.of(ctx);
+          final maxHeight = mq.size.height - mq.viewInsets.bottom - 80;
+          return Dialog(
+            insetPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 24,
             ),
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _field('First Name', firstCtrl),
-                const SizedBox(height: 10),
-                _field('Last Name', lastCtrl),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: _bg,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: DropdownButtonHideUnderline(
-                    child: DropdownButton<String>(
-                      isExpanded: true,
-                      value: gender,
-                      hint: Text(
-                        'Gender',
-                        style: GoogleFonts.inter(color: Colors.grey.shade400),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(24),
+            ),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: maxHeight),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Edit Student',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                        color: _deepBlue,
                       ),
-                      items: ['Male', 'Female', 'Other']
-                          .map(
-                            (g) => DropdownMenuItem(
-                              value: g,
-                              child: Text(
-                                g,
-                                style: GoogleFonts.inter(color: _deepBlue),
+                    ),
+                    const SizedBox(height: 16),
+                    Flexible(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _field('First Name', firstCtrl),
+                            const SizedBox(height: 14),
+                            _field('Last Name', lastCtrl),
+                            const SizedBox(height: 14),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: _bg,
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: DropdownButtonHideUnderline(
+                                child: DropdownButton<String>(
+                                  isExpanded: true,
+                                  value: gender,
+                                  hint: Text(
+                                    'Gender',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.grey.shade400,
+                                    ),
+                                  ),
+                                  items: ['Male', 'Female', 'Other']
+                                      .map(
+                                        (g) => DropdownMenuItem(
+                                          value: g,
+                                          child: Text(
+                                            g,
+                                            style: GoogleFonts.inter(
+                                              color: _deepBlue,
+                                            ),
+                                          ),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (v) =>
+                                      setDlg(() => gender = v),
+                                ),
                               ),
                             ),
-                          )
-                          .toList(),
-                      onChanged: (v) => setDlg(() => gender = v),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                _field('Phone', phoneCtrl),
-                const SizedBox(height: 10),
-                _field('Address', addressCtrl),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: Text(
-                'Cancel',
-                style: GoogleFonts.inter(color: Colors.grey),
-              ),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _teal,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              onPressed: () async {
-                final updated = StudentDto(
-                  id: s.id,
-                  firstName: firstCtrl.text.trim(),
-                  lastName: lastCtrl.text.trim(),
-                  gender: gender,
-                  dateOfBirth: s.dateOfBirth,
-                  phone: phoneCtrl.text.trim().isEmpty
-                      ? null
-                      : phoneCtrl.text.trim(),
-                  address: addressCtrl.text.trim().isEmpty
-                      ? null
-                      : addressCtrl.text.trim(),
-                  isActive: s.isActive,
-                  createdAt: s.createdAt,
-                );
-                try {
-                  await _api.updateStudent(s.id, updated);
-                  if (ctx.mounted) Navigator.pop(ctx, true);
-                } catch (e) {
-                  if (ctx.mounted) {
-                    ScaffoldMessenger.of(ctx).showSnackBar(
-                      SnackBar(
-                        content: Text('Error: $e'),
-                        backgroundColor: Colors.redAccent,
+                            const SizedBox(height: 14),
+                            _field('Phone', phoneCtrl),
+                            const SizedBox(height: 14),
+                            _field('Address', addressCtrl),
+                          ],
+                        ),
                       ),
-                    );
-                  }
-                }
-              },
-              child: Text(
-                'Save',
-                style: GoogleFonts.inter(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx, false),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.inter(color: Colors.grey),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _teal,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                          onPressed: () async {
+                            final updated = StudentDto(
+                              id: s.id,
+                              firstName: firstCtrl.text.trim(),
+                              lastName: lastCtrl.text.trim(),
+                              gender: gender,
+                              dateOfBirth: s.dateOfBirth,
+                              phone: phoneCtrl.text.trim().isEmpty
+                                  ? null
+                                  : phoneCtrl.text.trim(),
+                              address: addressCtrl.text.trim().isEmpty
+                                  ? null
+                                  : addressCtrl.text.trim(),
+                              isActive: s.isActive,
+                              createdAt: s.createdAt,
+                            );
+                            try {
+                              await _api.updateStudent(s.id, updated);
+                              if (ctx.mounted) Navigator.pop(ctx, true);
+                            } catch (e) {
+                              if (ctx.mounted) {
+                                ScaffoldMessenger.of(ctx).showSnackBar(
+                                  SnackBar(
+                                    content: Text('Error: $e'),
+                                    backgroundColor: Colors.redAccent,
+                                  ),
+                                );
+                              }
+                            }
+                          },
+                          child: Text(
+                            'Save',
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
     if (saved == true) _load();

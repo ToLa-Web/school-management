@@ -96,9 +96,9 @@ class ApiService {
 
   // login, register, logout, email verification, and password reset
 
-  /// POST /api/auth/register
-  /// Backend returns UserResponseDto (no tokens).
-  /// Backend also auto-sends email verification code.
+  // POST /api/auth/register
+  // Backend returns UserResponseDto (no tokens).
+  // Backend also auto-sends email verification code.
   Future<UserResponseDto?> register(UserCreateDto userDto) async {
     try {
       final response = await _dio.post(
@@ -119,8 +119,8 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/auth/authenticate
-  /// Backend returns AuthResponseDto with {token, refreshToken, ...}.
+  // POST /api/auth/authenticate
+  // Backend returns AuthResponseDto with {token, refreshToken, ...}.
   Future<AuthResponseDto?> login(LoginRequestDto loginDto) async {
     try {
       final response = await _dio.post(
@@ -151,7 +151,7 @@ class ApiService {
     await _secureStorage.write(key: 'user_role', value: role);
   }
 
-  /// Get the saved user role (teacher, student, parent).
+  // Get the saved user role (teacher, student, parent).
   Future<String?> getUserRole() async {
     return await _secureStorage.read(key: 'user_role');
   }
@@ -177,7 +177,7 @@ class ApiService {
     return await _secureStorage.read(key: 'user_email');
   }
 
-  /// Save the school-service entity ID (student or teacher) after login.
+  // Save the school-service entity ID (student or teacher) after login.
   Future<void> saveEntityId(String entityId) async {
     await _secureStorage.write(key: 'entity_id', value: entityId);
   }
@@ -187,7 +187,7 @@ class ApiService {
     return await _secureStorage.read(key: 'entity_id');
   }
 
-  /// POST /api/auth/refresh
+  // POST /api/auth/refresh
   Future<bool> _refreshAccessToken() async {
     if (_refreshToken == null) return false;
 
@@ -210,7 +210,7 @@ class ApiService {
     return false;
   }
 
-  /// POST /api/auth/logout
+  // POST /api/auth/logout
   Future<void> logout() async {
     try {
       if (_refreshToken != null) {
@@ -235,7 +235,7 @@ class ApiService {
     }
   }
 
-  /// POST /api/auth/request-email-verification-code
+  // POST /api/auth/request-email-verification-code
   Future<bool> requestEmailVerificationCode(String email) async {
     try {
       final response = await _dio.post(
@@ -249,7 +249,7 @@ class ApiService {
     return false;
   }
 
-  /// POST /api/auth/verify-email
+  // POST /api/auth/verify-email
   Future<bool> verifyEmail(String email, String code) async {
     try {
       final response = await _dio.post(
@@ -265,7 +265,7 @@ class ApiService {
     return false;
   }
 
-  /// POST /api/auth/request-password-reset
+  // POST /api/auth/request-password-reset
   Future<bool> requestPasswordReset(String email) async {
     try {
       final response = await _dio.post(
@@ -279,7 +279,7 @@ class ApiService {
     return false;
   }
 
-  /// POST /api/auth/reset-password
+  // POST /api/auth/reset-password
   Future<bool> resetPassword(String email, String code, String newPassword) async {
     try {
       final response = await _dio.post(
@@ -341,7 +341,7 @@ class ApiService {
 
   // all the classroom and school data calls (students, teachers, attendance, etc.)
 
-  /// GET /api/school/Students — returns list or paged result
+  // GET /api/school/Students — returns list or paged result
   Future<List<StudentDto>> getStudents({int? page, int? pageSize}) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -373,7 +373,7 @@ class ApiService {
     return [];
   }
 
-  /// GET /api/school/Students/{id}
+  // GET /api/school/Students/{id}
   Future<StudentDto?> getStudentById(String id) async {
     try {
       final response = await _dio.get('${ApiConfig.studentsEndpoint}/$id');
@@ -386,7 +386,7 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/school/Students
+  // POST /api/school/Students
   Future<StudentDto?> createStudent(StudentDto student) async {
     try {
       final response = await _dio.post(
@@ -406,7 +406,7 @@ class ApiService {
     return null;
   }
 
-  /// GET /api/school/Teachers — returns list or paged result
+  // GET /api/school/Teachers — returns list or paged result
   Future<List<TeacherDto>> getTeachers({int? page, int? pageSize}) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -437,7 +437,7 @@ class ApiService {
     return [];
   }
 
-  /// GET /api/school/Teachers/{id}
+  // GET /api/school/Teachers/{id}
   Future<TeacherDto?> getTeacherById(String id) async {
     try {
       final response = await _dio.get('${ApiConfig.teachersEndpoint}/$id');
@@ -450,7 +450,7 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/school/Teachers
+  // POST /api/school/Teachers
   Future<TeacherDto?> createTeacher(TeacherDto teacher) async {
     try {
       final response = await _dio.post(
@@ -470,7 +470,21 @@ class ApiService {
     return null;
   }
 
-  /// GET /api/school/Classrooms — returns list or paged result
+  // PUT /api/school/Teachers/{id}
+  Future<bool> updateTeacher(String id, TeacherDto teacher) async {
+    try {
+      final response = await _dio.put(
+        '${ApiConfig.teachersEndpoint}/$id',
+        data: teacher.toJson(),
+      );
+      return response.statusCode == 200;
+    } on DioException catch (e) {
+      _logger.warning('Update teacher error: ${e.message}');
+      rethrow;
+    }
+  }
+
+  // GET /api/school/Classrooms — returns list or paged result
   Future<List<ClassroomDto>> getClassrooms({int? page, int? pageSize}) async {
     try {
       final queryParams = <String, dynamic>{};
@@ -501,7 +515,7 @@ class ApiService {
     return [];
   }
 
-  /// GET /api/school/Classrooms/{id} — returns detail with students list
+  // GET /api/school/Classrooms/{id} — returns detail with students list
   Future<ClassroomDetailDto?> getClassroomDetail(String id) async {
     try {
       final response = await _dio.get('${ApiConfig.classroomsEndpoint}/$id');
@@ -515,7 +529,7 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/school/Classrooms — create a new classroom
+  // POST /api/school/Classrooms — create a new classroom
   Future<ClassroomDto?> createClassroom(ClassroomDto classroom) async {
     try {
       final response = await _dio.post(
@@ -532,7 +546,7 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/school/Classrooms/{id}/enroll
+  // POST /api/school/Classrooms/{id}/enroll
   Future<bool> enrollStudent(String classroomId, String studentId) async {
     try {
       final response = await _dio.post(
@@ -546,7 +560,7 @@ class ApiService {
     return false;
   }
 
-  /// PUT /api/school/Students/{id}
+  // PUT /api/school/Students/{id}
   Future<bool> updateStudent(String id, StudentDto student) async {
     try {
       final response = await _dio.put(
@@ -560,7 +574,7 @@ class ApiService {
     }
   }
 
-  /// DELETE /api/school/Students/{id}
+  // DELETE /api/school/Students/{id}
   Future<bool> deleteStudent(String id) async {
     try {
       final response = await _dio.delete('${ApiConfig.studentsEndpoint}/$id');
@@ -573,7 +587,7 @@ class ApiService {
 
   // subjects (the courses taught in school)
 
-  /// GET /api/school/Subjects
+  // GET /api/school/Subjects
   Future<List<SubjectDto>> getSubjects() async {
     try {
       final response = await _dio.get(ApiConfig.subjectsEndpoint);
@@ -588,7 +602,7 @@ class ApiService {
     return [];
   }
 
-  /// GET /api/school/Subjects/{id}
+  // GET /api/school/Subjects/{id}
   Future<SubjectDto?> getSubjectById(String id) async {
     try {
       final response = await _dio.get('${ApiConfig.subjectsEndpoint}/$id');
@@ -601,7 +615,7 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/school/Subjects
+  // POST /api/school/Subjects
   Future<SubjectDto?> createSubject(String subjectName) async {
     try {
       final response = await _dio.post(
@@ -618,7 +632,7 @@ class ApiService {
     return null;
   }
 
-  /// POST /api/school/Subjects/{id}/assign-teacher
+  // POST /api/school/Subjects/{id}/assign-teacher
   Future<bool> assignTeacherToSubject(String subjectId, String teacherId) async {
     try {
       final response = await _dio.post(
@@ -698,7 +712,7 @@ class ApiService {
 
   // who came to class, who didn't, and who was late
 
-  /// GET /api/school/Attendance?classroomId=&date=YYYY-MM-DD
+  // GET /api/school/Attendance?classroomId=&date=YYYY-MM-DD
   Future<List<AttendanceDto>> getClassroomAttendance(String classroomId, String date) async {
     try {
       final response = await _dio.get(
@@ -716,7 +730,7 @@ class ApiService {
     return [];
   }
 
-  /// GET /api/school/Attendance/{studentId}/history
+  // GET /api/school/Attendance/{studentId}/history
   Future<List<AttendanceDto>> getStudentAttendanceHistory(String studentId) async {
     try {
       final response = await _dio.get('${ApiConfig.attendanceEndpoint}/$studentId/history');
@@ -731,7 +745,7 @@ class ApiService {
     return [];
   }
 
-  /// POST /api/school/Attendance/mark
+  // POST /api/school/Attendance/mark
   Future<bool> markAttendance(BulkMarkAttendanceRequest request) async {
     try {
       final response = await _dio.post(
@@ -747,7 +761,7 @@ class ApiService {
   //Schedules
  
 
-  /// GET /api/school/Schedules?classroomId=
+  // GET /api/school/Schedules?classroomId=
   Future<List<ScheduleDto>> getClassroomSchedule(String classroomId) async {
     try {
       final response = await _dio.get(
@@ -765,7 +779,7 @@ class ApiService {
     return [];
   }
 
-  /// GET /api/school/Schedules?teacherId=
+  // GET /api/school/Schedules?teacherId=
   Future<List<ScheduleDto>> getTeacherSchedule(String teacherId) async {
     try {
       final response = await _dio.get(
@@ -783,7 +797,7 @@ class ApiService {
     return [];
   }
 
-  /// POST /api/school/Schedules
+  // POST /api/school/Schedules
   Future<ScheduleDto?> createSchedule(ScheduleDto schedule) async {
     try {
       final response = await _dio.post(
@@ -800,7 +814,7 @@ class ApiService {
     return null;
   }
 
-  /// DELETE /api/school/Schedules/{id}
+  // DELETE /api/school/Schedules/{id}
   Future<bool> deleteSchedule(String id) async {
     try {
       final response = await _dio.delete('${ApiConfig.schedulesEndpoint}/$id');

@@ -16,7 +16,6 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
   final Color deepBlue = const Color(0xFF0D3B66);
   final Color backgroundColor = const Color(0xFFF3F6F8);
 
-  // --- Selection State Variables ---
   String? selectedGradeNumber; // '7' .. '12'
   String? selectedSection; // 'A' .. 'E'
   String? selectedSubjectId;
@@ -29,14 +28,12 @@ class _CreateClassScreenState extends State<CreateClassScreen> {
       ? 'Class $selectedGradeNumber-$selectedSection'
       : '';
 
-  // --- Data from API ---
   List<SubjectDto> _subjects = [];
   List<StudentDto> _allStudents = [];
   Set<String> _selectedStudentIds = {};
   bool _isLoading = true;
   bool _isSubmitting = false;
 
-  // --- Data Lists ---
   final List<String> gradeNumbers = ['7', '8', '9', '10', '11', '12'];
   final List<String> sections = ['A', 'B', 'C', 'D', 'E'];
   final List<String> academicYears = ['2025-2026', '2026-2027'];
