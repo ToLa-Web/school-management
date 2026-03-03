@@ -82,11 +82,37 @@ public class AuthenticationService : IAuthenticationService
 
         await _userRepo.UpdateAsync(user);
 
-        var subject = "Your verification code";
-        var body = $@"<h2>Email verification</h2>
-                    <p>Your verification code is:</p>
-                    <p style='font-size:24px;letter-spacing:3px;'><strong>{code}</strong></p>
-                    <p>This code expires in 10 minutes.</p>";
+        var subject = "Email Verification Code";
+
+        var body = $@"
+        <html>
+        <body style='font-family: Arial, sans-serif; line-height:1.6;'>
+
+            <h2 style='color:#333;'>Email Verification</h2>
+
+            <p>Your verification code is:</p>
+
+            <div style='
+                font-size:28px;
+                letter-spacing:4px;
+                font-weight:bold;
+                color:#2c3e50;
+                margin:20px 0;
+            '>
+                {code}
+            </div>
+
+            <p>This code will expire in <strong>10 minutes</strong>.</p>
+
+            <hr/>
+
+            <p style='font-size:12px;color:#777;'>
+                If you did not request this verification code, please ignore this email.
+            </p>
+
+        </body>
+        </html>
+        ";
 
         try
         {
@@ -329,11 +355,39 @@ public class AuthenticationService : IAuthenticationService
 
         await _userRepo.UpdateAsync(user);
 
-        var subject = "Your password reset code";
-        var body = $@"<h2>Password reset</h2>
-                    <p>Your password reset code is:</p>
-                    <p style='font-size:24px;letter-spacing:3px;'><strong>{code}</strong></p>
-                    <p>This code expires in 10 minutes.</p>";
+        var subject = "Password Reset Code";
+
+        var body = $@"
+        <html>
+        <body style='font-family: Arial, sans-serif; line-height:1.6;'>
+
+            <h2 style='color:#333;'>Password Reset</h2>
+
+            <p>You requested to reset your password.</p>
+
+            <p>Your password reset code is:</p>
+
+            <div style='
+                font-size:28px;
+                letter-spacing:4px;
+                font-weight:bold;
+                color:#2c3e50;
+                margin:20px 0;
+            '>
+                {code}
+            </div>
+
+            <p>This code will expire in <strong>10 minutes</strong>.</p>
+
+            <hr/>
+
+            <p style='font-size:12px;color:#777;'>
+                If you did not request a password reset, please ignore this email.
+            </p>
+
+        </body>
+        </html>
+        ";
 
         try
         {

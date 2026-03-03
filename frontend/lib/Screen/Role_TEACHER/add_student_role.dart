@@ -17,6 +17,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
   final _dobCtrl = TextEditingController();
   final _phoneCtrl = TextEditingController();
   final _addressCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   String? _selectedGender;
   bool _isSubmitting = false;
 
@@ -27,6 +28,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     _dobCtrl.dispose();
     _phoneCtrl.dispose();
     _addressCtrl.dispose();
+    _emailCtrl.dispose();
     super.dispose();
   }
 
@@ -42,6 +44,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         dateOfBirth: _dobCtrl.text.isNotEmpty ? _dobCtrl.text.trim() : null,
         phone: _phoneCtrl.text.isNotEmpty ? _phoneCtrl.text.trim() : null,
         address: _addressCtrl.text.isNotEmpty ? _addressCtrl.text.trim() : null,
+        email: _emailCtrl.text.isNotEmpty ? _emailCtrl.text.trim() : null,
         isActive: true,
         createdAt: '',
       );
@@ -82,7 +85,6 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
       }
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -233,12 +235,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildModernTextField(
-                            "Date of Birth",
-                            "YYYY-MM-DD",
-                            icon: Icons.calendar_today_rounded,
-                            controller: _dobCtrl,
-                          ),
+                          child: _buildDatePickerField(),
                         ),
                         const SizedBox(width: 16),
                         Expanded(
@@ -273,10 +270,19 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                 child: Column(
                   children: [
                     _buildModernTextField(
+                      "Email",
+                      "student@school.edu",
+                      icon: Icons.email_rounded,
+                      controller: _emailCtrl,
+                      keyboardType: TextInputType.emailAddress,
+                    ),
+                    const SizedBox(height: 20),
+                    _buildModernTextField(
                       "Phone",
                       "012-345-678",
                       icon: Icons.phone_rounded,
                       controller: _phoneCtrl,
+                      keyboardType: TextInputType.phone,
                     ),
                     const SizedBox(height: 20),
                     _buildModernTextField(
@@ -331,20 +337,6 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: TextButton(
-                  onPressed: () {},
-                  child: Text(
-                    "Save as Draft",
-                    style: GoogleFonts.inter(
-                      color: Colors.grey.shade500,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 15,
-                    ),
-                  ),
-                ),
-              ),
               const SizedBox(height: 30),
             ],
           ),
@@ -377,6 +369,83 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     );
   }
 
+  Future<void> _pickDate() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(now.year - 15),
+      firstDate: DateTime(1990),
+      lastDate: DateTime(now.year - 3),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Color(0xFF0D3B66),
+            onPrimary: Colors.white,
+            onSurface: Color(0xFF0D3B66),
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      setState(() {
+        _dobCtrl.text =
+            '${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}';
+      });
+    }
+  }
+
+  Widget _buildDatePickerField() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Date of Birth",
+          style: GoogleFonts.inter(
+            fontSize: 13,
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GestureDetector(
+          onTap: _pickDate,
+          child: AbsorbPointer(
+            child: TextFormField(
+              controller: _dobCtrl,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF333333),
+                fontWeight: FontWeight.w500,
+              ),
+              decoration: InputDecoration(
+                hintText: 'YYYY-MM-DD',
+                hintStyle: GoogleFonts.inter(
+                  color: Colors.grey.shade400,
+                  fontWeight: FontWeight.w400,
+                ),
+                prefixIcon: Icon(
+                  Icons.calendar_today_rounded,
+                  size: 20,
+                  color: Colors.grey.shade400,
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF3F6F8),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 16,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildModernTextField(
     String label,
     String hint, {
@@ -384,6 +453,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
     bool isPassword = false,
     TextEditingController? controller,
     bool required = false,
+    TextInputType keyboardType = TextInputType.text,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -400,6 +470,7 @@ class _AddStudentScreenState extends State<AddStudentScreen> {
         TextFormField(
           controller: controller,
           obscureText: isPassword,
+          keyboardType: keyboardType,
           validator: required
               ? (v) => (v == null || v.trim().isEmpty) ? '$label is required' : null
               : null,

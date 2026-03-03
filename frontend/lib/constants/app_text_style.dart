@@ -1,9 +1,6 @@
 import 'package:flutter/widgets.dart';
-// ignore: depend_on_referenced_packages
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/constants/app_colors.dart';
-// ignore: depend_on_referenced_packages
-// import 'package:tamdansers_app/constants/app_colors.dart';
 
 class AppTextStyle {
   static final title32 = GoogleFonts.kantumruyPro(

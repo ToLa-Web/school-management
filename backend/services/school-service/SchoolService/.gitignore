@@ -4,8 +4,5 @@ obj/
 riderModule.iml
 /_ReSharper.Caches/
 
-# Local secrets for docker-compose
-.env
-
 # Development settings with real credentials - use env vars instead
 appsettings.Development.json

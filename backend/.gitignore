@@ -1,9 +1,9 @@
 # Backend .gitignore
 
-# Environment variables - INCLUDED FOR TEAM
-# .env
-# .env.local
-# .env.*.local
+# Environment variables - never commit real .env
+.env
+.env.local
+.env.*.local
 
 # IDE and Editor
 .vscode/
@@ -35,6 +35,10 @@ logs/
 
 # Docker
 docker-compose.override.yml
+
+# Build / publish output directories
+**/publish_test/
+**/publish/
 
 # OS
 Thumbs.db

@@ -1,6 +1,6 @@
 // what we send TO the server
 
-/// POST /api/auth/register
+// POST /api/auth/register
 class UserCreateDto {
   final String email;
   final String password;
@@ -22,7 +22,7 @@ class UserCreateDto {
   };
 }
 
-/// POST /api/auth/authenticate
+// POST /api/auth/authenticate
 class LoginRequestDto {
   final String email;
   final String password;
@@ -38,7 +38,7 @@ class LoginRequestDto {
   };
 }
 
-/// POST /api/auth/refresh
+// POST /api/auth/refresh
 class RefreshTokenRequestDto {
   final String refreshToken;
 
@@ -49,7 +49,7 @@ class RefreshTokenRequestDto {
   };
 }
 
-/// POST /api/auth/logout
+// POST /api/auth/logout
 class LogoutRequestDto {
   final String refreshToken;
 
@@ -60,7 +60,7 @@ class LogoutRequestDto {
   };
 }
 
-/// POST /api/auth/request-email-verification-code
+// POST /api/auth/request-email-verification-code
 class RequestEmailVerificationCodeRequestDto {
   final String email;
 
@@ -71,7 +71,7 @@ class RequestEmailVerificationCodeRequestDto {
   };
 }
 
-/// POST /api/auth/verify-email
+// POST /api/auth/verify-email
 class VerifyEmailRequestDto {
   final String email;
   final String code;
@@ -87,7 +87,7 @@ class VerifyEmailRequestDto {
   };
 }
 
-/// POST /api/auth/request-password-reset
+// POST /api/auth/request-password-reset
 class RequestPasswordResetRequestDto {
   final String email;
 
@@ -98,7 +98,7 @@ class RequestPasswordResetRequestDto {
   };
 }
 
-/// POST /api/auth/reset-password
+// POST /api/auth/reset-password
 class ResetPasswordRequestDto {
   final String email;
   final String code;
@@ -117,7 +117,7 @@ class ResetPasswordRequestDto {
   };
 }
 
-/// POST /api/auth/oauth/google
+// POST /api/auth/oauth/google
 class GoogleAuthRequestDto {
   final String idToken;
 
@@ -128,7 +128,7 @@ class GoogleAuthRequestDto {
   };
 }
 
-/// POST /api/auth/oauth/facebook
+// POST /api/auth/oauth/facebook
 class FacebookAuthRequestDto {
   final String accessToken;
 
@@ -141,8 +141,8 @@ class FacebookAuthRequestDto {
 
 // what we get BACK from the server
 
-/// Registration response: backend returns UserResponseDto (no tokens)
-/// {id, email, firstName, lastName, role (int), userRole (string), isEmailVerified}
+// Registration response: backend returns UserResponseDto (no tokens)
+// {id, email, firstName, lastName, role (int), userRole (string), isEmailVerified}
 class UserResponseDto {
   final String id;
   final String email;
@@ -177,8 +177,8 @@ class UserResponseDto {
   }
 }
 
-/// Login/Authenticate response: backend returns AuthResponseDto (with tokens)
-/// {userId, firstName, lastName, email, role (int), userRole (string), isActive, isEmailVerified, token, refreshToken, lastLoginAt}
+// Login/Authenticate response: backend returns AuthResponseDto (with tokens)
+// {userId, firstName, lastName, email, role (int), userRole (string), isActive, isEmailVerified, token, refreshToken, lastLoginAt}
 class AuthResponseDto {
   final String userId;
   final String firstName;
@@ -227,7 +227,7 @@ class AuthResponseDto {
 
 // school data — classrooms, students, teachers, grades, etc.
 
-/// Student response from GET /api/school/students
+// Student response from GET /api/school/students
 class StudentDto {
   final String id;
   final String firstName;
@@ -281,7 +281,7 @@ class StudentDto {
   };
 }
 
-/// Teacher response from GET /api/school/teachers
+// Teacher response from GET /api/school/teachers
 class TeacherDto {
   final String id;
   final String firstName;
@@ -335,7 +335,7 @@ class TeacherDto {
   };
 }
 
-/// Classroom response from GET /api/school/classrooms
+// Classroom response from GET /api/school/classrooms
 class ClassroomDto {
   final String id;
   final String name;
@@ -381,7 +381,7 @@ class ClassroomDto {
       };
 }
 
-/// Classroom detail (includes student list) from GET /api/school/classrooms/{id}
+// Classroom detail (includes student list) from GET /api/school/classrooms/{id}
 class ClassroomDetailDto {
   final String id;
   final String name;
@@ -424,7 +424,7 @@ class ClassroomDetailDto {
   }
 }
 
-/// Student nested inside ClassroomDetailDto
+// Student nested inside ClassroomDetailDto
 class ClassroomStudentDto {
   final String studentId;
   final String firstName;
