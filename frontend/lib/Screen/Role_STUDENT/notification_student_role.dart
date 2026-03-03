@@ -48,6 +48,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
   ];
 
   late List<NotificationItem> allNotifications;
+  List<NotificationItem> _filteredList = [];
+
+  List<NotificationItem> _applyFilter() {
+    return allNotifications.where((item) {
+      if (activeFilter == "All") return true;
+      if (activeFilter == "Seen") return !item.isNew;
+      return item.tag == activeFilter;
+    }).toList();
+  }
 
   @override
   void initState() {
@@ -106,6 +115,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         isNew: false,
       ),
     ];
+    _filteredList = _applyFilter();
   }
 
   // --- 3. Logic: Mark All as Read ---
@@ -114,18 +124,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
       for (var item in allNotifications) {
         item.isNew = false;
       }
+      _filteredList = _applyFilter();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // --- 4. Advanced Filtering Logic ---
-    List<NotificationItem> filteredList = allNotifications.where((item) {
-      if (activeFilter == "All") return true;
-      if (activeFilter == "Seen") return !item.isNew;
-      return item.tag == activeFilter;
-    }).toList();
-
     return Scaffold(
       backgroundColor: const Color(0xFFF3F6F8),
       appBar: AppBar(
@@ -193,7 +197,10 @@ class _NotificationScreenState extends State<NotificationScreen> {
               itemBuilder: (context, index) {
                 bool isSelected = activeFilter == filters[index];
                 return Bounceable(
-                  onTap: () => setState(() => activeFilter = filters[index]),
+                  onTap: () => setState(() {
+                    activeFilter = filters[index];
+                    _filteredList = _applyFilter();
+                  }),
                   child: Container(
                     margin: const EdgeInsets.only(right: 12),
                     padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -229,14 +236,14 @@ class _NotificationScreenState extends State<NotificationScreen> {
           const SizedBox(height: 24),
           // --- 6. Notification List ---
           Expanded(
-            child: filteredList.isEmpty
+            child: _filteredList.isEmpty
                 ? _buildEmptyState()
                 : ListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     physics: const BouncingScrollPhysics(),
-                    itemCount: filteredList.length,
+                    itemCount: _filteredList.length,
                     itemBuilder: (context, index) =>
-                        _buildNotificationCard(filteredList[index]),
+                        _buildNotificationCard(_filteredList[index]),
                   ),
           ),
         ],

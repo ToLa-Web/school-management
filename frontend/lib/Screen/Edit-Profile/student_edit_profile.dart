@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:tamdansers/Login/role.dart';
+import 'package:tamdansers/services/api_models.dart';
 import 'package:tamdansers/services/api_service.dart';
 
 class StudentEditProfileScreen extends StatefulWidget {
@@ -21,6 +22,8 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
   final TextEditingController _emailController = TextEditingController();
 
   bool _isLoading = true;
+  bool _isSaving = false;
+  String _studentDbId = '';
 
   @override
   void initState() {
@@ -31,45 +34,105 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
   Future<void> _loadUserData() async {
     final apiService = ApiService();
 
-    // Fetching the data you already have stored from sign-in
+    // Start with cached auth data (fast)
     final name = await apiService.getUserName();
     final email = await apiService.getUserEmail();
-
     if (mounted) {
       setState(() {
         _nameController.text = name ?? '';
         _emailController.text = email ?? '';
-        _isLoading = false; // Data is loaded
       });
     }
+
+    // Fetch full profile from API to get phone & address
+    final entityId = await apiService.getEntityId();
+    if (entityId != null && entityId.isNotEmpty) {
+      _studentDbId = entityId;
+      final student = await apiService.getStudentById(entityId);
+      if (student != null && mounted) {
+        setState(() {
+          if (student.fullName.isNotEmpty) {
+            _nameController.text = student.fullName;
+          }
+          if (student.email?.isNotEmpty == true) {
+            _emailController.text = student.email!;
+          }
+          _phoneController.text = student.phone ?? '';
+          _addressController.text = student.address ?? '';
+        });
+      }
+    }
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
-  // Method to handle updating profile logic
   Future<void> _handleSave() async {
-    // Show a loading dialog or snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Updating profile...', style: GoogleFonts.inter()),
-        duration: const Duration(seconds: 1),
-      ),
-    );
-
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (mounted) {
+    if (_studentDbId.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Profile updated successfully!',
-            style: GoogleFonts.inter(fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: const Color(0xFF50E3C2),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          content: Text('Cannot save: student ID not found.',
+              style: GoogleFonts.inter()),
+          backgroundColor: Colors.redAccent,
         ),
       );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final apiService = ApiService();
+      final nameParts = _nameController.text.trim().split(' ');
+      final firstName = nameParts.first;
+      final lastName =
+          nameParts.length > 1 ? nameParts.sublist(1).join(' ') : '';
+
+      final updated = StudentDto(
+        id: _studentDbId,
+        firstName: firstName,
+        lastName: lastName,
+        email: _emailController.text.trim(),
+        phone: _phoneController.text.trim().isNotEmpty
+            ? _phoneController.text.trim()
+            : null,
+        address: _addressController.text.trim().isNotEmpty
+            ? _addressController.text.trim()
+            : null,
+        isActive: true,
+        createdAt: '',
+      );
+
+      final success = await apiService.updateStudent(_studentDbId, updated);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              success
+                  ? 'Profile updated successfully!'
+                  : 'Update failed. Please try again.',
+              style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+            ),
+            backgroundColor:
+                success ? const Color(0xFF50E3C2) : Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('Error: ${e.toString()}', style: GoogleFonts.inter()),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
     }
   }
 
@@ -253,7 +316,10 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
                       Expanded(
                         child: _buildModernTextField(
                           'Student ID',
-                          TextEditingController(text: 'SID-9901'),
+                          TextEditingController(
+                              text: _studentDbId.isNotEmpty
+                                  ? _studentDbId
+                                  : 'N/A'),
                           enabled: false,
                           icon: Icons.badge_rounded,
                         ),
@@ -274,7 +340,7 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
 
                   // Save Changes Button
                   Bounceable(
-                    onTap: _handleSave,
+                    onTap: _isSaving ? null : _handleSave,
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -294,14 +360,23 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
                         ],
                       ),
                       child: Center(
-                        child: Text(
-                          'Save Changes',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        child: _isSaving
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2.5,
+                                ),
+                              )
+                            : Text(
+                                'Save Changes',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -433,7 +508,7 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
               style: GoogleFonts.inter(
                 fontWeight: enabled ? FontWeight.w600 : FontWeight.w500,
                 color: enabled ? const Color(0xFF0D3B66) : Colors.grey.shade600,
-                fontSize: 15,
+                fontSize: enabled ? 15 : 13,
               ),
               decoration: InputDecoration(
                 hintText: hintText,
@@ -458,8 +533,8 @@ class _StudentEditProfileScreenState extends State<StudentEditProfileScreen> {
                       )
                     : null,
                 border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: enabled ? 16 : 10,
                   vertical: 16,
                 ),
               ),

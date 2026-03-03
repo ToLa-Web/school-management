@@ -41,6 +41,8 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       ASPNETCORE_URLS: "http://+:8080"
       ConnectionStrings__AuthDb: Host=auth-db;Port=5432;Database=auth_db;Username=auth_user;Password=auth_pass
+      EmailSettings__FromEmail: ${EMAILSETTINGS_FROM_EMAIL}
+      EmailSettings__SmtpUser: ${EMAILSETTINGS_SMTP_USER}
       EmailSettings__AppPassword: ${EMAILSETTINGS_APP_PASSWORD}
       Jwt__Secret: ${JWT_SECRET}
       Jwt__Issuer: AuthService
@@ -69,8 +71,8 @@ services:
     container_name: pgadmin_container
     image: dpage/pgadmin4:latest
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@school.com
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
     ports:
       - "5050:80"
     volumes:

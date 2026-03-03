@@ -110,7 +110,6 @@ class _TeacherScheduleDetailScreenState
     super.dispose();
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────
   Color get accent => data['accent'] ?? const Color(0xFF4A90E2);
   String get title => data['title'] ?? 'Class';
   String get time => data['time'] ?? '';
@@ -130,7 +129,6 @@ class _TeacherScheduleDetailScreenState
   double get attendanceRate =>
       (presentCount + lateCount) / students.length * 100;
 
-  // ─── BUILD ────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,10 +173,9 @@ class _TeacherScheduleDetailScreenState
     }
   }
 
-  // ─── HERO HEADER ──────────────────────────────────────────────────────
   Widget _buildHeroHeader(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 320,
+      expandedHeight: MediaQuery.of(context).size.height * 0.38,
       backgroundColor: const Color(0xFF0D3B66),
       elevation: 0,
       pinned: true,
@@ -306,12 +303,12 @@ class _TeacherScheduleDetailScreenState
                     ),
                     const SizedBox(height: 20),
                     // Info chips
-                    Row(
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 8,
                       children: [
                         _infoChip(Icons.access_time_rounded, time),
-                        const SizedBox(width: 12),
                         _infoChip(Icons.meeting_room_rounded, 'Room $room'),
-                        const SizedBox(width: 12),
                         _infoChip(Icons.people_rounded, '$studentCount'),
                       ],
                     ),
@@ -452,10 +449,12 @@ class _TeacherScheduleDetailScreenState
     );
   }
 
-  Widget _vDivider() =>
-      Container(width: 1, height: 32, color: Colors.white.withValues(alpha: 0.15));
+  Widget _vDivider() => Container(
+    width: 1,
+    height: 32,
+    color: Colors.white.withValues(alpha: 0.15),
+  );
 
-  // ─── TAB BAR ──────────────────────────────────────────────────────────
   Widget _buildTabBar() {
     return Container(
       color: Colors.white,
@@ -502,7 +501,6 @@ class _TeacherScheduleDetailScreenState
     );
   }
 
-  // ─── OVERVIEW TAB ─────────────────────────────────────────────────────
   Widget _buildOverviewTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -713,7 +711,6 @@ class _TeacherScheduleDetailScreenState
     );
   }
 
-  // ─── SHARED CARD ──────────────────────────────────────────────────────
   Widget _sectionCard({
     required IconData icon,
     required Color iconColor,
@@ -748,15 +745,19 @@ class _TeacherScheduleDetailScreenState
                 child: Icon(icon, color: iconColor, size: 20),
               ),
               const SizedBox(width: 12),
-              Text(
-                title,
-                style: GoogleFonts.outfit(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF0D3B66),
+              Expanded(
+                child: Text(
+                  title,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF0D3B66),
+                  ),
                 ),
               ),
-              if (trailing != null) ...[const Spacer(), trailing],
+              if (trailing != null) ...[trailing],
             ],
           ),
           const SizedBox(height: 16),
@@ -798,7 +799,6 @@ class _TeacherScheduleDetailScreenState
   Widget _dividerLine() =>
       Divider(height: 1, thickness: 1, color: Colors.grey.shade100);
 
-  // ─── STUDENTS TAB ─────────────────────────────────────────────────────
   Widget _buildStudentsTab() {
     return Column(
       children: [
@@ -806,14 +806,14 @@ class _TeacherScheduleDetailScreenState
         Container(
           color: Colors.white,
           padding: const EdgeInsets.fromLTRB(20, 14, 20, 14),
-          child: Row(
+          child: Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.spaceBetween,
             children: [
               _statPill('Present', presentCount, const Color(0xFF50E3C2)),
-              const SizedBox(width: 8),
               _statPill('Late', lateCount, const Color(0xFFFFB75E)),
-              const SizedBox(width: 8),
               _statPill('Absent', absentCount, const Color(0xFFFF6B6B)),
-              const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 12,
@@ -971,11 +971,14 @@ class _TeacherScheduleDetailScreenState
                   const SizedBox(height: 4),
                   Row(
                     children: [
-                      Text(
-                        student['id'],
-                        style: GoogleFonts.inter(
-                          fontSize: 11,
-                          color: Colors.grey.shade400,
+                      Flexible(
+                        child: Text(
+                          student['id'],
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontSize: 11,
+                            color: Colors.grey.shade400,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -1301,7 +1304,6 @@ class _TeacherScheduleDetailScreenState
     );
   }
 
-  // ─── ACTIONS TAB ──────────────────────────────────────────────────────
   Widget _buildActionsTab() {
     final actions = [
       {
@@ -1554,7 +1556,6 @@ class _TeacherScheduleDetailScreenState
     );
   }
 
-  // ─── BOTTOM BAR ───────────────────────────────────────────────────────
   Widget _buildBottomBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 36),
@@ -1645,7 +1646,6 @@ class _TeacherScheduleDetailScreenState
     );
   }
 
-  // ─── OPTIONS SHEET ────────────────────────────────────────────────────
   void _showOptionsSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,

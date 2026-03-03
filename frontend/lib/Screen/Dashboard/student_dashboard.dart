@@ -3,7 +3,6 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bounceable/flutter_bounceable.dart';
 import 'package:google_fonts/google_fonts.dart';
-// --- CONTROLLER & SERVICE IMPORTS ---
 import 'package:tamdansers/Controller/activity_list_widget.dart';
 import 'package:tamdansers/Controller/course_card_widget.dart';
 import 'package:tamdansers/Screen/Edit-Profile/student_edit_profile.dart';
@@ -14,11 +13,11 @@ import 'package:tamdansers/Screen/Role_STUDENT/notification_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/permision_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/schedule_student_role.dart';
 import 'package:tamdansers/Screen/Role_STUDENT/score_student_role.dart';
+import 'package:tamdansers/Screen/setting/setting_role_student.dart';
 import 'package:tamdansers/constants/app_image.dart';
 import 'package:tamdansers/services/api_service.dart';
 
 // MAIN DASHBOARD
-
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
 
@@ -39,7 +38,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
       const StudentHomeContent(),
       const StudentCoursesTab(),
       const StudentMessagesTab(),
-      StudentEditProfileScreen(onBack: () => setState(() => _pageIndex = 0)),
+      const StudentSettingsScreen(),
     ];
   }
 
@@ -204,7 +203,9 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
               backgroundColor: Colors.white,
               child: CircleAvatar(
                 radius: 26,
-                backgroundImage: AssetImage(AppImages.userProfile),
+                backgroundImage: NetworkImage(
+                  'https://img.freepik.com/free-vector/mans-face-flat-style_90220-2877.jpg?semt=ais_hybrid&w=740&q=80',
+                ),
               ),
             ),
           ),
@@ -461,11 +462,80 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
     ];
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Upcoming Events",
+                    style: GoogleFonts.outfit(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0D3B66),
+                    ),
+                  ),
+                  Text(
+                    "${events.length} events this season",
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      color: Colors.grey.shade500,
+                    ),
+                  ),
+                ],
+              ),
+              // Live pill
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF95738).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFF95738).withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 7,
+                      height: 7,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF95738),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      "LIVE",
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFFF95738),
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
         CarouselSlider.builder(
           itemCount: events.length,
           itemBuilder: (context, index, realIndex) {
             final event = events[index];
+            final Color accentColor = _getCategoryColor(event["category"]);
             return Bounceable(
               onTap: () => Navigator.push(
                 context,
@@ -474,233 +544,243 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
                 ),
               ),
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(32),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.2),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                      spreadRadius: 2,
+                      color: accentColor.withValues(alpha: 0.35),
+                      blurRadius: 24,
+                      offset: const Offset(0, 12),
+                      spreadRadius: 0,
                     ),
                   ],
-                  image: DecorationImage(
-                    image: AssetImage(event["img"]),
-                    fit: BoxFit.cover,
-                  ),
                 ),
-                child: Stack(
-                  children: [
-                    // Dark overlay gradient
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(28),
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.3),
-                            Colors.black.withValues(alpha: 0.8),
-                          ],
-                          stops: const [0.3, 0.7, 1.0],
-                        ),
-                      ),
-                    ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(32),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Image.asset(event["img"], fit: BoxFit.cover),
 
-                    // Category badge
-                    Positioned(
-                      top: 16,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
+                      Container(
                         decoration: BoxDecoration(
-                          color: _getCategoryColor(event["category"]),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: _getCategoryColor(
-                                event["category"],
-                              ).withValues(alpha: 0.5),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Text(
-                          event["category"],
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-
-                    // Event details at bottom
-                    Positioned(
-                      bottom: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          borderRadius: const BorderRadius.vertical(
-                            bottom: Radius.circular(28),
-                          ),
                           gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
                             colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.9),
+                              accentColor.withValues(alpha: 0.15),
+                              Colors.black.withValues(alpha: 0.55),
+                              Colors.black.withValues(alpha: 0.85),
                             ],
+                            stops: const [0.0, 0.5, 1.0],
                           ),
                         ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+
+                      Positioned(
+                        top: -30,
+                        left: -30,
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: accentColor.withValues(alpha: 0.18),
+                          ),
+                        ),
+                      ),
+
+                      Positioned(
+                        top: 18,
+                        left: 18,
+                        right: 18,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              event["title"],
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                letterSpacing: -0.5,
+                            // Category
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 7,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            const SizedBox(height: 8),
-
-                            // Date and time row
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(4),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(8),
+                              decoration: BoxDecoration(
+                                color: accentColor,
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: accentColor.withValues(alpha: 0.45),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
                                   ),
-                                  child: const Icon(
-                                    Icons.calendar_month_rounded,
-                                    color: Colors.white70,
-                                    size: 14,
+                                ],
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    _getCategoryIcon(event["category"]),
+                                    size: 13,
+                                    color: Colors.white,
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    "${event["date"]} • ${event["time"]}",
+                                  const SizedBox(width: 5),
+                                  Text(
+                                    event["category"],
                                     style: GoogleFonts.inter(
-                                      color: Colors.white70,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 6),
-
-                            // Location and attendees row
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(
-                                            8,
-                                          ),
-                                        ),
-                                        child: const Icon(
-                                          Icons.location_on_rounded,
-                                          color: Colors.white70,
-                                          size: 14,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          event["location"],
-                                          style: GoogleFonts.inter(
-                                            color: Colors.white70,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                            // Attendees pill (glassmorphism)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 7,
                                 ),
-
-                                // Attendees count
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                    vertical: 4,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(
-                                      0xFFF95738,
-                                    ).withValues(alpha: 0.8),
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.people_rounded,
+                                color: Colors.white.withValues(alpha: 0.18),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.people_alt_rounded,
+                                      color: Colors.white,
+                                      size: 14,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      "${event["attendees"]}",
+                                      style: GoogleFonts.inter(
                                         color: Colors.white,
-                                        size: 14,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        "${event["attendees"]}",
-                                        style: GoogleFonts.inter(
-                                          color: Colors.white,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
+
+                      Positioned(
+                        bottom: 12,
+                        left: 16,
+                        right: 16,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(22),
+                          child: Container(
+                            padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.13),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.25),
+                              ),
+                              borderRadius: BorderRadius.circular(22),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // Title
+                                Text(
+                                  event["title"],
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 17,
+                                    letterSpacing: -0.3,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                const SizedBox(height: 6),
+                                // Date & location chips
+                                Row(
+                                  children: [
+                                    _infoChip(
+                                      Icons.calendar_today_rounded,
+                                      event["date"],
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Expanded(
+                                      child: _infoChip(
+                                        Icons.location_on_rounded,
+                                        event["location"],
+                                        expand: true,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                // Time + arrow CTA
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _infoChip(
+                                        Icons.access_time_rounded,
+                                        event["time"],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 14,
+                                        vertical: 7,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: accentColor,
+                                        borderRadius: BorderRadius.circular(20),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            "Details",
+                                            style: GoogleFonts.inter(
+                                              color: Colors.white,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          const Icon(
+                                            Icons.arrow_forward_rounded,
+                                            color: Colors.white,
+                                            size: 14,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             );
           },
           options: CarouselOptions(
-            height: 300,
+            height: MediaQuery.of(context).size.height * 0.38,
             enlargeCenterPage: true,
             autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 5),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
+            autoPlayInterval: const Duration(seconds: 4),
+            autoPlayAnimationDuration: const Duration(milliseconds: 700),
+            autoPlayCurve: Curves.easeInOutCubic,
             pauseAutoPlayOnTouch: true,
-            viewportFraction: 0.85,
-            enlargeFactor: 0.2,
+            viewportFraction: 0.88,
+            enlargeFactor: 0.22,
             onPageChanged: (index, reason) {
               setState(() {
                 _currentCarouselIndex = index;
@@ -709,25 +789,70 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
           ),
         ),
 
-        // Custom page indicator
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: events.asMap().entries.map((entry) {
-            return Container(
-              width: 8.0,
-              height: 8.0,
-              margin: const EdgeInsets.symmetric(horizontal: 4.0),
+            final bool isActive = entry.key == _currentCarouselIndex;
+            final Color dotColor = _getCategoryColor(
+              events[entry.key]["category"],
+            );
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 350),
+              curve: Curves.easeInOut,
+              width: isActive ? 28 : 8,
+              height: 8,
+              margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(
-                  0xFF0D3B66,
-                ).withValues(alpha: entry.key == _currentCarouselIndex ? 1 : 0.3),
+                borderRadius: BorderRadius.circular(8),
+                color: isActive
+                    ? dotColor
+                    : const Color(0xFF0D3B66).withValues(alpha: 0.18),
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: dotColor.withValues(alpha: 0.45),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : [],
               ),
             );
           }).toList(),
         ),
       ],
+    );
+  }
+
+  /// Small frosted-glass info chip used inside carousel card
+  Widget _infoChip(IconData icon, String label, {bool expand = false}) {
+    Widget content = Row(
+      mainAxisSize: expand ? MainAxisSize.max : MainAxisSize.min,
+      children: [
+        Icon(icon, color: Colors.white70, size: 12),
+        const SizedBox(width: 5),
+        Flexible(
+          child: Text(
+            label,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ],
+    );
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        color: Colors.white.withValues(alpha: 0.15),
+        child: content,
+      ),
     );
   }
 
@@ -746,11 +871,24 @@ class _StudentHomeContentState extends State<StudentHomeContent> {
         return const Color(0xFFF95738);
     }
   }
+
+  // Helper method for category icons
+  IconData _getCategoryIcon(String category) {
+    switch (category) {
+      case "Sports":
+        return Icons.sports_soccer_rounded;
+      case "Technology":
+        return Icons.computer_rounded;
+      case "Science":
+        return Icons.science_rounded;
+      case "Arts":
+        return Icons.music_note_rounded;
+      default:
+        return Icons.event_rounded;
+    }
+  }
 }
 
-// =============================================================================
-// PROGRESS SCREENS
-// =============================================================================
 class AllProgressScreen extends StatelessWidget {
   const AllProgressScreen({super.key});
 
@@ -1329,7 +1467,9 @@ class EventDetailScreen extends StatelessWidget {
                             Container(
                               padding: const EdgeInsets.all(10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0D3B66).withValues(alpha: 0.1),
+                                color: const Color(
+                                  0xFF0D3B66,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: const Icon(
@@ -1367,7 +1507,9 @@ class EventDetailScreen extends StatelessWidget {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF50E3C2).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF50E3C2,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
@@ -1431,7 +1573,9 @@ class EventDetailScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF0D3B66).withValues(alpha: 0.3),
+                            color: const Color(
+                              0xFF0D3B66,
+                            ).withValues(alpha: 0.3),
                             blurRadius: 15,
                             offset: const Offset(0, 8),
                           ),
@@ -1664,11 +1808,7 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
   String _searchQuery = '';
   bool _isLoading = true;
 
-  final List<String> _categories = [
-    'All',
-    'Active',
-    'Inactive',
-  ];
+  final List<String> _categories = ['All', 'Active', 'Inactive'];
 
   List<Map<String, dynamic>> _allCourses = [];
 
@@ -1740,9 +1880,10 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: Column(
-        children: [
-          // ── Header ──
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
             child: Row(
@@ -1816,7 +1957,6 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 20),
 
-          // ── Overall Progress Card ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -1847,9 +1987,18 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
                           height: 70,
                           width: 70,
                           child: CircularProgressIndicator(
-                            value: _allCourses.isEmpty ? 0.0 : _allCourses.where((c) => c['category'] == 'Active').length / _allCourses.length,
+                            value: _allCourses.isEmpty
+                                ? 0.0
+                                : _allCourses
+                                          .where(
+                                            (c) => c['category'] == 'Active',
+                                          )
+                                          .length /
+                                      _allCourses.length,
                             strokeWidth: 7,
-                            backgroundColor: Colors.white.withValues(alpha: 0.15),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.15,
+                            ),
                             valueColor: const AlwaysStoppedAnimation<Color>(
                               Color(0xFF50E3C2),
                             ),
@@ -1918,7 +2067,6 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 20),
 
-          // ── Search Bar ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -1963,7 +2111,6 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 16),
 
-          // ── Category Chips ──
           SizedBox(
             height: 42,
             child: ListView.builder(
@@ -2026,44 +2173,45 @@ class _StudentCoursesTabState extends State<StudentCoursesTab> {
 
           const SizedBox(height: 16),
 
-          // ── Course List ──
-          Expanded(
-            child: _filteredCourses.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: 64,
-                          color: Colors.grey.shade300,
+          _filteredCourses.isEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 40, bottom: 40),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.search_off_rounded,
+                        size: 64,
+                        color: Colors.grey.shade300,
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'No courses found',
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          color: Colors.grey.shade400,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'No courses found',
-                          style: GoogleFonts.outfit(
-                            fontSize: 18,
-                            color: Colors.grey.shade400,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 4,
-                    ),
-                    itemCount: _filteredCourses.length,
-                    itemBuilder: (context, index) {
-                      final course = _filteredCourses[index];
-                      return _buildCourseCard(course);
-                    },
+                      ),
+                    ],
                   ),
-          ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 4,
+                  ),
+                  itemCount: _filteredCourses.length,
+                  itemBuilder: (context, index) {
+                    final course = _filteredCourses[index];
+                    return _buildCourseCard(course);
+                  },
+                ),
+          const SizedBox(height: 16),
         ],
+        ),
       ),
     );
   }
@@ -2343,10 +2491,12 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
   @override
   Widget build(BuildContext context) {
+    final double listHeight = MediaQuery.of(context).size.height * 0.55;
     return SafeArea(
-      child: Column(
-        children: [
-          // ── Header ──
+      child: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
+        child: Column(
+          children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
             child: Row(
@@ -2404,7 +2554,9 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
                       borderRadius: BorderRadius.circular(14),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF0D3B66).withValues(alpha: 0.25),
+                          color: const Color(
+                            0xFF0D3B66,
+                          ).withValues(alpha: 0.25),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -2423,7 +2575,6 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
           const SizedBox(height: 20),
 
-          // ── Tab Bar ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -2475,7 +2626,9 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
                             decoration: BoxDecoration(
                               color: _msgTabController.index == 0
                                   ? const Color(0xFFF95738)
-                                  : const Color(0xFFF95738).withValues(alpha: 0.15),
+                                  : const Color(
+                                      0xFFF95738,
+                                    ).withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: Text(
@@ -2502,7 +2655,6 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
           const SizedBox(height: 16),
 
-          // ── Search Bar ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Container(
@@ -2547,7 +2699,6 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
 
           const SizedBox(height: 8),
 
-          // ── Online Now (horizontal list) ──
           SizedBox(
             height: 96,
             child: ListView.builder(
@@ -2575,14 +2726,16 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
                               gradient: LinearGradient(
                                 colors: [
                                   user['color'] as Color,
-                                  (user['color'] as Color).withValues(alpha: 0.6),
+                                  (user['color'] as Color).withValues(
+                                    alpha: 0.6,
+                                  ),
                                 ],
                               ),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: (user['color'] as Color).withValues(alpha: 
-                                    0.3,
+                                  color: (user['color'] as Color).withValues(
+                                    alpha: 0.3,
                                   ),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
@@ -2634,8 +2787,8 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
             ),
           ),
 
-          // ── Conversations List ──
-          Expanded(
+          SizedBox(
+            height: listHeight,
             child: TabBarView(
               controller: _msgTabController,
               children: [
@@ -2653,7 +2806,9 @@ class _StudentMessagesTabState extends State<StudentMessagesTab>
               ],
             ),
           ),
+          const SizedBox(height: 16),
         ],
+        ),
       ),
     );
   }

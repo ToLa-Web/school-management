@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:tamdansers/constants/app_image.dart';
+import 'package:tamdansers/routes/app_routes.dart';
 import 'package:tamdansers/services/api_models.dart';
 import 'package:tamdansers/services/api_service.dart';
 import 'package:tamdansers/services/oauth_service.dart';
@@ -83,6 +84,8 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        // Clear any stale entity_id from a previous session BEFORE lookup.
+        await _apiService.saveEntityId('');
         // Look up the school-service student record by matching email
         try {
           final students = await _apiService.getStudents();
@@ -101,7 +104,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/StudentDashboard',
+          AppRoutes.studentDashboard,
           (route) => false,
         );
       } else {
@@ -131,6 +134,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        await _apiService.saveEntityId('');
         try {
           final students = await _apiService.getStudents();
           final emailLower = response.email.toLowerCase();
@@ -147,7 +151,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/StudentDashboard',
+          AppRoutes.studentDashboard,
           (route) => false,
         );
       }
@@ -175,6 +179,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           username: response.fullName,
           email: response.email,
         );
+        await _apiService.saveEntityId('');
         try {
           final students = await _apiService.getStudents();
           final emailLower = response.email.toLowerCase();
@@ -191,7 +196,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
         if (!mounted) return;
         Navigator.pushNamedAndRemoveUntil(
           context,
-          '/StudentDashboard',
+          AppRoutes.studentDashboard,
           (route) => false,
         );
       }
@@ -331,8 +336,10 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () =>
-                                Navigator.pushNamed(context, '/ForgotPassword'),
+                            onPressed: () => Navigator.pushNamed(
+                              context,
+                              AppRoutes.forgotPassword,
+                            ),
                             style: TextButton.styleFrom(
                               padding: const EdgeInsets.symmetric(vertical: 4),
                             ),
@@ -587,7 +594,7 @@ class _StudentLoginScreenState extends State<StudentLoginScreen>
           style: TextStyle(color: Colors.grey.shade600, fontSize: 14),
         ),
         GestureDetector(
-          onTap: () => Navigator.pushNamed(context, '/RegisterScreen'),
+          onTap: () => Navigator.pushNamed(context, AppRoutes.register),
           child: Text(
             "Sign up",
             style: TextStyle(
