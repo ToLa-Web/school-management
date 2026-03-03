@@ -15,20 +15,16 @@ class OAuthService {
 
   // set up the Google Sign-In plugin (required once before calling signIn)
   Future<void> initializeGoogle() async {
-    // Note: 'scopes' is no longer a parameter here.
     await _googleSignIn.initialize(
       serverClientId:
-          'REMOVED_GOOGLE_CLIENT_ID',
+          const String.fromEnvironment('GOOGLE_SERVER_CLIENT_ID'),
     );
   }
 
   // open the Google sign-in dialog, get the ID token, send it to our backend
   Future<AuthResponseDto?> signInWithGoogle() async {
     try {
-      // Ensure plugin is initialized
       await initializeGoogle();
-
-      // FIX: Use 'authenticate' and pass scopes into 'scopeHint'
       final account = await _googleSignIn.authenticate(
         scopeHint: ['email', 'profile'],
       );

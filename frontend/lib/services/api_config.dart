@@ -1,8 +1,8 @@
 class ApiConfig {
-  // change this URL to match wherever your backend is running:
+  // Change this URL to match wherever your backend is running:
   //   Android emulator  → http://10.0.2.2:5001
   //   Chrome / Windows  → http://localhost:5001
-  //   Physical phone    → http://<YOUR_LAN_IP>:5001  (run ipconfig to find it)
+  //   Physical phone    → http://<YOUR_LAN_IP>:5001  (run ipconfig to find your IP)
   static const String baseUrl = 'http://10.0.2.2:5001';
 
   static const String registerEndpoint = '/api/auth/register';
