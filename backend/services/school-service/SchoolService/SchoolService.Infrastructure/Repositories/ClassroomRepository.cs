@@ -18,6 +18,7 @@ public class ClassroomRepository : IClassroomRepository
         => await _context.Classrooms
             .AsNoTracking()
             .Include(c => c.Teacher)
+            .Include(c => c.Room)
             .Include(c => c.StudentClassrooms)
             .ToListAsync();
 
@@ -26,6 +27,7 @@ public class ClassroomRepository : IClassroomRepository
         var query = _context.Classrooms
             .AsNoTracking()
             .Include(c => c.Teacher)
+            .Include(c => c.Room)
             .Include(c => c.StudentClassrooms)
             .OrderBy(c => c.Name);
         var total = await query.CountAsync();
@@ -39,6 +41,7 @@ public class ClassroomRepository : IClassroomRepository
     public async Task<Classroom?> GetByIdWithDetailsAsync(Guid id)
         => await _context.Classrooms
             .Include(c => c.Teacher)
+            .Include(c => c.Room)
             .Include(c => c.StudentClassrooms)
                 .ThenInclude(sc => sc.Student)
             .FirstOrDefaultAsync(c => c.Id == id);
@@ -74,6 +77,12 @@ public class ClassroomRepository : IClassroomRepository
     public async Task RemoveEnrollmentAsync(StudentClassroom enrollment)
     {
         _context.StudentClassrooms.Remove(enrollment);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateEnrollmentAsync(StudentClassroom enrollment)
+    {
+        _context.StudentClassrooms.Update(enrollment);
         await _context.SaveChangesAsync();
     }
 }

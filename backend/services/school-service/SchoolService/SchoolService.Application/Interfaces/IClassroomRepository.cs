@@ -14,4 +14,5 @@ public interface IClassroomRepository
     Task<StudentClassroom?> GetEnrollmentAsync(Guid classroomId, Guid studentId);
     Task AddEnrollmentAsync(StudentClassroom enrollment);
     Task RemoveEnrollmentAsync(StudentClassroom enrollment);
+    Task UpdateEnrollmentAsync(StudentClassroom enrollment);
 }

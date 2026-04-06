@@ -5,11 +5,11 @@ namespace SchoolService.Application.DTOs.Teachers;
 public class TeacherCreateDto
 {
     [Required(ErrorMessage = "FirstName is required.")]
-    [StringLength(100, ErrorMessage = "FirstName cannot exceed 100 characters.")]
+    [StringLength(100)]
     public string FirstName { get; set; } = null!;
 
     [Required(ErrorMessage = "LastName is required.")]
-    [StringLength(100, ErrorMessage = "LastName cannot exceed 100 characters.")]
+    [StringLength(100)]
     public string LastName { get; set; } = null!;
 
     [StringLength(10)]
@@ -26,16 +26,21 @@ public class TeacherCreateDto
 
     [StringLength(200)]
     public string? Specialization { get; set; }
+
+    [StringLength(150)]
+    public string? Department { get; set; }
+
+    public DateOnly? HireDate { get; set; }
 }
 
 public class TeacherUpdateDto
 {
     [Required(ErrorMessage = "FirstName is required.")]
-    [StringLength(100, ErrorMessage = "FirstName cannot exceed 100 characters.")]
+    [StringLength(100)]
     public string FirstName { get; set; } = null!;
 
     [Required(ErrorMessage = "LastName is required.")]
-    [StringLength(100, ErrorMessage = "LastName cannot exceed 100 characters.")]
+    [StringLength(100)]
     public string LastName { get; set; } = null!;
 
     [StringLength(10)]
@@ -52,6 +57,11 @@ public class TeacherUpdateDto
 
     [StringLength(200)]
     public string? Specialization { get; set; }
+
+    [StringLength(150)]
+    public string? Department { get; set; }
+
+    public DateOnly? HireDate { get; set; }
 
     public bool IsActive { get; set; } = true;
 }
@@ -66,6 +76,8 @@ public class TeacherResponseDto
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Specialization { get; set; }
+    public string? Department { get; set; }
+    public DateOnly? HireDate { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
 }

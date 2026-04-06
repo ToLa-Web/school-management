@@ -1,5 +1,29 @@
-import { redirect } from 'next/navigation';
+'use client';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getUser } from '@/lib/auth';
 
 export default function Home() {
-  redirect('/dashboard');
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = getUser();
+    if (!user) {
+      router.replace('/login');
+      return;
+    }
+    
+    // Redirect based on role (Admin=4, Teacher=1, Student=2)
+    if (user.role === 4) {
+      router.replace('/admin/dashboard');
+    } else if (user.role === 1) {
+      router.replace('/teacher/dashboard');
+    } else if (user.role === 2) {
+      router.replace('/student/dashboard');
+    } else {
+      router.replace('/login');
+    }
+  }, [router]);
+
+  return null;
 }

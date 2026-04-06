@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
 
 namespace SchoolService.Application.DTOs.Schedules;
 
@@ -13,13 +12,21 @@ public class ScheduleCreateDto
 
     public Guid? TeacherId { get; set; }
 
+    /// <summary>1=Monday … 7=Sunday</summary>
     [Required]
-    [StringLength(20)]
-    public string Day { get; set; } = null!;
+    [Range(1, 7)]
+    public int DayOfWeek { get; set; }
 
+    /// <summary>Format: HH:mm (e.g. "08:00")</summary>
     [Required]
-    [StringLength(30)]
-    public string Time { get; set; } = null!;
+    public TimeOnly StartTime { get; set; }
+
+    /// <summary>Format: HH:mm (e.g. "09:30")</summary>
+    [Required]
+    public TimeOnly EndTime { get; set; }
+
+    /// <summary>1=Regular, 2=MakeUp, 3=Consultation</summary>
+    public int Type { get; set; } = 1;
 }
 
 public class ScheduleUpdateDto
@@ -27,12 +34,16 @@ public class ScheduleUpdateDto
     public Guid? TeacherId { get; set; }
 
     [Required]
-    [StringLength(20)]
-    public string Day { get; set; } = null!;
+    [Range(1, 7)]
+    public int DayOfWeek { get; set; }
 
     [Required]
-    [StringLength(30)]
-    public string Time { get; set; } = null!;
+    public TimeOnly StartTime { get; set; }
+
+    [Required]
+    public TimeOnly EndTime { get; set; }
+
+    public int Type { get; set; } = 1;
 }
 
 public class ScheduleResponseDto
@@ -44,6 +55,10 @@ public class ScheduleResponseDto
     public string SubjectName { get; set; } = null!;
     public Guid? TeacherId { get; set; }
     public string? TeacherName { get; set; }
-    public string Day { get; set; } = null!;
-    public string Time { get; set; } = null!;
+    public int DayOfWeek { get; set; }
+    public string DayOfWeekName { get; set; } = null!;
+    public TimeOnly StartTime { get; set; }
+    public TimeOnly EndTime { get; set; }
+    public int Type { get; set; }
+    public string TypeName { get; set; } = null!;
 }

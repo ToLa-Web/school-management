@@ -21,6 +21,9 @@ public class BulkMarkAttendanceDto
     [Required]
     public DateOnly Date { get; set; }
 
+    /// <summary>Optional: ties the attendance batch to a specific schedule session.</summary>
+    public Guid? ScheduleId { get; set; }
+
     [Required]
     [MinLength(1)]
     public List<AttendanceMarkDto> Records { get; set; } = new();
@@ -33,6 +36,7 @@ public class AttendanceResponseDto
     public string StudentName { get; set; } = null!;
     public Guid? ClassroomId { get; set; }
     public string? ClassroomName { get; set; }
+    public Guid? ScheduleId { get; set; }
     public DateOnly Date { get; set; }
     /// <summary>"Present" | "Absent" | "Late"</summary>
     public string Status { get; set; } = null!;

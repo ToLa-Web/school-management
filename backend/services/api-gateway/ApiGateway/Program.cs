@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
 using Yarp.ReverseProxy;
@@ -23,14 +24,11 @@ builder.Services.AddSingleton<Consul.IConsulClient>(sp => new Consul.ConsulClien
     cfg.Address = new Uri($"http://{consulHost}:{consulPort}");
 }));
 
-// Load static config from appsettings.json as the initial/fallback config
 builder.Services.AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
 var app = builder.Build();
 
-// Try to discover registered services from Consul in the background.
-// If successful, update YARP's config with discovered routes/clusters.
 _ = Task.Run(async () =>
 {
     var consulHost = builder.Configuration["consul:host"] ?? "consul";
@@ -76,23 +74,23 @@ app.Use(async (context, next) =>
     {
         await next();
     }
-    catch (Exception ex)
+    catch (Exception exception)
     {
         var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Unhandled exception in API Gateway");
+        var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
 
-        context.Response.StatusCode = (int)HttpStatusCode.BadGateway;
+        logger.LogError(
+            exception,
+            "Unhandled gateway exception for {Method} {Path}. TraceId: {TraceId}",
+            context.Request.Method,
+            context.Request.Path,
+            traceId);
+
         context.Response.ContentType = "application/json";
 
-        var payload = JsonSerializer.Serialize(new
-        {
-            message = "Gateway error: upstream service is unavailable.",
-            code = "BAD_GATEWAY",
-#if DEBUG
-            details = ex.Message
-#endif
-        });
-        await context.Response.WriteAsync(payload);
+        var response = MapGatewayException(exception, traceId, context.Request.Path.Value, app.Environment.IsDevelopment());
+        context.Response.StatusCode = response.statusCode;
+        await context.Response.WriteAsync(JsonSerializer.Serialize(response));
     }
 });
 
@@ -100,3 +98,52 @@ app.MapReverseProxy();
 
 app.Run();
 
+static GatewayErrorResponse MapGatewayException(Exception exception, string traceId, string? path, bool includeDebugDetails)
+{
+    var response = new GatewayErrorResponse
+    {
+        message = "The gateway could not complete the request.",
+        code = "BAD_GATEWAY",
+        traceId = traceId,
+        statusCode = (int)HttpStatusCode.BadGateway,
+        path = path,
+        details = includeDebugDetails ? exception.Message : $"See traceId '{traceId}' in gateway logs.",
+        stackTrace = includeDebugDetails ? exception.StackTrace : null,
+    };
+
+    switch (exception)
+    {
+        case HttpRequestException ex:
+            response.message = "The gateway could not reach an upstream service.";
+            response.code = "UPSTREAM_UNAVAILABLE";
+            response.details = includeDebugDetails ? ex.Message : response.details;
+            break;
+
+        case TaskCanceledException ex:
+            response.message = "The gateway timed out while waiting for an upstream service.";
+            response.code = "UPSTREAM_TIMEOUT";
+            response.statusCode = (int)HttpStatusCode.GatewayTimeout;
+            response.details = includeDebugDetails ? ex.Message : response.details;
+            break;
+
+        case BadHttpRequestException ex:
+            response.message = "The gateway rejected the incoming request.";
+            response.code = "BAD_REQUEST";
+            response.statusCode = (int)HttpStatusCode.BadRequest;
+            response.details = ex.Message;
+            break;
+    }
+
+    return response;
+}
+
+public class GatewayErrorResponse
+{
+    public string message { get; set; } = string.Empty;
+    public string code { get; set; } = string.Empty;
+    public string? details { get; set; }
+    public string? stackTrace { get; set; }
+    public string? traceId { get; set; }
+    public int statusCode { get; set; }
+    public string? path { get; set; }
+}

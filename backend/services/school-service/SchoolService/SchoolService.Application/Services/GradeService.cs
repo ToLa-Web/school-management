@@ -10,15 +10,18 @@ public class GradeService : IGradeService
     private readonly IGradeRepository _gradeRepository;
     private readonly IStudentRepository _studentRepository;
     private readonly ISubjectRepository _subjectRepository;
+    private readonly IClassroomRepository _classroomRepository;
 
     public GradeService(
         IGradeRepository gradeRepository,
         IStudentRepository studentRepository,
-        ISubjectRepository subjectRepository)
+        ISubjectRepository subjectRepository,
+        IClassroomRepository classroomRepository)
     {
-        _gradeRepository = gradeRepository;
-        _studentRepository = studentRepository;
-        _subjectRepository = subjectRepository;
+        _gradeRepository    = gradeRepository;
+        _studentRepository  = studentRepository;
+        _subjectRepository  = subjectRepository;
+        _classroomRepository = classroomRepository;
     }
 
     public async Task<IReadOnlyList<GradeResponseDto>> GetAllAsync(Guid? studentId, Guid? subjectId, string? semester)
@@ -42,10 +45,17 @@ public class GradeService : IGradeService
         var subject = await _subjectRepository.GetByIdAsync(dto.SubjectId);
         if (subject == null) throw new NotFoundException("Subject", dto.SubjectId);
 
-        var grade = new StudentGrade(dto.StudentId, dto.SubjectId, dto.Score, dto.Semester);
+        if (dto.ClassroomId.HasValue)
+        {
+            var classroom = await _classroomRepository.GetByIdAsync(dto.ClassroomId.Value);
+            if (classroom == null) throw new NotFoundException("Classroom", dto.ClassroomId.Value);
+        }
+
+        var grade = new StudentGrade(
+            dto.StudentId, dto.SubjectId, dto.Score, dto.Semester,
+            dto.ClassroomId, (GradingMethod)dto.GradingMethod);
         await _gradeRepository.AddAsync(grade);
 
-        // Reload with navigation properties
         grade = await _gradeRepository.GetByIdAsync(grade.Id) ?? grade;
         return MapToResponse(grade);
     }
@@ -55,7 +65,7 @@ public class GradeService : IGradeService
         var grade = await _gradeRepository.GetByIdAsync(id);
         if (grade == null) throw new NotFoundException("Grade", id);
 
-        grade.UpdateScore(dto.Score, dto.Semester);
+        grade.UpdateScore(dto.Score, dto.Semester, (GradingMethod)dto.GradingMethod);
         await _gradeRepository.UpdateAsync(grade);
         return MapToResponse(grade);
     }
@@ -69,13 +79,17 @@ public class GradeService : IGradeService
 
     private static GradeResponseDto MapToResponse(StudentGrade g) => new()
     {
-        Id = g.Id,
-        StudentId = g.StudentId,
-        StudentName = g.Student != null ? $"{g.Student.FirstName} {g.Student.LastName}" : "",
-        SubjectId = g.SubjectId,
-        SubjectName = g.Subject?.SubjectName ?? "",
-        Score = g.Score,
-        Semester = g.Semester,
-        CreatedAt = g.CreatedAt
+        Id                = g.Id,
+        StudentId         = g.StudentId,
+        StudentName       = g.Student != null ? $"{g.Student.FirstName} {g.Student.LastName}" : "",
+        SubjectId         = g.SubjectId,
+        SubjectName       = g.Subject?.SubjectName ?? "",
+        ClassroomId       = g.ClassroomId,
+        ClassroomName     = g.Classroom?.Name,
+        Score             = g.Score,
+        Semester          = g.Semester,
+        GradingMethod     = (int)g.GradingMethod,
+        GradingMethodName = g.GradingMethod.ToString(),
+        CreatedAt         = g.CreatedAt
     };
 }

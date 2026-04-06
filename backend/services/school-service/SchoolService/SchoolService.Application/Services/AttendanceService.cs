@@ -35,7 +35,7 @@ public class AttendanceService : IAttendanceService
         var classroom = await _classroomRepository.GetByIdAsync(dto.ClassroomId);
         if (classroom == null) throw new NotFoundException("Classroom", dto.ClassroomId);
 
-        var toAdd = new List<Attendance>();
+        var toAdd    = new List<Attendance>();
         var toUpdate = new List<Attendance>();
 
         foreach (var record in dto.Records)
@@ -51,7 +51,7 @@ public class AttendanceService : IAttendanceService
             }
             else
             {
-                toAdd.Add(new Attendance(record.StudentId, dto.ClassroomId, dto.Date, status));
+                toAdd.Add(new Attendance(record.StudentId, dto.ClassroomId, dto.Date, status, dto.ScheduleId));
             }
         }
 
@@ -64,13 +64,14 @@ public class AttendanceService : IAttendanceService
 
     private static AttendanceResponseDto MapToResponse(Attendance a) => new()
     {
-        Id = a.Id,
-        StudentId = a.StudentId,
-        StudentName = a.Student != null ? $"{a.Student.FirstName} {a.Student.LastName}" : "",
-        ClassroomId = a.ClassroomId,
+        Id            = a.Id,
+        StudentId     = a.StudentId,
+        StudentName   = a.Student != null ? $"{a.Student.FirstName} {a.Student.LastName}" : "",
+        ClassroomId   = a.ClassroomId,
         ClassroomName = a.Classroom?.Name,
-        Date = a.Date,
-        Status = a.Status.ToString(),
-        CreatedAt = a.CreatedAt
+        ScheduleId    = a.ScheduleId,
+        Date          = a.Date,
+        Status        = a.Status.ToString(),
+        CreatedAt     = a.CreatedAt
     };
 }

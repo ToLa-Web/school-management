@@ -18,32 +18,28 @@ public class TeacherService : ITeacherService
     public async Task<IReadOnlyList<TeacherResponseDto>> GetAllAsync()
     {
         var teachers = await _repository.GetAllAsync();
-        return teachers
-            .Select(MapToResponse)
-            .ToList();
+        return teachers.Select(MapToResponse).ToList();
     }
 
     public async Task<PagedResult<TeacherResponseDto>> GetAllAsync(int page, int pageSize)
     {
-        page = Math.Max(1, page);
+        page     = Math.Max(1, page);
         pageSize = Math.Clamp(pageSize, 1, 100);
 
         var (items, total) = await _repository.GetPagedAsync(page, pageSize);
         return new PagedResult<TeacherResponseDto>
         {
-            Items = items.Select(MapToResponse).ToList(),
+            Items      = items.Select(MapToResponse).ToList(),
             TotalCount = total,
-            Page = page,
-            PageSize = pageSize
+            Page       = page,
+            PageSize   = pageSize
         };
     }
 
     public async Task<TeacherResponseDto> GetByIdAsync(Guid id)
     {
         var teacher = await _repository.GetByIdAsync(id);
-        if (teacher == null)
-            throw new NotFoundException("Teacher", id);
-
+        if (teacher == null) throw new NotFoundException("Teacher", id);
         return MapToResponse(teacher);
     }
 
@@ -51,13 +47,8 @@ public class TeacherService : ITeacherService
     {
         var teacher = new Teacher(dto.FirstName, dto.LastName);
         teacher.UpdateBasicInfo(
-            dto.FirstName,
-            dto.LastName,
-            dto.Gender,
-            dto.DateOfBirth,
-            dto.Phone,
-            dto.Email,
-            dto.Specialization);
+            dto.FirstName, dto.LastName, dto.Gender, dto.DateOfBirth,
+            dto.Phone, dto.Email, dto.Specialization, dto.Department, dto.HireDate);
 
         await _repository.AddAsync(teacher);
         return MapToResponse(teacher);
@@ -66,22 +57,13 @@ public class TeacherService : ITeacherService
     public async Task<TeacherResponseDto> UpdateAsync(Guid id, TeacherUpdateDto dto)
     {
         var teacher = await _repository.GetByIdAsync(id);
-        if (teacher == null)
-            throw new NotFoundException("Teacher", id);
+        if (teacher == null) throw new NotFoundException("Teacher", id);
 
         teacher.UpdateBasicInfo(
-            dto.FirstName,
-            dto.LastName,
-            dto.Gender,
-            dto.DateOfBirth,
-            dto.Phone,
-            dto.Email,
-            dto.Specialization);
+            dto.FirstName, dto.LastName, dto.Gender, dto.DateOfBirth,
+            dto.Phone, dto.Email, dto.Specialization, dto.Department, dto.HireDate);
 
-        if (dto.IsActive)
-            teacher.Activate();
-        else
-            teacher.Deactivate();
+        if (dto.IsActive) teacher.Activate(); else teacher.Deactivate();
 
         await _repository.UpdateAsync(teacher);
         return MapToResponse(teacher);
@@ -90,23 +72,23 @@ public class TeacherService : ITeacherService
     public async Task DeleteAsync(Guid id)
     {
         var teacher = await _repository.GetByIdAsync(id);
-        if (teacher == null)
-            throw new NotFoundException("Teacher", id);
-
+        if (teacher == null) throw new NotFoundException("Teacher", id);
         await _repository.DeleteAsync(teacher);
     }
 
     private static TeacherResponseDto MapToResponse(Teacher t) => new()
     {
-        Id = t.Id,
-        FirstName = t.FirstName,
-        LastName = t.LastName,
-        Gender = t.Gender,
-        DateOfBirth = t.DateOfBirth,
-        Phone = t.Phone,
-        Email = t.Email,
+        Id             = t.Id,
+        FirstName      = t.FirstName,
+        LastName       = t.LastName,
+        Gender         = t.Gender,
+        DateOfBirth    = t.DateOfBirth,
+        Phone          = t.Phone,
+        Email          = t.Email,
         Specialization = t.Specialization,
-        IsActive = t.IsActive,
-        CreatedAt = t.CreatedAt
+        Department     = t.Department,
+        HireDate       = t.HireDate,
+        IsActive       = t.IsActive,
+        CreatedAt      = t.CreatedAt
     };
 }

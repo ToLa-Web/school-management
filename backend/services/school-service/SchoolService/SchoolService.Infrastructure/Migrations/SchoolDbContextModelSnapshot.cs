@@ -17,10 +17,46 @@ namespace SchoolService.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.24")
+                .HasAnnotation("ProductVersion", "8.0.25")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("SchoolService.Domain.Entities.Announcement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("AuthorTeacherId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("ClassroomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("PublishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuthorTeacherId");
+
+                    b.HasIndex("ClassroomId");
+
+                    b.ToTable("Announcements");
+                });
 
             modelBuilder.Entity("SchoolService.Domain.Entities.Attendance", b =>
                 {
@@ -37,6 +73,9 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Property<DateOnly>("Date")
                         .HasColumnType("date");
 
+                    b.Property<Guid?>("ScheduleId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
@@ -46,6 +85,8 @@ namespace SchoolService.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClassroomId");
+
+                    b.HasIndex("ScheduleId");
 
                     b.HasIndex("StudentId");
 
@@ -65,6 +106,9 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Grade")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
@@ -77,39 +121,100 @@ namespace SchoolService.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<Guid?>("RoomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Semester")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
                     b.Property<Guid?>("TeacherId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("RoomId");
 
                     b.HasIndex("TeacherId");
 
                     b.ToTable("Classrooms");
                 });
 
-            modelBuilder.Entity("SchoolService.Domain.Entities.Enrollment", b =>
+            modelBuilder.Entity("SchoolService.Domain.Entities.Material", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("EnrolledAt")
+                    b.Property<Guid>("ClassroomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("StudentId")
-                        .HasColumnType("uuid");
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("SubjectId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Url")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SubjectId");
+                    b.HasIndex("ClassroomId");
 
-                    b.HasIndex("StudentId", "SubjectId")
-                        .IsUnique();
+                    b.ToTable("Materials");
+                });
 
-                    b.ToTable("Enrollments");
+            modelBuilder.Entity("SchoolService.Domain.Entities.Room", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Capacity")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Rooms");
                 });
 
             modelBuilder.Entity("SchoolService.Domain.Entities.Schedule", b =>
@@ -124,10 +229,17 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Day")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<TimeOnly>("EndTime")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<TimeOnly>("StartTime")
+                        .HasColumnType("time without time zone");
 
                     b.Property<Guid>("SubjectId")
                         .HasColumnType("uuid");
@@ -135,10 +247,8 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Property<Guid?>("TeacherId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Time")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("character varying(30)");
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -168,6 +278,9 @@ namespace SchoolService.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Email")
@@ -214,6 +327,12 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("UnenrolledAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("StudentId", "ClassroomId");
 
                     b.HasIndex("ClassroomId");
@@ -227,8 +346,14 @@ namespace SchoolService.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ClassroomId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("GradingMethod")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Score")
                         .HasPrecision(5, 2)
@@ -247,6 +372,8 @@ namespace SchoolService.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ClassroomId");
+
                     b.HasIndex("StudentId");
 
                     b.HasIndex("SubjectId");
@@ -260,8 +387,23 @@ namespace SchoolService.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("Category")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Code")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Department")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -271,9 +413,47 @@ namespace SchoolService.Infrastructure.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)");
 
+                    b.Property<int>("YearLevel")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("Subjects");
+                });
+
+            modelBuilder.Entity("SchoolService.Domain.Entities.Submission", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Feedback")
+                        .HasColumnType("text");
+
+                    b.Property<decimal?>("Grade")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)");
+
+                    b.Property<Guid>("MaterialId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StudentId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SubmissionUrl")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MaterialId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("Submissions");
                 });
 
             modelBuilder.Entity("SchoolService.Domain.Entities.Teacher", b =>
@@ -291,6 +471,13 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Department")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
                     b.Property<string>("Email")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -303,6 +490,9 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Property<string>("Gender")
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<DateOnly?>("HireDate")
+                        .HasColumnType("date");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
@@ -344,11 +534,34 @@ namespace SchoolService.Infrastructure.Migrations
                     b.ToTable("TeacherSubjects");
                 });
 
+            modelBuilder.Entity("SchoolService.Domain.Entities.Announcement", b =>
+                {
+                    b.HasOne("SchoolService.Domain.Entities.Teacher", "AuthorTeacher")
+                        .WithMany()
+                        .HasForeignKey("AuthorTeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolService.Domain.Entities.Classroom", "Classroom")
+                        .WithMany()
+                        .HasForeignKey("ClassroomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AuthorTeacher");
+
+                    b.Navigation("Classroom");
+                });
+
             modelBuilder.Entity("SchoolService.Domain.Entities.Attendance", b =>
                 {
                     b.HasOne("SchoolService.Domain.Entities.Classroom", "Classroom")
                         .WithMany()
                         .HasForeignKey("ClassroomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("SchoolService.Domain.Entities.Schedule", "Schedule")
+                        .WithMany()
+                        .HasForeignKey("ScheduleId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SchoolService.Domain.Entities.Student", "Student")
@@ -359,36 +572,37 @@ namespace SchoolService.Infrastructure.Migrations
 
                     b.Navigation("Classroom");
 
+                    b.Navigation("Schedule");
+
                     b.Navigation("Student");
                 });
 
             modelBuilder.Entity("SchoolService.Domain.Entities.Classroom", b =>
                 {
+                    b.HasOne("SchoolService.Domain.Entities.Room", "Room")
+                        .WithMany("Classrooms")
+                        .HasForeignKey("RoomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SchoolService.Domain.Entities.Teacher", "Teacher")
                         .WithMany("Classrooms")
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("Room");
+
                     b.Navigation("Teacher");
                 });
 
-            modelBuilder.Entity("SchoolService.Domain.Entities.Enrollment", b =>
+            modelBuilder.Entity("SchoolService.Domain.Entities.Material", b =>
                 {
-                    b.HasOne("SchoolService.Domain.Entities.Student", "Student")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("StudentId")
+                    b.HasOne("SchoolService.Domain.Entities.Classroom", "Classroom")
+                        .WithMany()
+                        .HasForeignKey("ClassroomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("SchoolService.Domain.Entities.Subject", "Subject")
-                        .WithMany("Enrollments")
-                        .HasForeignKey("SubjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Student");
-
-                    b.Navigation("Subject");
+                    b.Navigation("Classroom");
                 });
 
             modelBuilder.Entity("SchoolService.Domain.Entities.Schedule", b =>
@@ -438,6 +652,11 @@ namespace SchoolService.Infrastructure.Migrations
 
             modelBuilder.Entity("SchoolService.Domain.Entities.StudentGrade", b =>
                 {
+                    b.HasOne("SchoolService.Domain.Entities.Classroom", "Classroom")
+                        .WithMany()
+                        .HasForeignKey("ClassroomId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("SchoolService.Domain.Entities.Student", "Student")
                         .WithMany("Grades")
                         .HasForeignKey("StudentId")
@@ -450,9 +669,30 @@ namespace SchoolService.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.Navigation("Classroom");
+
                     b.Navigation("Student");
 
                     b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("SchoolService.Domain.Entities.Submission", b =>
+                {
+                    b.HasOne("SchoolService.Domain.Entities.Material", "Material")
+                        .WithMany("Submissions")
+                        .HasForeignKey("MaterialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SchoolService.Domain.Entities.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Material");
+
+                    b.Navigation("Student");
                 });
 
             modelBuilder.Entity("SchoolService.Domain.Entities.TeacherSubject", b =>
@@ -479,11 +719,19 @@ namespace SchoolService.Infrastructure.Migrations
                     b.Navigation("StudentClassrooms");
                 });
 
+            modelBuilder.Entity("SchoolService.Domain.Entities.Material", b =>
+                {
+                    b.Navigation("Submissions");
+                });
+
+            modelBuilder.Entity("SchoolService.Domain.Entities.Room", b =>
+                {
+                    b.Navigation("Classrooms");
+                });
+
             modelBuilder.Entity("SchoolService.Domain.Entities.Student", b =>
                 {
                     b.Navigation("Attendances");
-
-                    b.Navigation("Enrollments");
 
                     b.Navigation("Grades");
 
@@ -492,8 +740,6 @@ namespace SchoolService.Infrastructure.Migrations
 
             modelBuilder.Entity("SchoolService.Domain.Entities.Subject", b =>
                 {
-                    b.Navigation("Enrollments");
-
                     b.Navigation("Grades");
 
                     b.Navigation("Schedules");

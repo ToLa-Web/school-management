@@ -48,10 +48,22 @@ public class ScheduleService : IScheduleService
         var subject = await _subjectRepository.GetByIdAsync(dto.SubjectId);
         if (subject == null) throw new NotFoundException("Subject", dto.SubjectId);
 
-        var schedule = new Schedule(dto.ClassroomId, dto.SubjectId, dto.TeacherId, dto.Day, dto.Time);
+        var day   = (SchoolDayOfWeek)dto.DayOfWeek;
+        var start = dto.StartTime;
+        var end   = dto.EndTime;
+
+        if (dto.TeacherId.HasValue)
+        {
+            var conflicts = await _scheduleRepository.GetTeacherConflictsAsync(
+                dto.TeacherId.Value, day, start, end);
+            if (conflicts.Count > 0)
+                throw new ConflictException($"Teacher already has a schedule on {day} from {start} to {end}.");
+        }
+
+        var schedule = new Schedule(dto.ClassroomId, dto.SubjectId, dto.TeacherId,
+            day, start, end, (SessionType)dto.Type);
         await _scheduleRepository.AddAsync(schedule);
 
-        // Reload with nav props
         var loaded = await _scheduleRepository.GetByIdAsync(schedule.Id);
         return loaded != null ? MapToResponse(loaded) : MapToResponse(schedule);
     }
@@ -61,7 +73,20 @@ public class ScheduleService : IScheduleService
         var schedule = await _scheduleRepository.GetByIdAsync(id);
         if (schedule == null) throw new NotFoundException("Schedule", id);
 
-        schedule.Update(dto.TeacherId, dto.Day, dto.Time);
+        var day   = (SchoolDayOfWeek)dto.DayOfWeek;
+        var start = dto.StartTime;
+        var end   = dto.EndTime;
+
+        if (dto.TeacherId.HasValue)
+        {
+            var conflicts = await _scheduleRepository.GetTeacherConflictsAsync(
+                dto.TeacherId.Value, day, start, end, excludeScheduleId: id);
+            if (conflicts.Count > 0)
+                throw new ConflictException($"Teacher already has a schedule on {day} from {start} to {end}.");
+        }
+
+        schedule.UpdateInfo(day, start, end, (SessionType)dto.Type);
+        schedule.UpdateTeacher(dto.TeacherId);
         await _scheduleRepository.UpdateAsync(schedule);
         return MapToResponse(schedule);
     }
@@ -75,14 +100,18 @@ public class ScheduleService : IScheduleService
 
     private static ScheduleResponseDto MapToResponse(Schedule s) => new()
     {
-        Id = s.Id,
-        ClassroomId = s.ClassroomId,
+        Id            = s.Id,
+        ClassroomId   = s.ClassroomId,
         ClassroomName = s.Classroom?.Name ?? "",
-        SubjectId = s.SubjectId,
-        SubjectName = s.Subject?.SubjectName ?? "",
-        TeacherId = s.TeacherId,
-        TeacherName = s.Teacher != null ? $"{s.Teacher.FirstName} {s.Teacher.LastName}" : null,
-        Day = s.Day,
-        Time = s.Time
+        SubjectId     = s.SubjectId,
+        SubjectName   = s.Subject?.SubjectName ?? "",
+        TeacherId     = s.TeacherId,
+        TeacherName   = s.Teacher != null ? $"{s.Teacher.FirstName} {s.Teacher.LastName}" : null,
+        DayOfWeek     = (int)s.DayOfWeek,
+        DayOfWeekName = s.DayOfWeek.ToString(),
+        StartTime     = s.StartTime,
+        EndTime       = s.EndTime,
+        Type          = (int)s.Type,
+        TypeName      = s.Type.ToString()
     };
 }
