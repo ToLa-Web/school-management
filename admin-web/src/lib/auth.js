@@ -17,17 +17,40 @@ export function getToken() {
   return localStorage.getItem('token');
 }
 
-export function logout() {
+import { logoutUser } from './api';
+
+export async function logout() {
+  try {
+    await logoutUser();
+  } catch {}
   localStorage.removeItem('token');
+  localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
   window.location.href = '/login';
 }
 
-// Hook — redirect to /login if not authenticated
-export function useAuth() {
+// Hook — redirect to /login if not authenticated or not authorized
+export function useAuth(allowedRoles = []) {
   const router = useRouter();
   useEffect(() => {
     const token = localStorage.getItem('token');
-    if (!token) router.replace('/login');
-  }, [router]);
+    const userString = localStorage.getItem('user');
+    
+    if (!token || !userString) {
+      router.replace('/login');
+      return;
+    }
+
+    try {
+      const user = JSON.parse(userString);
+      if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+        if (user.role === 4) router.replace('/admin/dashboard');
+        else if (user.role === 1) router.replace('/teacher/dashboard');
+        else if (user.role === 2) router.replace('/student/dashboard');
+        else router.replace('/login');
+      }
+    } catch {
+      router.replace('/login');
+    }
+  }, [router]); // allow empty array, don't re-trigger on allowedRoles change if hardcoded
 }

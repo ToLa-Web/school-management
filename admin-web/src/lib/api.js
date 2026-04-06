@@ -7,8 +7,8 @@ function getToken() {
 }
 
 async function request(path, options = {}) {
-  const token = getToken();
-  const res = await fetch(path, {
+  let token = getToken();
+  let res = await fetch(path, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -18,27 +18,146 @@ async function request(path, options = {}) {
   });
 
   if (res.status === 401) {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
-    return;
+    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+    const userString = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+    let user = null;
+    try { user = JSON.parse(userString); } catch {}
+
+    if (token && refreshToken && user?.email) {
+      try {
+        const refreshRes = await fetch('/api/auth/refresh', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token, refreshToken, email: user.email }),
+        });
+        
+        if (refreshRes.ok) {
+          const data = await refreshRes.json();
+          localStorage.setItem('token', data.accessToken ?? data.token);
+          if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+          token = data.accessToken ?? data.token;
+          
+          // Retry original request
+          res = await fetch(path, {
+            ...options,
+            headers: {
+              ...options.headers,
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          return res;
+        }
+      } catch (err) {
+        console.error('Token refresh failed', err);
+      }
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return res;
   }
 
   return res;
 }
 
-// ── Auth ──────────────────────────────────────────────────────────────────────
+function toDayOfWeekNumber(value) {
+  if (typeof value === 'number') return value;
+
+  const dayMap = {
+    monday: 1,
+    tuesday: 2,
+    wednesday: 3,
+    thursday: 4,
+    friday: 5,
+    saturday: 6,
+    sunday: 7,
+  };
+
+  return dayMap[String(value).toLowerCase()] ?? 1;
+}
+
+function addMinutes(time, minutes) {
+  if (!time || !time.includes(':')) return '09:00';
+
+  const [hours, mins] = time.split(':').map(Number);
+  const totalMinutes = (hours * 60) + mins + minutes;
+  const nextHours = String(Math.floor((totalMinutes % (24 * 60)) / 60)).padStart(2, '0');
+  const nextMinutes = String(totalMinutes % 60).padStart(2, '0');
+  return `${nextHours}:${nextMinutes}`;
+}
 
 export async function login(email, password) {
-  const res = await fetch('/api/auth/authenticate', {
+  return fetch('/api/auth/authenticate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   });
-  return res;
 }
 
-// ── Teachers ──────────────────────────────────────────────────────────────────
+export async function registerUser(data) {
+  return fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+}
+
+export async function requestEmailVerification(email) {
+  return fetch('/api/auth/request-email-verification-code', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function verifyEmail(email, code) {
+  return fetch('/api/auth/verify-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+  });
+}
+
+export async function requestPasswordReset(email) {
+  return fetch('/api/auth/request-password-reset', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(email, resetCode, newPassword) {
+  return fetch('/api/auth/reset-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, resetCode, newPassword }),
+  });
+}
+
+export async function oauthLogin(provider, token) {
+  return fetch(`/api/auth/oauth/${provider}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token }),
+  });
+}
+
+export async function logoutUser() {
+  const t = getToken();
+  return fetch('/api/auth/logout', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(t ? { Authorization: `Bearer ${t}` } : {}),
+    },
+  });
+}
+
+// Teachers
 
 export async function getTeachers(page = 1, pageSize = 20) {
   const res = await request(`/api/school/teachers?page=${page}&pageSize=${pageSize}`);
@@ -68,7 +187,7 @@ export async function deleteTeacher(id) {
   return request(`/api/school/teachers/${id}`, { method: 'DELETE' });
 }
 
-// ── Classrooms ────────────────────────────────────────────────────────────────
+//Classrooms
 
 export async function getClassrooms(page = 1, pageSize = 20) {
   const res = await request(`/api/school/classrooms?page=${page}&pageSize=${pageSize}`);
@@ -117,7 +236,7 @@ export async function unenrollStudent(classroomId, studentId) {
   });
 }
 
-// ── Students ──────────────────────────────────────────────────────────────────
+//Students
 
 export async function getStudents(page = 1, pageSize = 20) {
   const res = await request(`/api/school/students?page=${page}&pageSize=${pageSize}`);
@@ -147,14 +266,14 @@ export async function deleteStudent(id) {
   return request(`/api/school/students/${id}`, { method: 'DELETE' });
 }
 
-// ── Health ────────────────────────────────────────────────────────────────────
+//Health
 
 export async function getHealthDashboard() {
-  const res = await request('/api/school/servicehealth/dashboard');
+  const res = await request('/api/servicehealth/dashboard');
   return res.ok ? res.json() : null;
 }
 
-// ── Subjects ──────────────────────────────────────────────────────────────────
+//Subjects
 
 export async function getSubjects() {
   const res = await request('/api/school/subjects');
@@ -166,17 +285,17 @@ export async function getSubject(id) {
   return res.ok ? res.json() : null;
 }
 
-export async function createSubject(subjectName) {
+export async function createSubject(subject) {
   return request('/api/school/subjects', {
     method: 'POST',
-    body: JSON.stringify({ subjectName }),
+    body: JSON.stringify(subject),
   });
 }
 
-export async function updateSubject(id, subjectName) {
+export async function updateSubject(id, subject) {
   return request(`/api/school/subjects/${id}`, {
     method: 'PUT',
-    body: JSON.stringify({ subjectName }),
+    body: JSON.stringify(subject),
   });
 }
 
@@ -197,7 +316,7 @@ export async function removeTeacherFromSubject(subjectId, teacherId) {
   });
 }
 
-// ── Grades ────────────────────────────────────────────────────────────────────
+//Grades
 
 export async function getGrades({ studentId, subjectId, semester } = {}) {
   const params = new URLSearchParams();
@@ -219,45 +338,81 @@ export async function deleteGrade(id) {
   return request(`/api/school/grades/${id}`, { method: 'DELETE' });
 }
 
-// ── Attendance ────────────────────────────────────────────────────────────────
+//Attendance
 
 export async function getAttendance({ classroomId, studentId, date } = {}) {
+  if (studentId && !classroomId && !date) {
+    return getStudentAttendanceHistory(studentId);
+  }
+
+  if (!classroomId || !date) return [];
+
   const params = new URLSearchParams();
   if (classroomId) params.set('classroomId', classroomId);
-  if (studentId) params.set('studentId', studentId);
   if (date) params.set('date', date);
   const res = await request(`/api/school/attendance?${params}`);
   return res.ok ? res.json() : null;
 }
 
 export async function getStudentAttendanceHistory(studentId) {
-  const res = await request(`/api/school/attendance/student/${studentId}`);
+  const res = await request(`/api/school/attendance/${studentId}/history`);
   return res.ok ? res.json() : null;
 }
 
 export async function createAttendance(data) {
-  return request('/api/school/attendance', {
+  const payload = data?.records
+    ? data
+    : {
+        classroomId: data.classroomId,
+        date: data.date,
+        records: [
+          {
+            studentId: data.studentId,
+            status:
+              data.status === 'Absent'
+                ? 2
+                : data.status === 'Late'
+                  ? 3
+                  : 1,
+          },
+        ],
+      };
+
+  return request('/api/school/attendance/mark', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 }
 
-// ── Schedules ─────────────────────────────────────────────────────────────────
+//Schedules
 
 export async function getClassroomSchedule(classroomId) {
-  const res = await request(`/api/school/schedules/classroom/${classroomId}`);
+  const res = await request(`/api/school/schedules?classroomId=${classroomId}`);
   return res.ok ? res.json() : null;
 }
 
 export async function getTeacherSchedule(teacherId) {
-  const res = await request(`/api/school/schedules/teacher/${teacherId}`);
+  const res = await request(`/api/school/schedules?teacherId=${teacherId}`);
   return res.ok ? res.json() : null;
 }
 
 export async function createSchedule(data) {
+  const payload =
+    typeof data?.dayOfWeek === 'string' || data?.time
+      ? {
+          classroomId: data.classroomId,
+          subjectId: data.subjectId,
+          teacherId: data.teacherId || null,
+          dayOfWeek: toDayOfWeekNumber(data.dayOfWeek),
+          startTime: data.time ?? '08:00',
+          endTime: data.endTime ?? addMinutes(data.time ?? '08:00', 60),
+          type: data.type ?? 1,
+        }
+      : data;
+
   return request('/api/school/schedules', {
     method: 'POST',
-    body: JSON.stringify(data),
+    body: JSON.stringify(payload),
   });
 }
 
@@ -265,7 +420,18 @@ export async function deleteSchedule(id) {
   return request(`/api/school/schedules/${id}`, { method: 'DELETE' });
 }
 
-// ── Admin — Auth Accounts ─────────────────────────────────────────────────────
+//Admin — Auth Accounts
+
+export async function getRooms() {
+  const res = await request('/api/rooms');
+  return res.ok ? res.json() : null;
+}
+
+export async function getAnnouncements(classroomId) {
+  const suffix = classroomId ? `?classroomId=${classroomId}` : '';
+  const res = await request(`/api/announcements${suffix}`);
+  return res.ok ? res.json() : null;
+}
 
 export async function adminGetUsers() {
   const res = await request('/api/auth/admin/users');

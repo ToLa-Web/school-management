@@ -17,8 +17,8 @@ public class ScheduleRepository : IScheduleRepository
             .Include(s => s.Subject)
             .Include(s => s.Teacher)
             .Include(s => s.Classroom)
-            .Where(s => s.ClassroomId == classroomId)
-            .OrderBy(s => s.Day).ThenBy(s => s.Time)
+            .Where(s => s.ClassroomId == classroomId && s.DeletedAt == null)
+            .OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
             .ToListAsync();
 
     public async Task<List<Schedule>> GetByTeacherAsync(Guid teacherId)
@@ -26,12 +26,30 @@ public class ScheduleRepository : IScheduleRepository
             .AsNoTracking()
             .Include(s => s.Subject)
             .Include(s => s.Classroom)
-            .Where(s => s.TeacherId == teacherId)
-            .OrderBy(s => s.Day).ThenBy(s => s.Time)
+            .Where(s => s.TeacherId == teacherId && s.DeletedAt == null)
+            .OrderBy(s => s.DayOfWeek).ThenBy(s => s.StartTime)
             .ToListAsync();
 
     public async Task<Schedule?> GetByIdAsync(Guid id)
-        => await _context.Schedules.FindAsync(id);
+        => await _context.Schedules
+            .Include(s => s.Subject)
+            .Include(s => s.Teacher)
+            .Include(s => s.Classroom)
+            .FirstOrDefaultAsync(s => s.Id == id);
+
+    public async Task<List<Schedule>> GetTeacherConflictsAsync(
+        Guid teacherId, SchoolDayOfWeek day, TimeOnly start, TimeOnly end,
+        Guid? excludeScheduleId = null)
+        => await _context.Schedules
+            .AsNoTracking()
+            .Where(s =>
+                s.TeacherId == teacherId &&
+                s.DayOfWeek == day &&
+                s.DeletedAt == null &&
+                s.StartTime < end &&
+                s.EndTime > start &&
+                (excludeScheduleId == null || s.Id != excludeScheduleId))
+            .ToListAsync();
 
     public async Task AddAsync(Schedule schedule)
     {

@@ -17,11 +17,6 @@ public class AdminSyncController : ControllerBase
         _studentRepo = studentRepo;
     }
 
-    /// <summary>
-    /// Called after an auth-service user is created or has their role changed.
-    /// Ensures a matching school profile exists in school_db, linked via AuthUserId.
-    /// role: 1=Teacher, 2=Student, 3=Parent, 4=Admin
-    /// </summary>
     [HttpPost("sync-profile")]
     public async Task<IActionResult> SyncProfile([FromBody] SyncProfileRequest req)
     {

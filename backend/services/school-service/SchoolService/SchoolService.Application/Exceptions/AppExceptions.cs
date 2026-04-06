@@ -26,3 +26,9 @@ public class BusinessRuleException : Exception
 {
     public BusinessRuleException(string message) : base(message) { }
 }
+
+// Thrown when a scheduling conflict is detected - maps to 409
+public class ConflictException : Exception
+{
+    public ConflictException(string message) : base(message) { }
+}

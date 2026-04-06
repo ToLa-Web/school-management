@@ -12,25 +12,30 @@ public class Attendance
     public Guid Id { get; private set; } = Guid.NewGuid();
     public Guid StudentId { get; private set; }
     public Guid? ClassroomId { get; private set; }
+    /// <summary>Links this record to a specific class session for conflict detection / reporting.</summary>
+    public Guid? ScheduleId { get; private set; }
     public DateOnly Date { get; private set; }
     public AttendanceStatus Status { get; private set; }
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
 
     public Student Student { get; private set; } = null!;
     public Classroom? Classroom { get; private set; }
+    public Schedule? Schedule { get; private set; }
 
     private Attendance() { } // EF
 
-    public Attendance(Guid studentId, Guid? classroomId, DateOnly date, AttendanceStatus status)
+    public Attendance(Guid studentId, Guid? classroomId, DateOnly date,
+        AttendanceStatus status, Guid? scheduleId = null)
     {
-        StudentId = studentId;
+        StudentId  = studentId;
         ClassroomId = classroomId;
+        ScheduleId = scheduleId;
         Update(date, status);
     }
 
     public void Update(DateOnly date, AttendanceStatus status)
     {
-        Date = date;
+        Date   = date;
         Status = status;
     }
 }

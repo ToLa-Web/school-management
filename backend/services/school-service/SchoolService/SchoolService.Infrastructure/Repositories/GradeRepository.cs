@@ -17,14 +17,12 @@ public class GradeRepository : IGradeRepository
             .AsNoTracking()
             .Include(g => g.Student)
             .Include(g => g.Subject)
+            .Include(g => g.Classroom)
             .AsQueryable();
 
-        if (studentId.HasValue)
-            query = query.Where(g => g.StudentId == studentId.Value);
-        if (subjectId.HasValue)
-            query = query.Where(g => g.SubjectId == subjectId.Value);
-        if (!string.IsNullOrWhiteSpace(semester))
-            query = query.Where(g => g.Semester == semester);
+        if (studentId.HasValue)  query = query.Where(g => g.StudentId == studentId.Value);
+        if (subjectId.HasValue)  query = query.Where(g => g.SubjectId == subjectId.Value);
+        if (!string.IsNullOrWhiteSpace(semester)) query = query.Where(g => g.Semester == semester);
 
         return await query.OrderBy(g => g.Semester).ToListAsync();
     }
@@ -33,6 +31,7 @@ public class GradeRepository : IGradeRepository
         => await _context.StudentGrades
             .Include(g => g.Student)
             .Include(g => g.Subject)
+            .Include(g => g.Classroom)
             .FirstOrDefaultAsync(g => g.Id == id);
 
     public async Task AddAsync(StudentGrade grade)

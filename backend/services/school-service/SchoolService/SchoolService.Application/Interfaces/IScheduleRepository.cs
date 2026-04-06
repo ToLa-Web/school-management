@@ -10,4 +10,9 @@ public interface IScheduleRepository
     Task AddAsync(Schedule schedule);
     Task UpdateAsync(Schedule schedule);
     Task DeleteAsync(Schedule schedule);
+    /// <summary>
+    /// Returns active schedules for the given teacher that overlap the requested day+time window.
+    /// Used for teacher conflict detection before creating/updating a schedule.
+    /// </summary>
+    Task<List<Schedule>> GetTeacherConflictsAsync(Guid teacherId, SchoolDayOfWeek day, TimeOnly start, TimeOnly end, Guid? excludeScheduleId = null);
 }

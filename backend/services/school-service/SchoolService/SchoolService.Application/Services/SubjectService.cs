@@ -31,7 +31,14 @@ public class SubjectService : ISubjectService
 
     public async Task<SubjectResponseDto> CreateAsync(SubjectCreateDto dto)
     {
-        var subject = new Subject(dto.SubjectName);
+        var subject = new Subject(
+            dto.SubjectName,
+            dto.YearLevel,
+            dto.Category,
+            dto.Department,
+            dto.Description,
+            dto.Code
+        );
         await _subjectRepository.AddAsync(subject);
         return MapToResponse(subject);
     }
@@ -41,7 +48,14 @@ public class SubjectService : ISubjectService
         var subject = await _subjectRepository.GetByIdAsync(id);
         if (subject == null) throw new NotFoundException("Subject", id);
 
-        subject.UpdateInfo(dto.SubjectName);
+        subject.UpdateInfo(
+            dto.SubjectName,
+            dto.YearLevel,
+            dto.Category,
+            dto.Department,
+            dto.Description,
+            dto.Code
+        );
         await _subjectRepository.UpdateAsync(subject);
         return MapToResponse(subject);
     }
@@ -85,6 +99,11 @@ public class SubjectService : ISubjectService
         CreatedAt = s.CreatedAt,
         TeacherNames = s.TeacherSubjects
             .Select(ts => $"{ts.Teacher.FirstName} {ts.Teacher.LastName}")
-            .ToList()
+            .ToList(),
+        YearLevel = s.YearLevel,
+        Category = s.Category,
+        Department = s.Department,
+        Description = s.Description,
+        Code = s.Code
     };
 }

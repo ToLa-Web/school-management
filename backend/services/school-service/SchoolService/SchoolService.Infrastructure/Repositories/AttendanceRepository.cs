@@ -16,6 +16,7 @@ public class AttendanceRepository : IAttendanceRepository
             .AsNoTracking()
             .Include(a => a.Student)
             .Include(a => a.Classroom)
+            .Include(a => a.Schedule)
             .Where(a => a.ClassroomId == classroomId && a.Date == date)
             .ToListAsync();
 
@@ -23,6 +24,7 @@ public class AttendanceRepository : IAttendanceRepository
         => await _context.Attendances
             .AsNoTracking()
             .Include(a => a.Classroom)
+            .Include(a => a.Schedule)
             .Where(a => a.StudentId == studentId)
             .OrderByDescending(a => a.Date)
             .ToListAsync();

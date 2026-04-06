@@ -12,13 +12,11 @@ public class Student
     public string? Email { get; private set; }
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
+    public DateTime? DeletedAt { get; private set; }
     public Guid? AuthUserId { get; private set; }
 
     private readonly List<StudentClassroom> _studentClassrooms = new();
     public IReadOnlyCollection<StudentClassroom> StudentClassrooms => _studentClassrooms;
-
-    private readonly List<Enrollment> _enrollments = new();
-    public IReadOnlyCollection<Enrollment> Enrollments => _enrollments;
 
     private readonly List<Attendance> _attendances = new();
     public IReadOnlyCollection<Attendance> Attendances => _attendances;
@@ -48,16 +46,17 @@ public class Student
         string? address,
         string? email = null)
     {
-        FirstName = firstName.Trim();
-        LastName = lastName.Trim();
-        Gender = string.IsNullOrWhiteSpace(gender) ? null : gender.Trim();
+        FirstName   = firstName.Trim();
+        LastName    = lastName.Trim();
+        Gender      = string.IsNullOrWhiteSpace(gender) ? null : gender.Trim();
         DateOfBirth = dateOfBirth;
-        Phone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
-        Address = string.IsNullOrWhiteSpace(address) ? null : address.Trim();
-        Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
+        Phone       = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
+        Address     = string.IsNullOrWhiteSpace(address) ? null : address.Trim();
+        Email       = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
     }
 
     public void Deactivate() => IsActive = false;
-    public void Activate() => IsActive = true;
+    public void Activate()   => IsActive = true;
+    public void SoftDelete() => DeletedAt = DateTime.UtcNow;
+    public bool IsDeleted    => DeletedAt.HasValue;
 }
-

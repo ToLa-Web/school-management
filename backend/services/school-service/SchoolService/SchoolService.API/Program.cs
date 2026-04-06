@@ -27,11 +27,16 @@ builder.Services.AddControllers()
                 .SelectMany(e => e.Value!.Errors.Select(er => er.ErrorMessage))
                 .ToList();
 
+            var traceId = System.Diagnostics.Activity.Current?.Id ?? context.HttpContext.TraceIdentifier;
+
             var response = new
             {
                 message = "Validation failed.",
                 code = "VALIDATION_ERROR",
-                details = string.Join(" ", errors)
+                details = string.Join(" ", errors),
+                traceId,
+                statusCode = 400,
+                path = context.HttpContext.Request.Path.Value
             };
 
             return new BadRequestObjectResult(response);
@@ -88,20 +93,30 @@ builder.Services.AddDbContext<SchoolDbContext>(options =>
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<IAuthServiceClient, AuthServiceClient>();
 
-builder.Services.AddScoped<IStudentRepository, StudentRepository>();
-builder.Services.AddScoped<IStudentService, StudentService>();
-builder.Services.AddScoped<ITeacherRepository, TeacherRepository>();
-builder.Services.AddScoped<ITeacherService, TeacherService>();
 builder.Services.AddScoped<IClassroomRepository, ClassroomRepository>();
-builder.Services.AddScoped<IClassroomService, ClassroomService>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+builder.Services.AddScoped<ITeacherRepository, TeacherRepository>();
 builder.Services.AddScoped<ISubjectRepository, SubjectRepository>();
-builder.Services.AddScoped<ISubjectService, SubjectService>();
-builder.Services.AddScoped<IGradeRepository, GradeRepository>();
-builder.Services.AddScoped<IGradeService, GradeService>();
 builder.Services.AddScoped<IAttendanceRepository, AttendanceRepository>();
-builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IScheduleRepository, ScheduleRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
+builder.Services.AddScoped<ISubmissionRepository, SubmissionRepository>();
+builder.Services.AddScoped<IGradeRepository, GradeRepository>();
+builder.Services.AddScoped<IAnnouncementRepository, AnnouncementRepository>();
+
+// Service Registrations
+builder.Services.AddScoped<IClassroomService, ClassroomService>();
+builder.Services.AddScoped<ITeacherService, TeacherService>();
+builder.Services.AddScoped<ISubjectService, SubjectService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IAttendanceService, AttendanceService>();
 builder.Services.AddScoped<IScheduleService, ScheduleService>();
+builder.Services.AddScoped<IRoomService, RoomService>();
+builder.Services.AddScoped<IMaterialService, MaterialService>();
+builder.Services.AddScoped<ISubmissionService, SubmissionService>();
+builder.Services.AddScoped<IGradeService, GradeService>();
+builder.Services.AddScoped<IAnnouncementService, AnnouncementService>();
 builder.Services.AddScoped<DataSeeder>();
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
@@ -158,6 +173,74 @@ using (var scope = app.Services.CreateScope())
                     ON ""Teachers""(""AuthUserId"") WHERE ""AuthUserId"" IS NOT NULL;
                 CREATE UNIQUE INDEX IF NOT EXISTS ""IX_Students_AuthUserId""
                     ON ""Students""(""AuthUserId"") WHERE ""AuthUserId"" IS NOT NULL;
+
+                CREATE TABLE IF NOT EXISTS ""Rooms"" (
+                    ""Id"" uuid NOT NULL,
+                    ""Name"" character varying(150) NOT NULL,
+                    ""Location"" character varying(500),
+                    ""Capacity"" integer NOT NULL DEFAULT 0,
+                    ""Type"" integer NOT NULL,
+                    ""IsActive"" boolean NOT NULL,
+                    ""CreatedAt"" timestamp with time zone NOT NULL,
+                    ""DeletedAt"" timestamp with time zone,
+                    CONSTRAINT ""PK_Rooms"" PRIMARY KEY (""Id"")
+                );
+
+                ALTER TABLE ""Classrooms"" ADD COLUMN IF NOT EXISTS ""RoomId"" uuid;
+                ALTER TABLE ""Classrooms"" ADD COLUMN IF NOT EXISTS ""Semester"" character varying(20);
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1
+                        FROM pg_constraint
+                        WHERE conname = 'FK_Classrooms_Rooms_RoomId'
+                    ) THEN
+                        ALTER TABLE ""Classrooms""
+                        ADD CONSTRAINT ""FK_Classrooms_Rooms_RoomId""
+                        FOREIGN KEY (""RoomId"") REFERENCES ""Rooms""(""Id"") ON DELETE SET NULL;
+                    END IF;
+                END $$;
+                CREATE INDEX IF NOT EXISTS ""IX_Classrooms_RoomId"" ON ""Classrooms""(""RoomId"");
+
+                CREATE TABLE IF NOT EXISTS ""Announcements"" (
+                    ""Id"" uuid NOT NULL,
+                    ""Title"" character varying(200) NOT NULL,
+                    ""Body"" text NOT NULL,
+                    ""ClassroomId"" uuid,
+                    ""AuthorTeacherId"" uuid NOT NULL,
+                    ""PublishedAt"" timestamp with time zone,
+                    ""CreatedAt"" timestamp with time zone NOT NULL,
+                    CONSTRAINT ""PK_Announcements"" PRIMARY KEY (""Id"")
+                );
+                CREATE INDEX IF NOT EXISTS ""IX_Announcements_ClassroomId"" ON ""Announcements""(""ClassroomId"");
+                CREATE INDEX IF NOT EXISTS ""IX_Announcements_AuthorTeacherId"" ON ""Announcements""(""AuthorTeacherId"");
+
+                CREATE TABLE IF NOT EXISTS ""Materials"" (
+                    ""Id"" uuid NOT NULL,
+                    ""ClassroomId"" uuid NOT NULL,
+                    ""Title"" character varying(200) NOT NULL,
+                    ""Description"" text,
+                    ""Url"" character varying(1000),
+                    ""Type"" integer NOT NULL,
+                    ""IsActive"" boolean NOT NULL,
+                    ""CreatedAt"" timestamp with time zone NOT NULL,
+                    ""DeletedAt"" timestamp with time zone,
+                    CONSTRAINT ""PK_Materials"" PRIMARY KEY (""Id"")
+                );
+                CREATE INDEX IF NOT EXISTS ""IX_Materials_ClassroomId"" ON ""Materials""(""ClassroomId"");
+
+                CREATE TABLE IF NOT EXISTS ""Submissions"" (
+                    ""Id"" uuid NOT NULL,
+                    ""MaterialId"" uuid NOT NULL,
+                    ""StudentId"" uuid NOT NULL,
+                    ""SubmissionUrl"" character varying(1000),
+                    ""SubmittedAt"" timestamp with time zone NOT NULL,
+                    ""Grade"" numeric(5,2),
+                    ""Feedback"" text,
+                    CONSTRAINT ""PK_Submissions"" PRIMARY KEY (""Id"")
+                );
+                CREATE INDEX IF NOT EXISTS ""IX_Submissions_MaterialId"" ON ""Submissions""(""MaterialId"");
+                CREATE INDEX IF NOT EXISTS ""IX_Submissions_StudentId"" ON ""Submissions""(""StudentId"");
             ");
 
             var seeder = scope.ServiceProvider.GetRequiredService<DataSeeder>();

@@ -57,7 +57,7 @@ public class DataSeeder
         var teachers = teacherData.Select(d =>
         {
             var t = new Teacher(d.First, d.Last);
-            t.UpdateBasicInfo(d.First, d.Last, d.Gender, null, d.Phone, d.Email, d.Subject);
+            t.UpdateBasicInfo(d.First, d.Last, d.Gender, null, d.Phone, d.Email, d.Subject, null, null);
             return t;
         }).ToList();
 
@@ -171,7 +171,7 @@ public class DataSeeder
         foreach (var cd in classData)
         {
             var cls = new Classroom(cd.Name);
-            cls.UpdateInfo(cd.Name, cd.Grade, "2025-2026");
+            cls.UpdateInfo(cd.Name, cd.Grade, "2025-2026", null, null);
             cls.AssignTeacher(teachers[cd.TeacherIdx].Id);
             await _context.Classrooms.AddAsync(cls);
             await _context.SaveChangesAsync();
@@ -230,33 +230,34 @@ public class DataSeeder
         var byName = subjects.ToDictionary(s => s.SubjectName);
         var byTeacher = teachers; // ordered by email: [0]=teacher1…[4]=teacher5
 
-        // (Day, Time, SubjectName, TeacherIdx)
+        // (DayOfWeek, StartTime, EndTime, SubjectName, TeacherIdx)
         var slots = new[]
         {
-            ("Monday",    "07:00-08:30", "Mathematics",        0),
-            ("Monday",    "08:45-10:15", "Science",            1),
-            ("Tuesday",   "07:00-08:30", "English",            2),
-            ("Tuesday",   "08:45-10:15", "History",            3),
-            ("Wednesday", "07:00-08:30", "Physical Education", 4),
-            ("Wednesday", "08:45-10:15", "Mathematics",        0),
-            ("Thursday",  "07:00-08:30", "Science",            1),
-            ("Thursday",  "08:45-10:15", "English",            2),
-            ("Friday",    "07:00-08:30", "History",            3),
-            ("Friday",    "08:45-10:15", "Physical Education", 4),
+            (Day: SchoolDayOfWeek.Monday,    Start: new TimeOnly(7,  0), End: new TimeOnly(8,  30), Subject: "Mathematics",        TIdx: 0),
+            (Day: SchoolDayOfWeek.Monday,    Start: new TimeOnly(8, 45), End: new TimeOnly(10, 15), Subject: "Science",            TIdx: 1),
+            (Day: SchoolDayOfWeek.Tuesday,   Start: new TimeOnly(7,  0), End: new TimeOnly(8,  30), Subject: "English",            TIdx: 2),
+            (Day: SchoolDayOfWeek.Tuesday,   Start: new TimeOnly(8, 45), End: new TimeOnly(10, 15), Subject: "History",            TIdx: 3),
+            (Day: SchoolDayOfWeek.Wednesday, Start: new TimeOnly(7,  0), End: new TimeOnly(8,  30), Subject: "Physical Education", TIdx: 4),
+            (Day: SchoolDayOfWeek.Wednesday, Start: new TimeOnly(8, 45), End: new TimeOnly(10, 15), Subject: "Mathematics",        TIdx: 0),
+            (Day: SchoolDayOfWeek.Thursday,  Start: new TimeOnly(7,  0), End: new TimeOnly(8,  30), Subject: "Science",            TIdx: 1),
+            (Day: SchoolDayOfWeek.Thursday,  Start: new TimeOnly(8, 45), End: new TimeOnly(10, 15), Subject: "English",            TIdx: 2),
+            (Day: SchoolDayOfWeek.Friday,    Start: new TimeOnly(7,  0), End: new TimeOnly(8,  30), Subject: "History",            TIdx: 3),
+            (Day: SchoolDayOfWeek.Friday,    Start: new TimeOnly(8, 45), End: new TimeOnly(10, 15), Subject: "Physical Education", TIdx: 4),
         };
 
         // Create the same timetable for EVERY classroom
         foreach (var classroom in classrooms)
         {
-            foreach (var (day, time, subjectName, teacherIdx) in slots)
+            foreach (var slot in slots)
             {
-                if (!byName.TryGetValue(subjectName, out var subject)) continue;
+                if (!byName.TryGetValue(slot.Subject, out var subject)) continue;
                 var schedule = new Schedule(
                     classroom.Id,
                     subject.Id,
-                    byTeacher[teacherIdx].Id,
-                    day,
-                    time);
+                    byTeacher[slot.TIdx].Id,
+                    slot.Day,
+                    slot.Start,
+                    slot.End);
                 await _context.Schedules.AddAsync(schedule);
             }
         }

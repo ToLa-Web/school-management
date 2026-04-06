@@ -14,6 +14,11 @@ public class ClassroomCreateDto
     [StringLength(20)]
     public string? AcademicYear { get; set; }
 
+    [StringLength(20)]
+    public string? Semester { get; set; }
+
+    public Guid? RoomId { get; set; }
+
     public Guid? TeacherId { get; set; }
 }
 
@@ -29,6 +34,11 @@ public class ClassroomUpdateDto
     [StringLength(20)]
     public string? AcademicYear { get; set; }
 
+    [StringLength(20)]
+    public string? Semester { get; set; }
+
+    public Guid? RoomId { get; set; }
+
     public Guid? TeacherId { get; set; }
 
     public bool IsActive { get; set; } = true;
@@ -40,6 +50,9 @@ public class ClassroomResponseDto
     public string Name { get; set; } = null!;
     public string? Grade { get; set; }
     public string? AcademicYear { get; set; }
+    public string? Semester { get; set; }
+    public Guid? RoomId { get; set; }
+    public string? RoomName { get; set; }
     public Guid? TeacherId { get; set; }
     public string? TeacherName { get; set; }
     public bool IsActive { get; set; }
@@ -53,6 +66,9 @@ public class ClassroomDetailResponseDto
     public string Name { get; set; } = null!;
     public string? Grade { get; set; }
     public string? AcademicYear { get; set; }
+    public string? Semester { get; set; }
+    public Guid? RoomId { get; set; }
+    public string? RoomName { get; set; }
     public Guid? TeacherId { get; set; }
     public string? TeacherName { get; set; }
     public bool IsActive { get; set; }
@@ -65,7 +81,14 @@ public class ClassroomStudentDto
     public Guid StudentId { get; set; }
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
+    public string? Email { get; set; }
+    public string? Phone { get; set; }
+    public string? Gender { get; set; }
+    public DateTime? DateOfBirth { get; set; }
     public DateTime EnrolledAt { get; set; }
+    /// <summary>"Active" | "Dropped" | "Completed"</summary>
+    public string Status { get; set; } = null!;
+    public DateTime? UnenrolledAt { get; set; }
 }
 
 public class EnrollStudentDto

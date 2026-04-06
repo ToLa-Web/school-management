@@ -10,6 +10,9 @@ public class GradeCreateDto
     [Required]
     public Guid SubjectId { get; set; }
 
+    /// <summary>Optional: scopes the grade to a classroom section.</summary>
+    public Guid? ClassroomId { get; set; }
+
     [Required]
     [Range(0, 100, ErrorMessage = "Score must be 0–100.")]
     public decimal Score { get; set; }
@@ -17,6 +20,9 @@ public class GradeCreateDto
     [Required]
     [StringLength(20)]
     public string Semester { get; set; } = null!;
+
+    /// <summary>1=Aggregated, 2=Manual</summary>
+    public int GradingMethod { get; set; } = 2;
 }
 
 public class GradeUpdateDto
@@ -28,6 +34,9 @@ public class GradeUpdateDto
     [Required]
     [StringLength(20)]
     public string Semester { get; set; } = null!;
+
+    /// <summary>1=Aggregated, 2=Manual</summary>
+    public int GradingMethod { get; set; } = 2;
 }
 
 public class GradeResponseDto
@@ -37,7 +46,11 @@ public class GradeResponseDto
     public string StudentName { get; set; } = null!;
     public Guid SubjectId { get; set; }
     public string SubjectName { get; set; } = null!;
+    public Guid? ClassroomId { get; set; }
+    public string? ClassroomName { get; set; }
     public decimal Score { get; set; }
     public string Semester { get; set; } = null!;
+    public int GradingMethod { get; set; }
+    public string GradingMethodName { get; set; } = null!;
     public DateTime CreatedAt { get; set; }
 }

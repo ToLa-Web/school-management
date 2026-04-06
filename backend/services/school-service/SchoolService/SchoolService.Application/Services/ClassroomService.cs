@@ -54,7 +54,7 @@ public class ClassroomService : IClassroomService
     public async Task<ClassroomResponseDto> CreateAsync(ClassroomCreateDto dto)
     {
         var classroom = new Classroom(dto.Name);
-        classroom.UpdateInfo(dto.Name, dto.Grade, dto.AcademicYear);
+        classroom.UpdateInfo(dto.Name, dto.Grade, dto.AcademicYear, dto.Semester, dto.RoomId);
         classroom.AssignTeacher(dto.TeacherId);
 
         await _classroomRepository.AddAsync(classroom);
@@ -67,7 +67,7 @@ public class ClassroomService : IClassroomService
         if (classroom == null)
             throw new NotFoundException("Classroom", id);
 
-        classroom.UpdateInfo(dto.Name, dto.Grade, dto.AcademicYear);
+        classroom.UpdateInfo(dto.Name, dto.Grade, dto.AcademicYear, dto.Semester, dto.RoomId);
         classroom.AssignTeacher(dto.TeacherId);
 
         if (dto.IsActive)
@@ -112,43 +112,49 @@ public class ClassroomService : IClassroomService
         if (enrollment == null)
             throw new NotFoundException($"No enrollment found for student '{studentId}' in classroom '{classroomId}'.");
 
-        await _classroomRepository.RemoveEnrollmentAsync(enrollment);
+        enrollment.Drop();
+        await _classroomRepository.UpdateEnrollmentAsync(enrollment);
     }
 
     private static ClassroomResponseDto MapToResponse(Classroom c) => new()
     {
-        Id = c.Id,
-        Name = c.Name,
-        Grade = c.Grade,
+        Id           = c.Id,
+        Name         = c.Name,
+        Grade        = c.Grade,
         AcademicYear = c.AcademicYear,
-        TeacherId = c.TeacherId,
-        TeacherName = c.Teacher != null
-            ? $"{c.Teacher.FirstName} {c.Teacher.LastName}"
-            : null,
-        IsActive = c.IsActive,
-        CreatedAt = c.CreatedAt,
+        Semester     = c.Semester,
+        RoomId       = c.RoomId,
+        RoomName     = c.Room?.Name,
+        TeacherId    = c.TeacherId,
+        TeacherName  = c.Teacher != null ? $"{c.Teacher.FirstName} {c.Teacher.LastName}" : null,
+        IsActive     = c.IsActive,
+        CreatedAt    = c.CreatedAt,
         StudentCount = c.StudentClassrooms.Count
     };
 
     private static ClassroomDetailResponseDto MapToDetailResponse(Classroom c) => new()
     {
-        Id = c.Id,
-        Name = c.Name,
-        Grade = c.Grade,
+        Id           = c.Id,
+        Name         = c.Name,
+        Grade        = c.Grade,
         AcademicYear = c.AcademicYear,
-        TeacherId = c.TeacherId,
-        TeacherName = c.Teacher != null
-            ? $"{c.Teacher.FirstName} {c.Teacher.LastName}"
-            : null,
-        IsActive = c.IsActive,
-        CreatedAt = c.CreatedAt,
-        Students = c.StudentClassrooms
+        TeacherId    = c.TeacherId,
+        TeacherName  = c.Teacher != null ? $"{c.Teacher.FirstName} {c.Teacher.LastName}" : null,
+        IsActive     = c.IsActive,
+        CreatedAt    = c.CreatedAt,
+        Students     = c.StudentClassrooms
             .Select(sc => new ClassroomStudentDto
             {
-                StudentId = sc.StudentId,
-                FirstName = sc.Student.FirstName,
-                LastName = sc.Student.LastName,
-                EnrolledAt = sc.EnrolledAt
+                StudentId    = sc.StudentId,
+                FirstName    = sc.Student.FirstName,
+                LastName     = sc.Student.LastName,
+                Email        = sc.Student.Email,
+                Phone        = sc.Student.Phone,
+                Gender       = sc.Student.Gender,
+                DateOfBirth  = sc.Student.DateOfBirth,
+                EnrolledAt   = sc.EnrolledAt,
+                Status       = sc.Status.ToString(),
+                UnenrolledAt = sc.UnenrolledAt
             })
             .ToList()
     };
