@@ -5,10 +5,10 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
 import {
   getClassroom, updateClassroom,
-  getTeachers, getStudents, getRooms,
+  getTeachers, getStudents, getRooms, getSubjects,
   enrollStudent, unenrollStudent,
 } from '@/lib/api';
-import { School, ArrowLeft, AlertCircle, Save, Bookmark, User, Users, UserPlus, Trash2, CheckCircle, Home, Power } from 'lucide-react';
+import { School, ArrowLeft, AlertCircle, Save, Bookmark, User, Users, UserPlus, Trash2, CheckCircle, Home, Power, BookOpen } from 'lucide-react';
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog';
 
 const inputCls = 'admin-input';
@@ -21,6 +21,7 @@ export default function ClassroomDetailPage() {
   const [classroom,  setClassroom]  = useState(null);
   const [teachers,   setTeachers]   = useState([]);
   const [rooms,      setRooms]      = useState([]);
+  const [subjects,   setSubjects]   = useState([]);
   const [allStudents, setAllStudents] = useState([]);
   const [form,       setForm]       = useState(null);
   const [error,      setError]      = useState('');
@@ -33,10 +34,11 @@ export default function ClassroomDetailPage() {
   const [deleting, setDeleting] = useState(false);
 
   async function load() {
-    const [cls, tea, roo, stu] = await Promise.all([
+    const [cls, tea, roo, sub, stu] = await Promise.all([
       getClassroom(id),
       getTeachers(1, 100),
       getRooms(),
+      getSubjects(),
       getStudents(1, 100),
     ]);
     if (cls) {
@@ -48,11 +50,13 @@ export default function ClassroomDetailPage() {
         semester:     cls.semester ?? '',
         roomId:       cls.roomId ?? '',
         teacherId:    cls.teacherId ?? '',
+        subjectId:    cls.subjectId ?? '',
         isActive:     cls.isActive ?? true,
       });
     }
     setTeachers(tea?.items ?? tea ?? []);
     setRooms(roo?.items ?? roo ?? []);
+    setSubjects(sub?.items ?? sub ?? []);
     setAllStudents(stu?.items ?? stu ?? []);
     setLoading(false);
   }
@@ -76,6 +80,7 @@ export default function ClassroomDetailPage() {
         semester: form.semester || null,
         roomId: form.roomId || null,
         teacherId: form.teacherId || null,
+        subjectId: form.subjectId || null,
         isActive: form.isActive,
       };
       const res = await updateClassroom(id, payload);
@@ -85,7 +90,7 @@ export default function ClassroomDetailPage() {
         setTimeout(() => setSuccess(''), 4000);
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data?.message ?? 'Failed to save.');
+        setError(data?.details ?? data?.message ?? 'Failed to save.');
       }
     } finally {
       setSaving(false);
@@ -102,7 +107,8 @@ export default function ClassroomDetailPage() {
       load(); 
     }
     else {
-      setError('Failed to enroll student.');
+      const data = await res.json().catch(() => ({}));
+      setError(data?.details ?? data?.message ?? 'Failed to enroll student.');
     }
   }
 
@@ -129,7 +135,8 @@ export default function ClassroomDetailPage() {
         setDeleteTarget(null);
         load();
       } else {
-        setError('Failed to remove student.');
+        const data = await res.json().catch(() => ({}));
+        setError(data?.details ?? data?.message ?? 'Failed to remove student.');
       }
     } finally {
       setDeleting(false);
@@ -207,6 +214,19 @@ export default function ClassroomDetailPage() {
             </label>
             <input type="text" required value={form.name}
               onChange={(e) => set('name', e.target.value)} className={inputCls} />
+          </div>
+          <div>
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1.5">
+              <BookOpen className="w-4 h-4 text-slate-400" />
+              Subject <span className="text-red-500">*</span>
+            </label>
+            <select required value={form.subjectId}
+              onChange={(e) => set('subjectId', e.target.value)} className={inputCls}>
+              <option value="">Select Subject</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>{s.subjectName}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1.5">

@@ -23,7 +23,7 @@ public class ClassroomService : IClassroomService
     {
         var classrooms = await _classroomRepository.GetAllAsync();
         return classrooms
-            .Select(MapToResponse)
+            .Select(MapToResponseSafe)
             .ToList();
     }
 
@@ -35,7 +35,7 @@ public class ClassroomService : IClassroomService
         var (items, total) = await _classroomRepository.GetPagedAsync(page, pageSize);
         return new PagedResult<ClassroomResponseDto>
         {
-            Items = items.Select(MapToResponse).ToList(),
+            Items = items.Select(MapToResponseSafe).ToList(),
             TotalCount = total,
             Page = page,
             PageSize = pageSize
@@ -53,12 +53,16 @@ public class ClassroomService : IClassroomService
 
     public async Task<ClassroomResponseDto> CreateAsync(ClassroomCreateDto dto)
     {
-        var classroom = new Classroom(dto.Name);
+        var classroom = new Classroom(dto.Name, dto.SubjectId);
         classroom.UpdateInfo(dto.Name, dto.Grade, dto.AcademicYear, dto.Semester, dto.RoomId);
         classroom.AssignTeacher(dto.TeacherId);
 
         await _classroomRepository.AddAsync(classroom);
-        return MapToResponse(classroom);
+        
+        var createdClassroom = await _classroomRepository.GetByIdWithDetailsAsync(classroom.Id);
+        if (createdClassroom == null)
+            throw new Exception("Failed to retrieve the created classroom.");
+        return MapToResponse(createdClassroom);
     }
 
     public async Task<ClassroomResponseDto> UpdateAsync(Guid id, ClassroomUpdateDto dto)
@@ -76,7 +80,11 @@ public class ClassroomService : IClassroomService
             classroom.Deactivate();
 
         await _classroomRepository.UpdateAsync(classroom);
-        return MapToResponse(classroom);
+        
+        var updatedClassroom = await _classroomRepository.GetByIdWithDetailsAsync(id);
+        if (updatedClassroom == null)
+            throw new Exception("Failed to retrieve the updated classroom.");
+        return MapToResponse(updatedClassroom);
     }
 
     public async Task DeleteAsync(Guid id)
@@ -127,6 +135,26 @@ public class ClassroomService : IClassroomService
         RoomName     = c.Room?.Name,
         TeacherId    = c.TeacherId,
         TeacherName  = c.Teacher != null ? $"{c.Teacher.FirstName} {c.Teacher.LastName}" : null,
+        SubjectId    = c.SubjectId,
+        SubjectName  = c.Subject.SubjectName,
+        IsActive     = c.IsActive,
+        CreatedAt    = c.CreatedAt,
+        StudentCount = c.StudentClassrooms.Count
+    };
+
+    private static ClassroomResponseDto MapToResponseSafe(Classroom c) => new()
+    {
+        Id           = c.Id,
+        Name         = c.Name,
+        Grade        = c.Grade,
+        AcademicYear = c.AcademicYear,
+        Semester     = c.Semester,
+        RoomId       = c.RoomId,
+        RoomName     = c.Room?.Name,
+        TeacherId    = c.TeacherId,
+        TeacherName  = c.Teacher != null ? $"{c.Teacher.FirstName} {c.Teacher.LastName}" : null,
+        SubjectId    = c.SubjectId,
+        SubjectName  = c.Subject?.SubjectName ?? "Unknown Subject",
         IsActive     = c.IsActive,
         CreatedAt    = c.CreatedAt,
         StudentCount = c.StudentClassrooms.Count
@@ -140,18 +168,21 @@ public class ClassroomService : IClassroomService
         AcademicYear = c.AcademicYear,
         TeacherId    = c.TeacherId,
         TeacherName  = c.Teacher != null ? $"{c.Teacher.FirstName} {c.Teacher.LastName}" : null,
+        SubjectId    = c.SubjectId,
+        SubjectName  = c.Subject?.SubjectName ?? "Unknown Subject",
         IsActive     = c.IsActive,
         CreatedAt    = c.CreatedAt,
         Students     = c.StudentClassrooms
+            .Where(sc => sc.Student != null)
             .Select(sc => new ClassroomStudentDto
             {
                 StudentId    = sc.StudentId,
-                FirstName    = sc.Student.FirstName,
-                LastName     = sc.Student.LastName,
-                Email        = sc.Student.Email,
-                Phone        = sc.Student.Phone,
-                Gender       = sc.Student.Gender,
-                DateOfBirth  = sc.Student.DateOfBirth,
+                FirstName    = sc.Student?.FirstName ?? "Unknown",
+                LastName     = sc.Student?.LastName ?? "Student",
+                Email        = sc.Student?.Email,
+                Phone        = sc.Student?.Phone,
+                Gender       = sc.Student?.Gender,
+                DateOfBirth  = sc.Student?.DateOfBirth,
                 EnrolledAt   = sc.EnrolledAt,
                 Status       = sc.Status.ToString(),
                 UnenrolledAt = sc.UnenrolledAt

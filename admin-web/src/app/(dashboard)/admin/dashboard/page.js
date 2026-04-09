@@ -906,16 +906,16 @@ export default function AdminDashboardPage() {
                   <Link
                     key={classroom.id}
                     href={`/admin/classrooms/${classroom.id}`}
-                    className="rounded-[1.4rem] border border-slate-200/70 bg-white/80 p-4 transition hover:border-slate-300 hover:bg-white"
+                    className="block rounded-[1.4rem] border border-slate-200/70 bg-white/80 p-4 transition hover:border-slate-300 hover:bg-white"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <div className="flex w-full items-start justify-between gap-4">
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-slate-900">{classroom.name}</p>
-                        <p className="mt-1 text-sm text-slate-500">
+                        <p className="mt-1 text-sm text-slate-600">
                           {classroom.grade} | {classroom.teacherName}
                         </p>
                       </div>
-                      <div className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
+                      <div className="flex-shrink-0 rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">
                         {formatNumber(classroom.students)}
                       </div>
                     </div>

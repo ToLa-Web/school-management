@@ -56,9 +56,17 @@ export default function ClassroomsPage() {
     setDeleteDialogOpen(true);
   }
 
-  const filtered = classrooms.filter(c =>
-    (c.className ?? c.name ?? '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = classrooms.filter(c => {
+    const searchTerm = search.toLowerCase();
+    return (
+      (c.name ?? '').toLowerCase().includes(searchTerm) ||
+      (c.grade ?? '').toLowerCase().includes(searchTerm) ||
+      (c.teacherName ?? '').toLowerCase().includes(searchTerm) ||
+      (c.subjectName ?? '').toLowerCase().includes(searchTerm) ||
+      (c.roomName ?? '').toLowerCase().includes(searchTerm) ||
+      (c.academicYear ?? '').toLowerCase().includes(searchTerm)
+    );
+  });
 
   return (
     <div className="admin-page">
@@ -121,6 +129,9 @@ export default function ClassroomsPage() {
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Class Name</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Grade</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Teacher</th>
+                <th className="text-left px-5 py-4 font-semibold text-slate-600">Subject</th>
+                <th className="text-left px-5 py-4 font-semibold text-slate-600">Room</th>
+                <th className="text-left px-5 py-4 font-semibold text-slate-600">Academic Year</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Students</th>
                 <th className="px-5 py-4 w-24"></th>
               </tr>
@@ -133,7 +144,7 @@ export default function ClassroomsPage() {
                       <div className="w-9 h-9 rounded-lg bg-[#526d82] flex items-center justify-center">
                         <School className="w-4 h-4 text-white" />
                       </div>
-                      <span className="font-medium text-slate-900">{c.className ?? c.name}</span>
+                      <span className="font-medium text-slate-900">{c.name}</span>
                     </div>
                   </td>
                   <td className="px-5 py-4">
@@ -142,7 +153,16 @@ export default function ClassroomsPage() {
                     </span>
                   </td>
                   <td className="px-5 py-4 text-slate-600">
-                    {c.teacherName ?? c.teacher?.firstName ?? <span className="text-slate-400">Not assigned</span>}
+                    {c.teacherName ?? <span className="text-slate-400">Not assigned</span>}
+                  </td>
+                  <td className="px-5 py-4 text-slate-600">
+                    {c.subjectName ?? <span className="text-slate-400">—</span>}
+                  </td>
+                  <td className="px-5 py-4 text-slate-600">
+                    {c.roomName ?? <span className="text-slate-400">—</span>}
+                  </td>
+                  <td className="px-5 py-4 text-slate-600">
+                    {c.academicYear ?? <span className="text-slate-400">—</span>}
                   </td>
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-1.5 text-slate-600">
@@ -160,7 +180,7 @@ export default function ClassroomsPage() {
                         <Settings className="w-4 h-4" />
                       </Link>
                       <button
-                        onClick={() => handleDeleteClick(c.id, c.className ?? c.name)}
+                        onClick={() => handleDeleteClick(c.id, c.name)}
                         className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Delete"
                       >

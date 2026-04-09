@@ -19,6 +19,7 @@ import {
   UserCog,
   Users,
   X,
+  Home,
 } from 'lucide-react';
 
 const adminSections = [
@@ -41,6 +42,7 @@ const adminSections = [
     title: 'Academics',
     items: [
       { href: '/admin/classrooms', label: 'Classrooms', icon: School },
+      { href: '/admin/rooms', label: 'Rooms', icon: Home },
       { href: '/admin/subjects', label: 'Subjects', icon: BookOpen },
       { href: '/admin/grades', label: 'Grades', icon: BarChart3 },
       { href: '/admin/attendance', label: 'Attendance', icon: ClipboardCheck },

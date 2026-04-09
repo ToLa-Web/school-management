@@ -33,7 +33,6 @@ public class SubjectService : ISubjectService
     {
         var subject = new Subject(
             dto.SubjectName,
-            dto.YearLevel,
             dto.Category,
             dto.Department,
             dto.Description,
@@ -50,7 +49,6 @@ public class SubjectService : ISubjectService
 
         subject.UpdateInfo(
             dto.SubjectName,
-            dto.YearLevel,
             dto.Category,
             dto.Department,
             dto.Description,
@@ -100,7 +98,6 @@ public class SubjectService : ISubjectService
         TeacherNames = s.TeacherSubjects
             .Select(ts => $"{ts.Teacher.FirstName} {ts.Teacher.LastName}")
             .ToList(),
-        YearLevel = s.YearLevel,
         Category = s.Category,
         Department = s.Department,
         Description = s.Description,

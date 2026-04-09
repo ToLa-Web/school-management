@@ -20,6 +20,9 @@ public class ClassroomCreateDto
     public Guid? RoomId { get; set; }
 
     public Guid? TeacherId { get; set; }
+
+    [Required(ErrorMessage = "SubjectId is required.")]
+    public Guid SubjectId { get; set; }
 }
 
 public class ClassroomUpdateDto
@@ -41,6 +44,9 @@ public class ClassroomUpdateDto
 
     public Guid? TeacherId { get; set; }
 
+    [Required(ErrorMessage = "SubjectId is required.")]
+    public Guid SubjectId { get; set; }
+
     public bool IsActive { get; set; } = true;
 }
 
@@ -55,6 +61,8 @@ public class ClassroomResponseDto
     public string? RoomName { get; set; }
     public Guid? TeacherId { get; set; }
     public string? TeacherName { get; set; }
+    public Guid SubjectId { get; set; }
+    public string SubjectName { get; set; } = null!;
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public int StudentCount { get; set; }
@@ -71,6 +79,8 @@ public class ClassroomDetailResponseDto
     public string? RoomName { get; set; }
     public Guid? TeacherId { get; set; }
     public string? TeacherName { get; set; }
+    public Guid SubjectId { get; set; }
+    public string SubjectName { get; set; } = null!;
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<ClassroomStudentDto> Students { get; set; } = new();

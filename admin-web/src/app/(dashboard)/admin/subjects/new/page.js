@@ -11,7 +11,6 @@ export default function NewSubjectPage() {
 
   const router = useRouter();
   const [subjectName, setSubjectName] = useState('');
-  const [yearLevel, setYearLevel] = useState('');
   const [category, setCategory] = useState('');
   const [department, setDepartment] = useState('');
   const [description, setDescription] = useState('');
@@ -27,7 +26,6 @@ export default function NewSubjectPage() {
     try {
       const res = await createSubject({
         subjectName: subjectName.trim(),
-        yearLevel: yearLevel ? parseInt(yearLevel) : 0,
         category: category || null,
         department: department || null,
         description: description || null,
@@ -100,21 +98,7 @@ export default function NewSubjectPage() {
             <option value="Biology">Biology</option>
           </select>
         </div>
-        <div>
-          <label className="text-sm font-semibold text-slate-700 mb-1.5">Year Level</label>
-          <select
-            value={yearLevel}
-            onChange={e => setYearLevel(e.target.value)}
-            className="admin-input"
-          >
-            <option value="">Select Year</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5 (Capstone)</option>
-          </select>
-        </div>
+
         <div>
           <label className="text-sm font-semibold text-slate-700 mb-1.5">Category</label>
           <select
