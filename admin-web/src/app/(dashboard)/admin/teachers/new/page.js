@@ -25,6 +25,7 @@ const defaultForm = {
   specialization: '',
   department: '',
   hireDate: '',
+  isActive: true,
 };
 
 export default function NewTeacherPage() {
@@ -48,6 +49,14 @@ export default function NewTeacherPage() {
       if (payload.dateOfBirth) {
         payload.dateOfBirth = new Date(payload.dateOfBirth).toISOString();
       }
+      // HireDate should be sent as DateOnly format (YYYY-MM-DD), not ISO DateTime
+      if (payload.hireDate) {
+        payload.hireDate = payload.hireDate;
+      } else {
+        payload.hireDate = null;
+      }
+      // Ensure isActive is included
+      payload.isActive = form.isActive ?? true;
       const res = await createTeacher(payload);
       if (res?.ok) {
         router.push('/admin/teachers');
@@ -196,6 +205,13 @@ export default function NewTeacherPage() {
             className={inputCls}
           />
         </Field>
+
+        <div className="flex items-center gap-3 py-2">
+          <input type="checkbox" id="isActive" checked={form.isActive} onChange={(e) => set('isActive', e.target.checked)} className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-400" />
+          <label htmlFor="isActive" className="text-sm font-semibold text-slate-700">
+            Active Teacher Account
+          </label>
+        </div>
 
         <div className="flex gap-3 pt-3">
           <button

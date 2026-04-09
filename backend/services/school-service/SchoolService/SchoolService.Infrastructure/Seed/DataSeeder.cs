@@ -148,29 +148,24 @@ public class DataSeeder
 
         var teachers = await _context.Teachers.OrderBy(t => t.Email).ToListAsync();
         var students = await _context.Students.OrderBy(s => s.Email).ToListAsync();
+        var subjects = await _context.Subjects.OrderBy(s => s.SubjectName).ToListAsync();
 
-        if (teachers.Count < 5 || students.Count < 47) return;
-
-        // Homeroom teacher assignment:
-        //   Class 10-A → Sopheak Meas  (teacher[0])
-        //   Class 11-A → Dara Chan     (teacher[1])
-        //   Class 12-A → Bopha Sok     (teacher[2])
-        //   Class 10-B → Rithy Phal    (teacher[3])
-        //   Class 12-B → Sreyla Noun   (teacher[4])
+        if (teachers.Count < 5 || students.Count < 47 || subjects.Count < 5) return;
+        
         var classData = new[]
         {
-            (Name: "Class 10-A", Grade: "10", TeacherIdx: 0, StudentStart:  0, StudentCount: 15),
-            (Name: "Class 11-A", Grade: "11", TeacherIdx: 1, StudentStart: 15, StudentCount: 10),
-            (Name: "Class 12-A", Grade: "12", TeacherIdx: 2, StudentStart: 25, StudentCount:  7),
-            (Name: "Class 10-B", Grade: "10", TeacherIdx: 3, StudentStart: 32, StudentCount:  9),
-            (Name: "Class 12-B", Grade: "12", TeacherIdx: 4, StudentStart: 41, StudentCount:  6),
+            (Name: "Class 10-A", Grade: "10", TeacherIdx: 0, SubjectIdx: 0, StudentStart:  0, StudentCount: 15),
+            (Name: "Class 11-A", Grade: "11", TeacherIdx: 1, SubjectIdx: 1, StudentStart: 15, StudentCount: 10),
+            (Name: "Class 12-A", Grade: "12", TeacherIdx: 2, SubjectIdx: 2, StudentStart: 25, StudentCount:  7),
+            (Name: "Class 10-B", Grade: "10", TeacherIdx: 3, SubjectIdx: 3, StudentStart: 32, StudentCount:  9),
+            (Name: "Class 12-B", Grade: "12", TeacherIdx: 4, SubjectIdx: 4, StudentStart: 41, StudentCount:  6),
         };
 
         var enrollments = new List<StudentClassroom>();
 
         foreach (var cd in classData)
         {
-            var cls = new Classroom(cd.Name);
+            var cls = new Classroom(cd.Name, subjects[cd.SubjectIdx].Id);
             cls.UpdateInfo(cd.Name, cd.Grade, "2025-2026", null, null);
             cls.AssignTeacher(teachers[cd.TeacherIdx].Id);
             await _context.Classrooms.AddAsync(cls);

@@ -82,7 +82,14 @@ public class AuthController : ControllerBase
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequestDto dto)
     {
+        if (string.IsNullOrWhiteSpace(dto.RefreshToken))
+            return BadRequest(new { success = false, message = "Refresh token is required" });
+
         var result = await _authService.RefreshTokenAsync(dto.RefreshToken);
+        
+        if (result == null)
+            return Unauthorized(new { success = false, message = "Invalid or expired refresh token" });
+        
         return Ok(result);
     }
 

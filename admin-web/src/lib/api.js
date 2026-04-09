@@ -28,11 +28,17 @@ async function request(path, options = {}) {
         const refreshRes = await fetch('/api/auth/refresh', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, refreshToken, email: user.email }),
+          body: JSON.stringify({ refreshToken }),
         });
         
         if (refreshRes.ok) {
           const data = await refreshRes.json();
+          
+          // Validate response has required fields
+          if (!data || !data.token && !data.accessToken) {
+            throw new Error('Invalid refresh response: missing token');
+          }
+          
           localStorage.setItem('token', data.accessToken ?? data.token);
           if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
           token = data.accessToken ?? data.token;
@@ -46,6 +52,8 @@ async function request(path, options = {}) {
             },
           });
           return res;
+        } else {
+          console.error(`Token refresh failed with status ${refreshRes.status}`);
         }
       } catch (err) {
         console.error('Token refresh failed', err);
@@ -208,10 +216,14 @@ export async function createClassroom(data) {
 
 export async function updateClassroom(id, data) {
   const payload = {
-    name: data.className,
+    name: data.name,
     grade: data.grade,
     academicYear: data.academicYear,
+    semester: data.semester,
+    roomId: data.roomId,
     teacherId: data.teacherId,
+    subjectId: data.subjectId,
+    isActive: data.isActive,
   };
   return request(`/api/school/classrooms/${id}`, {
     method: 'PUT',
@@ -425,6 +437,29 @@ export async function deleteSchedule(id) {
 export async function getRooms() {
   const res = await request('/api/rooms');
   return res.ok ? res.json() : null;
+}
+
+export async function getRoom(id) {
+  const res = await request(`/api/rooms/${id}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function createRoom(data) {
+  return request('/api/rooms', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateRoom(id, data) {
+  return request(`/api/rooms/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRoom(id) {
+  return request(`/api/rooms/${id}`, { method: 'DELETE' });
 }
 
 export async function getAnnouncements(classroomId) {

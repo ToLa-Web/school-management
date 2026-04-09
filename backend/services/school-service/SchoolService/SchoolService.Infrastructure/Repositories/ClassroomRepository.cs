@@ -19,6 +19,7 @@ public class ClassroomRepository : IClassroomRepository
             .AsNoTracking()
             .Include(c => c.Teacher)
             .Include(c => c.Room)
+            .Include(c => c.Subject)
             .Include(c => c.StudentClassrooms)
             .ToListAsync();
 
@@ -28,6 +29,7 @@ public class ClassroomRepository : IClassroomRepository
             .AsNoTracking()
             .Include(c => c.Teacher)
             .Include(c => c.Room)
+            .Include(c => c.Subject)
             .Include(c => c.StudentClassrooms)
             .OrderBy(c => c.Name);
         var total = await query.CountAsync();
@@ -42,6 +44,7 @@ public class ClassroomRepository : IClassroomRepository
         => await _context.Classrooms
             .Include(c => c.Teacher)
             .Include(c => c.Room)
+            .Include(c => c.Subject)
             .Include(c => c.StudentClassrooms)
                 .ThenInclude(sc => sc.Student)
             .FirstOrDefaultAsync(c => c.Id == id);

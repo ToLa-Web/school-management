@@ -9,19 +9,21 @@ public class Classroom
     public string? Semester { get; private set; }
     public Guid? RoomId { get; private set; }
     public Guid? TeacherId { get; private set; }
+    public Guid SubjectId { get; private set; }
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
-    /// <summary>Soft-delete. Cascade-deactivates linked Schedules and Materials at the service layer.</summary>
     public DateTime? DeletedAt { get; private set; }
 
     public Teacher? Teacher { get; private set; }
     public Room? Room { get; private set; }
+    public Subject Subject { get; private set; } = null!;
 
     private readonly List<StudentClassroom> _studentClassrooms = new();
     public IReadOnlyCollection<StudentClassroom> StudentClassrooms => _studentClassrooms;
 
-    public Classroom(string name)
+    public Classroom(string name, Guid subjectId)
     {
+        SubjectId = subjectId;
         UpdateInfo(name, null, null, null, null);
     }
 
@@ -43,8 +45,7 @@ public class Classroom
 
     public void Deactivate() => IsActive = false;
     public void Activate()   => IsActive = true;
-
-    /// <summary>Marks as soft-deleted. The service layer must also soft-delete Schedules and Materials.</summary>
+    
     public void SoftDelete()
     {
         DeletedAt = DateTime.UtcNow;

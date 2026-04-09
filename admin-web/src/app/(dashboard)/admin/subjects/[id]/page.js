@@ -19,7 +19,6 @@ export default function SubjectDetailPage() {
   const [teachers, setTeachers] = useState([]);
   const [form, setForm] = useState({
     subjectName: '',
-    yearLevel: '',
     category: '',
     department: '',
     description: '',
@@ -38,7 +37,6 @@ export default function SubjectDetailPage() {
         setSubject(subjectRes);
         setForm({
           subjectName: subjectRes.subjectName ?? '',
-          yearLevel: subjectRes.yearLevel?.toString() ?? '',
           category: subjectRes.category ?? '',
           department: subjectRes.department ?? '',
           description: subjectRes.description ?? '',
@@ -67,7 +65,6 @@ export default function SubjectDetailPage() {
       const response = await updateSubject(id, {
         subjectName: form.subjectName.trim(),
         yearLevel: form.yearLevel ? Number(form.yearLevel) : 0,
-        category: form.category || null,
         department: form.department || null,
         description: form.description || null,
         code: form.code || null,
@@ -187,18 +184,7 @@ export default function SubjectDetailPage() {
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="mb-1.5 block text-sm font-semibold text-slate-700">Year Level</label>
-            <select className={inputCls} value={form.yearLevel} onChange={(event) => setForm((current) => ({ ...current, yearLevel: event.target.value }))}>
-              <option value="">Select year</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
-              <option value="3">3</option>
-              <option value="4">4</option>
-              <option value="5">5</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-sm font-semibold text-slate-700">Category</label>
-            <select className={inputCls} value={form.category} onChange={(event) => setForm((current) => ({ ...current, category: event.target.value }))}>
+            <select className={inputCls} value={form.yearLevel} onChange={(event)=> setForm((current) => ({ ...current, category: event.target.value }))}>
               <option value="">Select category</option>
               <option value="Foundations">Foundations</option>
               <option value="Core CS">Core CS</option>

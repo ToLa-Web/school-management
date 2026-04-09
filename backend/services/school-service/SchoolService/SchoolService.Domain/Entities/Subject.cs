@@ -8,7 +8,6 @@ public class Subject
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? DeletedAt { get; private set; }
 
-    public int YearLevel { get; private set; }
     public string? Category { get; private set; }
     public string? Department { get; private set; }
     public string? Description { get; private set; }
@@ -25,15 +24,14 @@ public class Subject
 
     private Subject() { } // EF
 
-    public Subject(string subjectName, int yearLevel = 0, string? category = null, string? department = null, string? description = null, string? code = null)
+    public Subject(string subjectName, string? category = null, string? department = null, string? description = null, string? code = null)
     {
-        UpdateInfo(subjectName, yearLevel, category, department, description, code);
+        UpdateInfo(subjectName, category, department, description, code);
     }
 
-    public void UpdateInfo(string subjectName, int yearLevel = 0, string? category = null, string? department = null, string? description = null, string? code = null)
+    public void UpdateInfo(string subjectName, string? category = null, string? department = null, string? description = null, string? code = null)
     {
         SubjectName = subjectName.Trim();
-        YearLevel = yearLevel;
         Category = category?.Trim();
         Department = department?.Trim();
         Description = description?.Trim();

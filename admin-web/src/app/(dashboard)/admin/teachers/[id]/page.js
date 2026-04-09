@@ -74,12 +74,20 @@ export default function EditTeacherPage() {
       if (payload.dateOfBirth) {
         payload.dateOfBirth = new Date(payload.dateOfBirth).toISOString();
       }
+      // HireDate should be sent as DateOnly format (YYYY-MM-DD), not ISO DateTime
+      if (payload.hireDate) {
+        payload.hireDate = payload.hireDate;
+      } else {
+        payload.hireDate = null;
+      }
+      // Ensure isActive is explicitly included
+      payload.isActive = form.isActive ?? true;
       const res = await updateTeacher(id, payload);
       if (res?.ok) {
         router.push('/admin/teachers');
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data?.message ?? data?.error ?? 'Failed to update teacher.');
+        setError(data?.details ?? data?.message ?? data?.error ?? 'Failed to update teacher.');
       }
     } finally {
       setSaving(false);

@@ -60,7 +60,7 @@ export default function GradesPage() {
         handleSearch();
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data?.message ?? data?.error ?? 'Failed to create grade.');
+        setError(data?.details ?? data?.message ?? data?.error ?? 'Failed to create grade.');
       }
     } finally {
       setSaving(false);

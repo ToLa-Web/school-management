@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { createClassroom, getTeachers, getStudents, enrollStudent, getRooms } from '@/lib/api';
+import { createClassroom, getTeachers, getStudents, enrollStudent, getRooms, getSubjects } from '@/lib/api';
 import {
   School, ArrowLeft, AlertCircle, Save, Bookmark, User,
-  Users, Search, Check, Loader2, Home,
+  Users, Search, Check, Loader2, Home, BookOpen,
 } from 'lucide-react';
 
 const inputCls = 'admin-input';
@@ -15,9 +15,10 @@ export default function NewClassroomPage() {
   useAuth();
   const router = useRouter();
 
-  const [form, setForm] = useState({ name: '', grade: '', academicYear: '', semester: '', roomId: '', teacherId: '' });
+  const [form, setForm] = useState({ name: '', grade: '', academicYear: '', semester: '', roomId: '', teacherId: '', subjectId: '' });
   const [rooms, setRooms] = useState([]);
   const [teachers, setTeachers] = useState([]);
+  const [subjects, setSubjects] = useState([]);
   const [students, setStudents] = useState([]);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [search, setSearch] = useState('');
@@ -28,6 +29,7 @@ export default function NewClassroomPage() {
   useEffect(() => {
     getRooms().then((data) => setRooms(data?.items ?? data ?? []));
     getTeachers(1, 100).then((data) => setTeachers(data?.items ?? data ?? []));
+    getSubjects().then((data) => setSubjects(data?.items ?? data ?? []));
     getStudents(1, 500).then((data) => {
       setStudents(data?.items ?? data ?? []);
       setLoadingStudents(false);
@@ -72,11 +74,12 @@ export default function NewClassroomPage() {
         semester: form.semester || null,
         roomId: form.roomId || null,
         teacherId: form.teacherId || null,
+        subjectId: form.subjectId || null,
       };
       const res = await createClassroom(payload);
       if (!res?.ok) {
         const data = await res.json().catch(() => ({}));
-        setError(data?.message ?? data?.error ?? 'Failed to create classroom.');
+        setError(data?.details ?? data?.message ?? data?.error ?? 'Failed to create classroom.');
         return;
       }
       const created = await res.json().catch(() => null);
@@ -130,6 +133,24 @@ export default function NewClassroomPage() {
               placeholder="e.g. Class A"
               className={inputCls}
             />
+          </div>
+
+          <div>
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-slate-700 mb-1.5">
+              <BookOpen className="w-4 h-4 text-slate-400" />
+              Subject <span className="text-red-500">*</span>
+            </label>
+            <select
+              required
+              value={form.subjectId}
+              onChange={(e) => set('subjectId', e.target.value)}
+              className={inputCls}
+            >
+              <option value="">Select Subject</option>
+              {subjects.map((s) => (
+                <option key={s.id} value={s.id}>{s.subjectName}</option>
+              ))}
+            </select>
           </div>
 
           <div>

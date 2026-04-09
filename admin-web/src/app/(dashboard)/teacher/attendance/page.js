@@ -56,7 +56,7 @@ export default function AttendancePage() {
         handleSearch();
       } else {
         const data = await res.json().catch(() => ({}));
-        setError(data?.message ?? data?.error ?? 'Failed to record attendance.');
+        setError(data?.details ?? data?.message ?? data?.error ?? 'Failed to record attendance.');
       }
     } finally {
       setSaving(false);
