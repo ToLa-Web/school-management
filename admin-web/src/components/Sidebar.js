@@ -73,9 +73,27 @@ const teacherSections = [
 
 const studentSections = [
   {
-    title: 'Student',
+    title: 'Overview',
     items: [
       { href: '/student/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    ],
+  },
+  {
+    title: 'Academics',
+    items: [
+      { href: '/student/academics', label: 'Academics', icon: BookOpen },
+      { href: '/student/grades', label: 'Grades', icon: BarChart3 },
+      { href: '/student/attendance', label: 'Attendance', icon: ClipboardCheck },
+      { href: '/student/schedules', label: 'Schedules', icon: CalendarDays },
+    ],
+  },
+  {
+    title: 'Resources',
+    items: [
+      { href: '/student/assignments', label: 'Assignments', icon: ClipboardCheck },
+      { href: '/student/materials', label: 'Materials', icon: BookOpen },
+      { href: '/student/announcements', label: 'Announcements', icon: Activity },
+      { href: '/student/profile', label: 'Profile', icon: GraduationCap },
     ],
   },
 ];

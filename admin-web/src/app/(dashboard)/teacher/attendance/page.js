@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getAttendance, createAttendance, getClassrooms, getStudents } from '@/lib/api';
 import { ClipboardCheck, Search, AlertCircle, CheckCircle, XCircle, Clock, Calendar, Plus, X } from 'lucide-react';
+import { formatStudentId } from '@/lib/id-formatter';
 
 export default function AttendancePage() {
   useAuth([1]);
@@ -254,7 +255,7 @@ export default function AttendancePage() {
                       <div className="w-8 h-8 rounded-full bg-[#526d82] flex items-center justify-center text-white font-semibold text-xs">
                         {(r.studentName ?? 'S')[0]}
                       </div>
-                      <span className="font-medium text-slate-900">{r.studentName ?? r.studentId}</span>
+                      <span className="font-medium text-slate-900">{r.studentName ?? formatStudentId(r.studentId)}</span>
                     </div>
                   </td>
                   <td className="px-5 py-4 text-slate-600">{r.classroomName ?? r.classroomId}</td>

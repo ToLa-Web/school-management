@@ -12,10 +12,12 @@ namespace SchoolService.API.Controllers;
 public class StudentsController : ControllerBase
 {
     private readonly IStudentService _studentService;
+    private readonly IClassroomService _classroomService;
 
-    public StudentsController(IStudentService studentService)
+    public StudentsController(IStudentService studentService, IClassroomService classroomService)
     {
         _studentService = studentService;
+        _classroomService = classroomService;
     }
 
     [HttpGet]
@@ -37,6 +39,23 @@ public class StudentsController : ControllerBase
     {
         var student = await _studentService.GetByIdAsync(id);
         return Ok(student);
+    }
+
+    [HttpGet("by-auth-user/{authUserId:guid}")]
+    public async Task<ActionResult<StudentResponseDto>> GetByAuthUserId(Guid authUserId)
+    {
+        var student = await _studentService.GetByAuthUserIdAsync(authUserId);
+        if (student == null)
+            return NotFound();
+
+        return Ok(student);
+    }
+
+    [HttpGet("{id:guid}/classrooms")]
+    public async Task<ActionResult> GetClassrooms(Guid id)
+    {
+        var classrooms = await _classroomService.GetByStudentIdAsync(id);
+        return Ok(classrooms);
     }
 
     [HttpPost]

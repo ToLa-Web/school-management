@@ -39,6 +39,14 @@ public class SubmissionService : ISubmissionService
             .ToList();
     }
 
+    public async Task<List<SubmissionResponseDto>> GetSubmissionsByStudentAsync(Guid studentId)
+    {
+        var submissions = await _submissionRepository.GetByStudentAsync(studentId);
+        return submissions
+            .Select(MapToResponse)
+            .ToList();
+    }
+
     private async Task<SubmissionResponseDto> GetSubmissionResponseAsync(Guid id)
     {
         var submission = await _submissionRepository.GetByIdWithDetailsAsync(id);

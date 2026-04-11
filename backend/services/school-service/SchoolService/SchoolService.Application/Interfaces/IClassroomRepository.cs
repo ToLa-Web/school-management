@@ -8,6 +8,7 @@ public interface IClassroomRepository
     Task<(List<Classroom> Items, int TotalCount)> GetPagedAsync(int page, int pageSize);
     Task<Classroom?> GetByIdAsync(Guid id);
     Task<Classroom?> GetByIdWithDetailsAsync(Guid id);
+    Task<List<Classroom>> GetByStudentIdAsync(Guid studentId);
     Task AddAsync(Classroom classroom);
     Task UpdateAsync(Classroom classroom);
     Task DeleteAsync(Classroom classroom);

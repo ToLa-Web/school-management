@@ -451,6 +451,28 @@ public class AuthenticationService : IAuthenticationService
         return true;
     }
 
+    public async Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword)
+    {
+        if (userId == Guid.Empty || string.IsNullOrWhiteSpace(currentPassword) || string.IsNullOrWhiteSpace(newPassword))
+            return false;
+
+        var user = await _userRepo.GetByIdAsync(userId);
+        if (user == null || string.IsNullOrWhiteSpace(user.PasswordHash) || !user.IsActive)
+            return false;
+
+        if (!_passwordHasher.VerifyPassword(user, user.PasswordHash, currentPassword))
+            return false;
+
+        var newHash = _passwordHasher.HashPassword(user, newPassword);
+        user.SetPasswordHash(newHash);
+
+        foreach (var refreshToken in user.RefreshTokens)
+            refreshToken.Revoke();
+
+        await _userRepo.UpdateAsync(user);
+        return true;
+    }
+
     public async Task<bool> LogoutAsync(string refreshToken)
     {
         if (string.IsNullOrWhiteSpace(refreshToken))

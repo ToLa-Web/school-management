@@ -21,6 +21,12 @@ public class SubmissionsController : ControllerBase
         return await _submissionService.GetSubmissionsByMaterialAsync(materialId);
     }
 
+    [HttpGet("student/{studentId}")]
+    public async Task<ActionResult<List<SubmissionResponseDto>>> GetByStudent(Guid studentId)
+    {
+        return await _submissionService.GetSubmissionsByStudentAsync(studentId);
+    }
+
     [HttpPost]
     public async Task<ActionResult<SubmissionResponseDto>> Submit(SubmissionCreateDto dto)
     {

@@ -49,6 +49,17 @@ public class ClassroomRepository : IClassroomRepository
                 .ThenInclude(sc => sc.Student)
             .FirstOrDefaultAsync(c => c.Id == id);
 
+    public async Task<List<Classroom>> GetByStudentIdAsync(Guid studentId)
+        => await _context.Classrooms
+            .AsNoTracking()
+            .Include(c => c.Teacher)
+            .Include(c => c.Room)
+            .Include(c => c.Subject)
+            .Include(c => c.StudentClassrooms)
+            .Where(c => c.StudentClassrooms.Any(sc => sc.StudentId == studentId && sc.Status == StudentClassroomStatus.Active))
+            .OrderBy(c => c.Name)
+            .ToListAsync();
+
     public async Task AddAsync(Classroom classroom)
     {
         await _context.Classrooms.AddAsync(classroom);

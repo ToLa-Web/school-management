@@ -47,6 +47,12 @@ public class StudentService : IStudentService
         return MapToResponse(student);
     }
 
+    public async Task<StudentResponseDto?> GetByAuthUserIdAsync(Guid authUserId)
+    {
+        var student = await _repository.GetByAuthUserIdAsync(authUserId);
+        return student == null ? null : MapToResponse(student);
+    }
+
     public async Task<StudentResponseDto> CreateAsync(StudentCreateDto dto)
     {
         var student = new Student(dto.FirstName, dto.LastName);
