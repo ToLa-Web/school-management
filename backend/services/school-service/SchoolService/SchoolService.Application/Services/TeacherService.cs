@@ -36,6 +36,27 @@ public class TeacherService : ITeacherService
         };
     }
 
+    public async Task<IReadOnlyList<TeacherResponseDto>> GetByDepartmentAsync(Guid departmentId)
+    {
+        var teachers = await _repository.GetByDepartmentAsync(departmentId);
+        return teachers.Select(MapToResponse).ToList();
+    }
+
+    public async Task<PagedResult<TeacherResponseDto>> GetByDepartmentAsync(Guid departmentId, int page, int pageSize)
+    {
+        page     = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 100);
+
+        var (items, total) = await _repository.GetByDepartmentPagedAsync(departmentId, page, pageSize);
+        return new PagedResult<TeacherResponseDto>
+        {
+            Items      = items.Select(MapToResponse).ToList(),
+            TotalCount = total,
+            Page       = page,
+            PageSize   = pageSize
+        };
+    }
+
     public async Task<TeacherResponseDto> GetByIdAsync(Guid id)
     {
         var teacher = await _repository.GetByIdAsync(id);
@@ -48,7 +69,7 @@ public class TeacherService : ITeacherService
         var teacher = new Teacher(dto.FirstName, dto.LastName);
         teacher.UpdateBasicInfo(
             dto.FirstName, dto.LastName, dto.Gender, dto.DateOfBirth,
-            dto.Phone, dto.Email, dto.Specialization, dto.Department, dto.HireDate);
+            dto.Phone, dto.Email, dto.Specialization, dto.HireDate);
 
         await _repository.AddAsync(teacher);
         return MapToResponse(teacher);
@@ -61,7 +82,7 @@ public class TeacherService : ITeacherService
 
         teacher.UpdateBasicInfo(
             dto.FirstName, dto.LastName, dto.Gender, dto.DateOfBirth,
-            dto.Phone, dto.Email, dto.Specialization, dto.Department, dto.HireDate);
+            dto.Phone, dto.Email, dto.Specialization, dto.HireDate);
 
         if (dto.IsActive) teacher.Activate(); else teacher.Deactivate();
 
@@ -86,9 +107,15 @@ public class TeacherService : ITeacherService
         Phone          = t.Phone,
         Email          = t.Email,
         Specialization = t.Specialization,
-        Department     = t.Department,
         HireDate       = t.HireDate,
         IsActive       = t.IsActive,
-        CreatedAt      = t.CreatedAt
+        CreatedAt      = t.CreatedAt,
+        Departments    = t.TeacherDepartments
+            .Select(td => new TeacherDepartmentResponseDto
+            {
+                DepartmentId = td.DepartmentId,
+                DepartmentName = td.Department.Name
+            })
+            .ToList()
     };
 }

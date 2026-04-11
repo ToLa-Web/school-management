@@ -15,21 +15,54 @@ public class TeacherRepository : ITeacherRepository
     }
 
     public async Task<List<Teacher>> GetAllAsync()
-        => await _context.Teachers.AsNoTracking().ToListAsync();
+        => await _context.Teachers
+            .AsNoTracking()
+            .Include(t => t.TeacherDepartments).ThenInclude(td => td.Department)
+            .ToListAsync();
 
     public async Task<(List<Teacher> Items, int TotalCount)> GetPagedAsync(int page, int pageSize)
     {
-        var query = _context.Teachers.AsNoTracking().OrderBy(t => t.LastName).ThenBy(t => t.FirstName);
+        var query = _context.Teachers
+            .AsNoTracking()
+            .Include(t => t.TeacherDepartments).ThenInclude(td => td.Department)
+            .OrderBy(t => t.LastName)
+            .ThenBy(t => t.FirstName);
+        var total = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+        return (items, total);
+    }
+
+    public async Task<List<Teacher>> GetByDepartmentAsync(Guid departmentId)
+        => await _context.Teachers
+            .AsNoTracking()
+            .Include(t => t.TeacherDepartments).ThenInclude(td => td.Department)
+            .Where(t => t.TeacherDepartments.Any(td => td.DepartmentId == departmentId))
+            .OrderBy(t => t.LastName)
+            .ThenBy(t => t.FirstName)
+            .ToListAsync();
+
+    public async Task<(List<Teacher> Items, int TotalCount)> GetByDepartmentPagedAsync(Guid departmentId, int page, int pageSize)
+    {
+        var query = _context.Teachers
+            .AsNoTracking()
+            .Include(t => t.TeacherDepartments).ThenInclude(td => td.Department)
+            .Where(t => t.TeacherDepartments.Any(td => td.DepartmentId == departmentId))
+            .OrderBy(t => t.LastName)
+            .ThenBy(t => t.FirstName);
         var total = await query.CountAsync();
         var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
         return (items, total);
     }
 
     public async Task<Teacher?> GetByIdAsync(Guid id)
-        => await _context.Teachers.FindAsync(id);
+        => await _context.Teachers
+            .Include(t => t.TeacherDepartments).ThenInclude(td => td.Department)
+            .FirstOrDefaultAsync(t => t.Id == id);
 
     public async Task<Teacher?> GetByAuthUserIdAsync(Guid authUserId)
-        => await _context.Teachers.FirstOrDefaultAsync(t => t.AuthUserId == authUserId);
+        => await _context.Teachers
+            .Include(t => t.TeacherDepartments).ThenInclude(td => td.Department)
+            .FirstOrDefaultAsync(t => t.AuthUserId == authUserId);
 
     public async Task AddAsync(Teacher teacher)
     {

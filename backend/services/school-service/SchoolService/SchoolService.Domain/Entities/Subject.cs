@@ -4,14 +4,16 @@ public class Subject
 {
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string SubjectName { get; private set; } = null!;
+    public Guid DepartmentId { get; private set; }
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
     public DateTime? DeletedAt { get; private set; }
 
     public string? Category { get; private set; }
-    public string? Department { get; private set; }
     public string? Description { get; private set; }
     public string? Code { get; private set; }
+
+    public Department Department { get; private set; } = null!;
 
     private readonly List<TeacherSubject> _teacherSubjects = new();
     public IReadOnlyCollection<TeacherSubject> TeacherSubjects => _teacherSubjects;
@@ -24,16 +26,19 @@ public class Subject
 
     private Subject() { } // EF
 
-    public Subject(string subjectName, string? category = null, string? department = null, string? description = null, string? code = null)
+    public Subject(string subjectName, Guid departmentId, string? category = null, string? description = null, string? code = null)
     {
-        UpdateInfo(subjectName, category, department, description, code);
+        UpdateInfo(subjectName, departmentId, category, description, code);
     }
 
-    public void UpdateInfo(string subjectName, string? category = null, string? department = null, string? description = null, string? code = null)
+    public void UpdateInfo(string subjectName, Guid departmentId, string? category = null, string? description = null, string? code = null)
     {
+        if (departmentId == Guid.Empty)
+            throw new ArgumentException("DepartmentId cannot be empty", nameof(departmentId));
+
         SubjectName = subjectName.Trim();
+        DepartmentId = departmentId;
         Category = category?.Trim();
-        Department = department?.Trim();
         Description = description?.Trim();
         Code = code?.Trim();
     }

@@ -102,7 +102,7 @@ export default function TeacherClassroomsPage() {
                     </div>
                   </td>
                   <td className="px-5 py-4">
-                    <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">
+                    <span className="px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-50 text-blue-700 whitespace-nowrap inline-block">
                       {c.grade ?? '—'}
                     </span>
                   </td>
