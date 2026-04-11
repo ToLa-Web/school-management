@@ -22,6 +22,14 @@ public class SubmissionRepository : ISubmissionRepository
             .OrderBy(s => s.SubmittedAt)
             .ToListAsync();
 
+    public async Task<List<Submission>> GetByStudentAsync(Guid studentId)
+        => await _context.Submissions
+            .Where(s => s.StudentId == studentId)
+            .Include(s => s.Student)
+            .Include(s => s.Material)
+            .OrderByDescending(s => s.SubmittedAt)
+            .ToListAsync();
+
     public async Task<Submission?> GetByIdAsync(Guid id)
         => await _context.Submissions.FindAsync(id);
 

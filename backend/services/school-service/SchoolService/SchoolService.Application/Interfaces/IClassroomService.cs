@@ -8,6 +8,7 @@ public interface IClassroomService
     Task<IReadOnlyList<ClassroomResponseDto>> GetAllAsync();
     Task<PagedResult<ClassroomResponseDto>> GetAllAsync(int page, int pageSize);
     Task<ClassroomDetailResponseDto> GetByIdAsync(Guid id);
+    Task<IReadOnlyList<ClassroomResponseDto>> GetByStudentIdAsync(Guid studentId);
     Task<ClassroomResponseDto> CreateAsync(ClassroomCreateDto dto);
     Task<ClassroomResponseDto> UpdateAsync(Guid id, ClassroomUpdateDto dto);
     Task DeleteAsync(Guid id);

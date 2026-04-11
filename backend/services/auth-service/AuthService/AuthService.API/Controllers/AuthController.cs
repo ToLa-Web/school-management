@@ -152,6 +152,16 @@ public class AuthController : ControllerBase
         return Ok(reset);
     }
 
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
+    {
+        var changed = await _authService.ChangePasswordAsync(dto.UserId, dto.CurrentPassword, dto.NewPassword);
+        if (!changed)
+            return BadRequest(new { success = false, error = "Current password is incorrect or the account is unavailable." });
+
+        return Ok(new { success = true, message = "Password changed successfully." });
+    }
+
     [HttpPost("oauth/google")]
 public async Task<IActionResult> OAuthGoogle([FromBody] GoogleAuthRequestDto dto)
 {

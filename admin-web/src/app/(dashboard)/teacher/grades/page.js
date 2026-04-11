@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth';
 import { getGrades, createGrade, deleteGrade, getStudents, getSubjects } from '@/lib/api';
 import { BarChart3, Search, AlertCircle, Award, TrendingUp, TrendingDown, Plus, Trash2, X } from 'lucide-react';
+import { formatStudentId } from '@/lib/id-formatter';
 
 export default function GradesPage() {
   useAuth([1]);
@@ -254,7 +255,7 @@ export default function GradesPage() {
                       <div className="w-8 h-8 rounded-full bg-[#526d82] flex items-center justify-center text-white font-semibold text-xs">
                         {(g.studentName ?? 'S')[0]}
                       </div>
-                      <span className="font-medium text-slate-900">{g.studentName ?? g.studentId}</span>
+                      <span className="font-medium text-slate-900">{g.studentName ?? formatStudentId(g.studentId)}</span>
                     </div>
                   </td>
                   <td className="px-5 py-4 text-slate-600">{g.subjectName ?? g.subjectId}</td>

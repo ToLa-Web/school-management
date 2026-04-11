@@ -6,6 +6,11 @@ function getToken() {
   return localStorage.getItem('token');
 }
 
+function getRefreshToken() {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('refreshToken');
+}
+
 async function request(path, options = {}) {
   let token = getToken();
   let res = await fetch(path, {
@@ -18,7 +23,7 @@ async function request(path, options = {}) {
   });
 
   if (res.status === 401) {
-    const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
+    const refreshToken = getRefreshToken();
     const userString = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
     let user = null;
     try { user = JSON.parse(userString); } catch {}
@@ -47,6 +52,7 @@ async function request(path, options = {}) {
           res = await fetch(path, {
             ...options,
             headers: {
+              'Content-Type': 'application/json',
               ...options.headers,
               Authorization: `Bearer ${token}`,
             },
@@ -156,12 +162,14 @@ export async function oauthLogin(provider, token) {
 
 export async function logoutUser() {
   const t = getToken();
+  const refreshToken = getRefreshToken();
   return fetch('/api/auth/logout', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...(t ? { Authorization: `Bearer ${t}` } : {}),
     },
+    body: JSON.stringify({ refreshToken }),
   });
 }
 
@@ -261,6 +269,16 @@ export async function getStudents(page = 1, pageSize = 20) {
 
 export async function getStudent(id) {
   const res = await request(`/api/school/students/${id}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function getStudentByAuthUserId(authUserId) {
+  const res = await request(`/api/school/students/by-auth-user/${authUserId}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function getStudentClassrooms(studentId) {
+  const res = await request(`/api/school/students/${studentId}/classrooms`);
   return res.ok ? res.json() : null;
 }
 
@@ -521,6 +539,35 @@ export async function getAnnouncements(classroomId) {
   const suffix = classroomId ? `?classroomId=${classroomId}` : '';
   const res = await request(`/api/announcements${suffix}`);
   return res.ok ? res.json() : null;
+}
+
+export async function getMaterialsByClassroom(classroomId) {
+  const res = await request(`/api/materials/classroom/${classroomId}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function getMaterialSubmissions(materialId) {
+  const res = await request(`/api/submissions/material/${materialId}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function getStudentSubmissions(studentId) {
+  const res = await request(`/api/submissions/student/${studentId}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function submitStudentSubmission(studentId, data) {
+  return request(`/api/submissions/${studentId}/submit`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function changePassword(data) {
+  return request('/api/auth/change-password', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
 export async function adminGetUsers() {

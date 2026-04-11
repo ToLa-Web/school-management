@@ -5,6 +5,7 @@ namespace SchoolService.Application.Interfaces;
 public interface ISubmissionRepository
 {
     Task<List<Submission>> GetByMaterialAsync(Guid materialId);
+    Task<List<Submission>> GetByStudentAsync(Guid studentId);
     Task<Submission?> GetByIdAsync(Guid id);
     Task<Submission?> GetByIdWithDetailsAsync(Guid id);
     Task AddAsync(Submission submission);

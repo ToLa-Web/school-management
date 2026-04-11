@@ -34,7 +34,22 @@ export default function LoginPage() {
 
       localStorage.setItem('token', data.accessToken ?? data.token);
       if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
-      localStorage.setItem('user', JSON.stringify(data.user ?? { email, role: userRole }));
+      localStorage.setItem(
+        'user',
+        JSON.stringify(
+          data.user ?? {
+            userId: data.userId ?? null,
+            firstName: data.firstName ?? '',
+            lastName: data.lastName ?? '',
+            email: data.email ?? email,
+            role: userRole,
+            userRole: data.userRole ?? '',
+            isActive: data.isActive ?? true,
+            isEmailVerified: data.isEmailVerified ?? true,
+            lastLoginAt: data.lastLoginAt ?? null,
+          },
+        ),
+      );
       
       if (userRole === 4) {
         router.replace('/admin/dashboard');

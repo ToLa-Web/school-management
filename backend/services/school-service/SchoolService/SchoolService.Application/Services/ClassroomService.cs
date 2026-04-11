@@ -51,6 +51,12 @@ public class ClassroomService : IClassroomService
         return MapToDetailResponse(classroom);
     }
 
+    public async Task<IReadOnlyList<ClassroomResponseDto>> GetByStudentIdAsync(Guid studentId)
+    {
+        var classrooms = await _classroomRepository.GetByStudentIdAsync(studentId);
+        return classrooms.Select(MapToResponseSafe).ToList();
+    }
+
     public async Task<ClassroomResponseDto> CreateAsync(ClassroomCreateDto dto)
     {
         var classroom = new Classroom(dto.Name, dto.SubjectId);

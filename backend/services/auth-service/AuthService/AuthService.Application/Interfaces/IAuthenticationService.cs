@@ -13,6 +13,7 @@ public interface IAuthenticationService
     Task<bool> LogoutAsync(string refreshToken);
     Task RequestPasswordResetAsync(string email);
     Task<bool> ResetPasswordAsync(string email, string code, string newPassword);
+    Task<bool> ChangePasswordAsync(Guid userId, string currentPassword, string newPassword);
     Task<AuthResponseDto?> AuthenticateGoogleAsync(string idToken);
     Task<AuthResponseDto?> AuthenticateFacebookAsync(string accessToken);
     Task<UserResponseDto> AdminCreateUserAsync(AdminCreateUserDto dto);
