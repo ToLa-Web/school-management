@@ -8,6 +8,7 @@ import {
   Activity,
   BarChart3,
   BookOpen,
+  Building2,
   CalendarDays,
   ChevronRight,
   ClipboardCheck,
@@ -41,6 +42,7 @@ const adminSections = [
   {
     title: 'Academics',
     items: [
+      { href: '/admin/departments', label: 'Departments', icon: Building2 },
       { href: '/admin/classrooms', label: 'Classrooms', icon: School },
       { href: '/admin/rooms', label: 'Rooms', icon: Home },
       { href: '/admin/subjects', label: 'Subjects', icon: BookOpen },

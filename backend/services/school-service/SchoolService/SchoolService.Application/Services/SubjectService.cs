@@ -33,8 +33,8 @@ public class SubjectService : ISubjectService
     {
         var subject = new Subject(
             dto.SubjectName,
+            dto.DepartmentId,
             dto.Category,
-            dto.Department,
             dto.Description,
             dto.Code
         );
@@ -49,8 +49,8 @@ public class SubjectService : ISubjectService
 
         subject.UpdateInfo(
             dto.SubjectName,
+            dto.DepartmentId,
             dto.Category,
-            dto.Department,
             dto.Description,
             dto.Code
         );
@@ -93,13 +93,14 @@ public class SubjectService : ISubjectService
     {
         Id = s.Id,
         SubjectName = s.SubjectName,
+        DepartmentId = s.DepartmentId,
+        DepartmentName = s.Department?.Name,
         IsActive = s.IsActive,
         CreatedAt = s.CreatedAt,
         TeacherNames = s.TeacherSubjects
             .Select(ts => $"{ts.Teacher.FirstName} {ts.Teacher.LastName}")
             .ToList(),
         Category = s.Category,
-        Department = s.Department,
         Description = s.Description,
         Code = s.Code
     };

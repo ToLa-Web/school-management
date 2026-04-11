@@ -27,9 +27,6 @@ public class TeacherCreateDto
     [StringLength(200)]
     public string? Specialization { get; set; }
 
-    [StringLength(150)]
-    public string? Department { get; set; }
-
     public DateOnly? HireDate { get; set; }
 }
 
@@ -58,9 +55,6 @@ public class TeacherUpdateDto
     [StringLength(200)]
     public string? Specialization { get; set; }
 
-    [StringLength(150)]
-    public string? Department { get; set; }
-
     public DateOnly? HireDate { get; set; }
 
     public bool IsActive { get; set; } = true;
@@ -76,8 +70,8 @@ public class TeacherResponseDto
     public string? Phone { get; set; }
     public string? Email { get; set; }
     public string? Specialization { get; set; }
-    public string? Department { get; set; }
     public DateOnly? HireDate { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<TeacherDepartmentResponseDto> Departments { get; set; } = new();
 }

@@ -167,8 +167,12 @@ export async function logoutUser() {
 
 // Teachers
 
-export async function getTeachers(page = 1, pageSize = 20) {
-  const res = await request(`/api/school/teachers?page=${page}&pageSize=${pageSize}`);
+export async function getTeachers(page = 1, pageSize = 20, departmentId = null) {
+  let url = `/api/school/teachers?page=${page}&pageSize=${pageSize}`;
+  if (departmentId) {
+    url += `&departmentId=${departmentId}`;
+  }
+  const res = await request(url);
   return res.ok ? res.json() : null;
 }
 
@@ -287,8 +291,12 @@ export async function getHealthDashboard() {
 
 //Subjects
 
-export async function getSubjects() {
-  const res = await request('/api/school/subjects');
+export async function getSubjects(departmentId = null) {
+  let url = '/api/school/subjects';
+  if (departmentId) {
+    url += `?departmentId=${departmentId}`;
+  }
+  const res = await request(url);
   return res.ok ? res.json() : null;
 }
 
@@ -430,6 +438,53 @@ export async function createSchedule(data) {
 
 export async function deleteSchedule(id) {
   return request(`/api/school/schedules/${id}`, { method: 'DELETE' });
+}
+
+// Departments
+
+export async function getDepartments() {
+  const res = await request('/api/school/departments');
+  return res.ok ? res.json() : null;
+}
+
+export async function getDepartment(id) {
+  const res = await request(`/api/school/departments/${id}`);
+  return res.ok ? res.json() : null;
+}
+
+export async function getDepartmentDetail(id) {
+  const res = await request(`/api/school/departments/${id}/detail`);
+  return res.ok ? res.json() : null;
+}
+
+export async function createDepartment(data) {
+  return request('/api/school/departments', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateDepartment(id, data) {
+  return request(`/api/school/departments/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function deleteDepartment(id) {
+  return request(`/api/school/departments/${id}`, { method: 'DELETE' });
+}
+
+export async function assignTeacherToDepartment(teacherId, departmentId) {
+  return request(`/api/school/departments/${departmentId}/assign-teacher/${teacherId}`, {
+    method: 'POST',
+  });
+}
+
+export async function removeTeacherFromDepartment(teacherId, departmentId) {
+  return request(`/api/school/teachers/${teacherId}/departments/${departmentId}`, {
+    method: 'DELETE',
+  });
 }
 
 //Admin — Auth Accounts

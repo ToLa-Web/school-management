@@ -10,7 +10,6 @@ public class Teacher
     public string? Phone { get; private set; }
     public string? Email { get; private set; }
     public string? Specialization { get; private set; }
-    public string? Department { get; private set; }
     public DateOnly? HireDate { get; private set; }
     public bool IsActive { get; private set; } = true;
     public DateTime CreatedAt { get; private set; } = DateTime.UtcNow;
@@ -23,17 +22,20 @@ public class Teacher
     private readonly List<TeacherSubject> _teacherSubjects = new();
     public IReadOnlyCollection<TeacherSubject> TeacherSubjects => _teacherSubjects;
 
+    private readonly List<TeacherDepartment> _teacherDepartments = new();
+    public IReadOnlyCollection<TeacherDepartment> TeacherDepartments => _teacherDepartments;
+
     private readonly List<Schedule> _schedules = new();
     public IReadOnlyCollection<Schedule> Schedules => _schedules;
 
     public Teacher(string firstName, string lastName)
     {
-        UpdateBasicInfo(firstName, lastName, null, null, null, null, null, null, null);
+        UpdateBasicInfo(firstName, lastName, null, null, null, null, null, null);
     }
 
     public Teacher(string firstName, string lastName, Guid authUserId)
     {
-        UpdateBasicInfo(firstName, lastName, null, null, null, null, null, null, null);
+        UpdateBasicInfo(firstName, lastName, null, null, null, null, null, null);
         AuthUserId = authUserId;
     }
 
@@ -47,7 +49,6 @@ public class Teacher
         string? phone,
         string? email,
         string? specialization,
-        string? department = null,
         DateOnly? hireDate = null)
     {
         FirstName      = firstName.Trim();
@@ -57,7 +58,6 @@ public class Teacher
         Phone          = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
         Email          = string.IsNullOrWhiteSpace(email) ? null : email.Trim();
         Specialization = string.IsNullOrWhiteSpace(specialization) ? null : specialization.Trim();
-        Department     = string.IsNullOrWhiteSpace(department) ? null : department.Trim();
         HireDate       = hireDate;
     }
 

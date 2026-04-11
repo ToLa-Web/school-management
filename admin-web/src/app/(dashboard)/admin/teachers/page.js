@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth';
-import { getTeachers, deleteTeacher } from '@/lib/api';
+import { getTeachers, deleteTeacher, getDepartments } from '@/lib/api';
 import { Users, Plus, Pencil, Trash2, AlertCircle, Search, X as XIcon } from 'lucide-react';
 import DeleteConfirmDialog from '@/components/DeleteConfirmDialog';
 
@@ -10,6 +10,7 @@ export default function TeachersPage() {
   useAuth();
 
   const [teachers, setTeachers] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [error,    setError]    = useState('');
   const [search,   setSearch]   = useState('');
@@ -18,14 +19,19 @@ export default function TeachersPage() {
   const [filterName, setFilterName] = useState('');
   const [filterEmail, setFilterEmail] = useState('');
   const [filterPhone, setFilterPhone] = useState('');
+  const [filterDepartment, setFilterDepartment] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
 
   async function load() {
     setLoading(true);
-    const data = await getTeachers(1, 100);
-    setTeachers(data?.items ?? data ?? []);
+    const [teachersData, deptData] = await Promise.all([
+      getTeachers(1, 100),
+      getDepartments()
+    ]);
+    setTeachers(teachersData?.items ?? teachersData ?? []);
+    setDepartments(Array.isArray(deptData) ? deptData : deptData?.items ?? []);
     setLoading(false);
   }
 
@@ -51,17 +57,22 @@ export default function TeachersPage() {
       const nameMatch = fullName.includes(filterName.toLowerCase());
       const emailMatch = email.includes(filterEmail.toLowerCase());
       const phoneMatch = phone.includes(filterPhone.toLowerCase());
+      
+      // Check if teacher has the selected department
+      const deptMatch = !filterDepartment || 
+        (t.departments && t.departments.some(d => d.departmentId === filterDepartment));
 
-      return nameMatch && emailMatch && phoneMatch;
+      return nameMatch && emailMatch && phoneMatch && deptMatch;
     });
   };
   const filtered = getFilteredTeachers();
-  const hasFilters = filterName || filterEmail || filterPhone;
+  const hasFilters = filterName || filterEmail || filterPhone || filterDepartment;
 
   const clearFilters = () => {
     setFilterName('');
     setFilterEmail('');
     setFilterPhone('');
+    setFilterDepartment('');
   }
 
   async function handleDeleteConfirm() {
@@ -137,7 +148,7 @@ export default function TeachersPage() {
           )}
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
           {/* Name filter */}
           <div>
             <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Search by Name</label>
@@ -173,6 +184,23 @@ export default function TeachersPage() {
               className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
+
+          {/* Department filter */}
+          <div>
+            <label className="text-xs font-semibold text-slate-700 mb-1.5 block">Filter by Department</label>
+            <select
+              value={filterDepartment}
+              onChange={(e) => setFilterDepartment(e.target.value)}
+              className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="">All Departments</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.name}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -185,7 +213,7 @@ export default function TeachersPage() {
         <div className="bg-white rounded-2xl border border-slate-100 p-12 text-center">
           <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
           <p className="text-slate-500 text-sm">
-            {search ? 'No teachers match your search.' : 'No teachers yet. Create the first one.'}
+            {hasFilters ? 'No teachers match your filters.' : 'No teachers yet. Create the first one.'}
           </p>
         </div>
       ) : (
@@ -195,7 +223,8 @@ export default function TeachersPage() {
               <tr>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Name</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Email</th>
-                <th className="text-left px-5 py-4 font-semibold text-slate-600">Subject</th>
+                <th className="text-left px-5 py-4 font-semibold text-slate-600">Departments</th>
+                <th className="text-left px-5 py-4 font-semibold text-slate-600">Specialization</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Phone</th>
                 <th className="text-left px-5 py-4 font-semibold text-slate-600">Date of Birth</th>
                 <th className="px-5 py-4 w-24"></th>
@@ -213,6 +242,12 @@ export default function TeachersPage() {
                     </div>
                   </td>
                   <td className="px-5 py-4 text-slate-600">{t.email ?? '—'}</td>
+                  <td className="px-5 py-4 text-slate-600">
+                    {t.departments?.length > 0 
+                      ? t.departments.map(d => d.departmentName).join(', ')
+                      : <span className="text-slate-400">No departments</span>
+                    }
+                  </td>
                   <td className="px-5 py-4 text-slate-600">{t.specialization ?? '—'}</td>
                   <td className="px-5 py-4 text-slate-600">{t.phone ?? '—'}</td>
                   <td className="px-5 py-4 text-slate-500">

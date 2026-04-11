@@ -7,8 +7,11 @@ public class SubjectCreateDto
     [Required(ErrorMessage = "SubjectName is required.")]
     [StringLength(150)]
     public string SubjectName { get; set; } = null!;
+
+    [Required(ErrorMessage = "DepartmentId is required.")]
+    public Guid DepartmentId { get; set; }
+
     public string? Category { get; set; }
-    public string? Department { get; set; }
     public string? Description { get; set; }
     public string? Code { get; set; }
 }
@@ -18,8 +21,11 @@ public class SubjectUpdateDto
     [Required(ErrorMessage = "SubjectName is required.")]
     [StringLength(150)]
     public string SubjectName { get; set; } = null!;
+
+    [Required(ErrorMessage = "DepartmentId is required.")]
+    public Guid DepartmentId { get; set; }
+
     public string? Category { get; set; }
-    public string? Department { get; set; }
     public string? Description { get; set; }
     public string? Code { get; set; }
 }
@@ -28,11 +34,12 @@ public class SubjectResponseDto
 {
     public Guid Id { get; set; }
     public string SubjectName { get; set; } = null!;
+    public Guid DepartmentId { get; set; }
+    public string? DepartmentName { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<string> TeacherNames { get; set; } = new();
     public string? Category { get; set; }
-    public string? Department { get; set; }
     public string? Description { get; set; }
     public string? Code { get; set; }
 }

@@ -14,15 +14,19 @@ public class SubjectRepository : ISubjectRepository
     public async Task<List<Subject>> GetAllAsync()
         => await _context.Subjects
             .AsNoTracking()
+            .Include(s => s.Department)
             .Include(s => s.TeacherSubjects).ThenInclude(ts => ts.Teacher)
             .OrderBy(s => s.SubjectName)
             .ToListAsync();
 
     public async Task<Subject?> GetByIdAsync(Guid id)
-        => await _context.Subjects.FindAsync(id);
+        => await _context.Subjects
+            .Include(s => s.Department)
+            .FirstOrDefaultAsync(s => s.Id == id);
 
     public async Task<Subject?> GetByIdWithTeachersAsync(Guid id)
         => await _context.Subjects
+            .Include(s => s.Department)
             .Include(s => s.TeacherSubjects).ThenInclude(ts => ts.Teacher)
             .FirstOrDefaultAsync(s => s.Id == id);
 

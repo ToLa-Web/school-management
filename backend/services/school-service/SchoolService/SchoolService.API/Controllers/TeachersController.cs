@@ -12,24 +12,39 @@ namespace SchoolService.API.Controllers;
 public class TeachersController : ControllerBase
 {
     private readonly ITeacherService _teacherService;
+    private readonly IDepartmentService _departmentService;
 
-    public TeachersController(ITeacherService teacherService)
+    public TeachersController(ITeacherService teacherService, IDepartmentService departmentService)
     {
         _teacherService = teacherService;
+        _departmentService = departmentService;
     }
 
     [HttpGet]
     public async Task<ActionResult> GetAll(
         [FromQuery] int? page,
-        [FromQuery] int? pageSize)
+        [FromQuery] int? pageSize,
+        [FromQuery] Guid? departmentId)
     {
+        if (departmentId.HasValue)
+        {
+            var teachers = await _teacherService.GetByDepartmentAsync(departmentId.Value);
+            if (page.HasValue || pageSize.HasValue)
+            {
+                var paged = await _teacherService.GetByDepartmentAsync(
+                    departmentId.Value, page ?? 1, pageSize ?? 20);
+                return Ok(paged);
+            }
+            return Ok(teachers);
+        }
+
         if (page.HasValue || pageSize.HasValue)
         {
             var paged = await _teacherService.GetAllAsync(page ?? 1, pageSize ?? 20);
             return Ok(paged);
         }
-        var teachers = await _teacherService.GetAllAsync();
-        return Ok(teachers);
+        var allTeachers = await _teacherService.GetAllAsync();
+        return Ok(allTeachers);
     }
 
     [HttpGet("{id:guid}")]
@@ -57,6 +72,22 @@ public class TeachersController : ControllerBase
     public async Task<IActionResult> Delete(Guid id)
     {
         await _teacherService.DeleteAsync(id);
+        return NoContent();
+    }
+
+    [HttpPost("{teacherId:guid}/departments/{departmentId:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> AssignDepartment(Guid teacherId, Guid departmentId)
+    {
+        await _departmentService.AssignTeacherAsync(teacherId, departmentId);
+        return Ok();
+    }
+
+    [HttpDelete("{teacherId:guid}/departments/{departmentId:guid}")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> RemoveDepartment(Guid teacherId, Guid departmentId)
+    {
+        await _departmentService.RemoveTeacherAsync(teacherId, departmentId);
         return NoContent();
     }
 }

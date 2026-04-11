@@ -15,11 +15,11 @@ public class SubjectsController : ControllerBase
     public SubjectsController(ISubjectService subjectService) => _subjectService = subjectService;
 
     [HttpGet]
-    public async Task<ActionResult> GetAll([FromQuery] string? department, [FromQuery] string? category, [FromQuery] string? code)
+    public async Task<ActionResult> GetAll([FromQuery] Guid? departmentId, [FromQuery] string? category, [FromQuery] string? code)
     {
         var subjects = await _subjectService.GetAllAsync();
-        if (!string.IsNullOrWhiteSpace(department))
-            subjects = subjects.Where(s => string.Equals(s.Department, department, StringComparison.OrdinalIgnoreCase)).ToList();
+        if (departmentId.HasValue && departmentId != Guid.Empty)
+            subjects = subjects.Where(s => s.DepartmentId == departmentId).ToList();
         if (!string.IsNullOrWhiteSpace(category))
             subjects = subjects.Where(s => string.Equals(s.Category, category, StringComparison.OrdinalIgnoreCase)).ToList();
         if (!string.IsNullOrWhiteSpace(code))

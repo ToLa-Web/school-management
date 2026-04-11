@@ -6,6 +6,8 @@ public interface ITeacherRepository
 {
     Task<List<Teacher>> GetAllAsync();
     Task<(List<Teacher> Items, int TotalCount)> GetPagedAsync(int page, int pageSize);
+    Task<List<Teacher>> GetByDepartmentAsync(Guid departmentId);
+    Task<(List<Teacher> Items, int TotalCount)> GetByDepartmentPagedAsync(Guid departmentId, int page, int pageSize);
     Task<Teacher?> GetByIdAsync(Guid id);
     Task<Teacher?> GetByAuthUserIdAsync(Guid authUserId);
     Task AddAsync(Teacher teacher);
